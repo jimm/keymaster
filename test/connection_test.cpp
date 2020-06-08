@@ -82,6 +82,19 @@ TEST_CASE("!xpose", CATCH_CATEGORY) {
   delete conn;
 }
 
+TEST_CASE("xpose out of range filteres out note", CATCH_CATEGORY) {
+  Connection *conn = create_conn();
+
+  conn->midi_in(Pm_Message(NOTE_ON, 64, 127));
+  conn->xpose = 128;
+  conn->midi_in(Pm_Message(NOTE_ON, 64, 127));
+
+  REQUIRE(conn->output->num_io_messages ==1);
+  REQUIRE(conn->output->io_messages[0] == Pm_Message(NOTE_ON, 64,    127));
+
+  delete conn;
+}
+
 TEST_CASE("!zone", CATCH_CATEGORY) {
   Connection *conn = create_conn();
 

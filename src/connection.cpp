@@ -93,10 +93,12 @@ void Connection::midi_in(PmMessage msg) {
   switch (high_nibble) {
   case NOTE_ON: case NOTE_OFF: case POLY_PRESSURE:
     if (inside_zone(msg)) {
-      if (output_chan != CONNECTION_ALL_CHANNELS)
-        status = high_nibble + output_chan;
       data1 += xpose;
-      midi_out(Pm_Message(status, data1, data2));
+      if (data1 >= 0 && data1 <= 127) {
+        if (output_chan != CONNECTION_ALL_CHANNELS)
+          status = high_nibble + output_chan;
+        midi_out(Pm_Message(status, data1, data2));
+      }
     }
     break;
   case CONTROLLER:
