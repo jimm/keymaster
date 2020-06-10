@@ -17,8 +17,8 @@ public:
   Message(sqlite3_int64 id, const char *name);
   ~Message();
 
-  void send();
-  void send(Output &);
+  void send_to_all_outputs();
+  void send_to(Output &);
 
   void clear_messages();
 

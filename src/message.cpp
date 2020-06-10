@@ -14,13 +14,12 @@ Message::~Message() {
     free(events);
 }
 
-
-void Message::send() {
+void Message::send_to_all_outputs() {
   for (auto& out : KeyMaster_instance()->outputs)
-    send(*out);
+    send_to(*out);
 }
 
-void Message::send(Output &out) {
+void Message::send_to(Output &out) {
   if (events == nullptr)
     convert_messages();
   out.write(events, num_events);

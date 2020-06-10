@@ -84,7 +84,7 @@ void MessageEditor::save(wxCommandEvent& _) {
   char text_buf[BUFSIZ];
   vector<char *>line_ptrs;
 
-  // Need to be careful about memory use here. `strok` (used here and by
+  // Need to be careful about memory use here. `strtok` (used here and by
   // `message_from_bytes`) munges the string passed in, and it is not thread
   // safe. We make sure each call is run in isolation (first splitting text
   // into lines, then parsing each line) and runs on a char array.

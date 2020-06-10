@@ -17,6 +17,8 @@ void Trigger::set_trigger_key_code(int key_code) {
   trigger_key_code = key_code;
 }
 
+// `message` might be all zeroes, which will never match an incoming MIDI
+// message.
 void Trigger::set_trigger_message(Input *input, PmMessage message) {
   remove_from_input();
   trigger_message = message;
@@ -67,7 +69,7 @@ void Trigger::perform_action() {
     km->panic(true);
     break;
   case TA_MESSAGE:
-    output_message->send();
+    output_message->send_to_all_outputs();
     break;
   }
 }

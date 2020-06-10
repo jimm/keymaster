@@ -22,7 +22,7 @@ class Input;
 class Trigger : public DBObj {
 public:
   int trigger_key_code;
-  PmMessage trigger_message;
+  PmMessage trigger_message;    // might be all zeroes
   TriggerAction action;
   Message *output_message;
 

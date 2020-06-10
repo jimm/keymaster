@@ -367,8 +367,7 @@ void Frame::send_message(wxCommandEvent& event) {
   KeyMaster *km = KeyMaster_instance();
   int message_num = lc_messages->GetSelection();
   Message *message = km->messages[message_num];
-  for (auto& output : km->outputs)
-    message->send(*output);
+  message->send_to_all_outputs();
 }
 
 // ================ create, edit, destroy ================
