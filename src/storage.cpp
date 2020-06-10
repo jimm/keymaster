@@ -427,25 +427,15 @@ void Storage::save_messages() {
     "insert into messages (id, name, bytes) values (?, ?, ?)";
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
-  for (auto& msg : km->messages)
-    save_message(stmt, msg);
-  for (auto& song : km->all_songs->songs)
-    for (auto& patch : song->patches) {
-      if (patch->start_message != nullptr)
-        save_message(stmt, patch->start_message);
-      if (patch->stop_message != nullptr)
-        save_message(stmt, patch->stop_message);
-    }
+  for (auto& msg : km->messages) {
+    bind_obj_id_or_null(stmt, 1, msg);
+    sqlite3_bind_text(stmt, 2, msg->name.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, message_to_byte_str(msg).c_str(), -1, SQLITE_STATIC);
+    sqlite3_step(stmt);
+    extract_id(msg);
+    sqlite3_reset(stmt);
+  }
   sqlite3_finalize(stmt);
-}
-
-void Storage::save_message(sqlite3_stmt *stmt, Message *msg) {
-  bind_obj_id_or_null(stmt, 1, msg);
-  sqlite3_bind_text(stmt, 2, msg->name.c_str(), -1, SQLITE_STATIC);
-  sqlite3_bind_text(stmt, 3, message_to_byte_str(msg).c_str(), -1, SQLITE_STATIC);
-  sqlite3_step(stmt);
-  extract_id(msg);
-  sqlite3_reset(stmt);
 }
 
 void Storage::save_triggers() {
