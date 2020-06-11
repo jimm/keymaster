@@ -246,9 +246,9 @@ void Frame::make_menu_bar() {
                       "Open the MIDI Monitor window");
 
   wxMenu *menu_midi = new wxMenu;
-  menu_midi->Append(ID_RegularPanic, "&Send All Notes Off\tCtrl-A",
+  menu_midi->Append(ID_RegularPanic, "&Send All Notes Off\tCtrl-.",
                    "Send All Notes Off controller message on all channels");
-  menu_midi->Append(ID_SuperPanic, "&Send Super-Panic\tCtrl-.",
+  menu_midi->Append(ID_SuperPanic, "&Send Super-Panic\tCtrl-/",
                    "Send Notes Off messages, all notes, all channels");
 
   wxMenu *menu_help = new wxMenu;
