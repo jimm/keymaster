@@ -128,6 +128,21 @@ void format_controllers(Connection *conn, char *buf) {
   *buf = 0;
 }
 
+// Handles "0x" prefix and negative numbers.
+int int_from_chars(const char *str) {
+  str += strspn(str, " \t");
+  if (strlen(str) > 2 && strncasecmp(str, "0x", 2) == 0)
+    return (int)strtol(str, 0, 16);
+
+  if (str[0] == '-' || isdigit(str[0]))
+    return atoi(str);
+
+  return 0;
+}
+
+// ================ parsing MIDI messages ================
+
+// Private helper for `hex_to_byte`.
 unsigned char hex_digit_from_char(char ch) {
   switch (ch) {
   case '0': case '1': case '2': case '3': case '4':
@@ -142,24 +157,22 @@ unsigned char hex_digit_from_char(char ch) {
   }
 }
 
-// Translates first two hex chars into an unsigned char value. Zero, one, or
-// two chars used.
+// Translates up to first two hex chars into an unsigned char value. Zero,
+// one, or two chars used.
 unsigned char hex_to_byte(const char *hex) {
   unsigned char val = 0;
-  
-  for (int i = 0; i < 2 && isxdigit(*hex); ++i, ++hex) {
-    val <<= 4;
-    val += hex_digit_from_char(*hex);
+  if (isxdigit(*hex)) {
+    val = hex_digit_from_char(*hex);
+    ++hex;
   }
+  if (isxdigit(*hex))
+    val = (val << 4) + hex_digit_from_char(*hex);
+
   return val;
 }
 
-string byte_to_hex(unsigned char byte) {
-  char buf[3];
-  snprintf(buf, 3, "%02x", byte);
-  return string((const char *)buf);
-}
-
+// private helper for message_from_bytes
+//
 bool check_byte_value(int val) {
   if (val >= 0 && val <= 255)
     return true;
@@ -168,25 +181,19 @@ bool check_byte_value(int val) {
   return false;
 }
 
-// Handles "0x" prefix and negative numbers.
-int int_from_chars(const char *str) {
-  str += strspn(str, " \t");
-  if (strlen(str) > 2 && strncasecmp(str, "0x", 2) == 0)
-    return (int)strtol(str, 0, 16);
-
-  if (str[0] == '-' || isdigit(str[0]))
-    return atoi(str);
-
-  return 0;
-}
-
+// private helper for message_from_bytes
+//
 unsigned char byte_from_chars(const char * const str) {
   int val = int_from_chars(str);
   return check_byte_value(val) ? val : 0;
 }
 
-// Translates hex bytes in `str`
+// Translates hex bytes in `str` into a single non-sysex MIDI message. If
+// `str` is `nullptr` returns a message consisting of three zero bytes.
 PmMessage message_from_bytes(const char *str) {
+  if (str == nullptr)
+    return Pm_Message(0, 0, 0);
+
   int bytes[3] = {0, 0, 0};
   int i = 0;
 

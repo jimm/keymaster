@@ -53,7 +53,7 @@ TEST_CASE("send start and stop messages", CATCH_CATEGORY) {
 
   clear_out_io_messages(km);
   km->next_patch();             // second patch in song: has start and stop
-  REQUIRE(km->cursor->patch()->start_message->messages.size() > 0);
+  REQUIRE(km->cursor->patch()->start_message->events.size() > 0);
   assert_no_stop_sent(km);
   assert_start_sent(km);
 

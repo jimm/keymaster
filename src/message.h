@@ -12,21 +12,23 @@ class Output;
 
 class Message : public DBObj, public Named {
 public:
-  vector<PmMessage> messages;
+  vector<PmEvent> events;       // public for testing only
 
   Message(sqlite3_int64 id, const char *name);
-  ~Message();
+
+  void from_string(string &str) { from_chars(str.c_str()); }
+  void from_chars(const char *str);
+
+  void from_editable_string(const string &str);
+
+  string to_string();
+  string to_editable_string();
 
   void send_to_all_outputs();
   void send_to(Output &);
 
-  void clear_messages();
-
 private:
-  PmEvent *events;
-  int num_events;
-
-  void convert_messages();
+  void clear_events();
 };
 
 #endif /* MESSAGE_H */

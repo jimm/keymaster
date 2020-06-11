@@ -123,12 +123,7 @@ void Storage::load_messages() {
 
     Message *m = new Message(id, name);
     km->messages.push_back(m);
-
-    char *p = (char *)bytes;
-    while (*p) {
-      m->messages.push_back(km_message_from_bytes(p));
-      p += 6;
-    }
+    m->from_chars(bytes);
   }
   sqlite3_finalize(stmt);
 }
@@ -177,7 +172,7 @@ void Storage::load_triggers() {
       t->set_trigger_key_code(trigger_key_code);
     if (input_id != UNDEFINED_ID) {
       Input *input = find_input_by_id("trigger", id, input_id);
-      PmMessage trigger_message = km_message_from_bytes((char *)bytes);
+      PmMessage trigger_message = single_message_from_hex_bytes((char *)bytes);
       t->set_trigger_message(input, trigger_message);
     }
   }
@@ -430,7 +425,7 @@ void Storage::save_messages() {
   for (auto& msg : km->messages) {
     bind_obj_id_or_null(stmt, 1, msg);
     sqlite3_bind_text(stmt, 2, msg->name.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 3, message_to_byte_str(msg).c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, msg->to_string().c_str(), -1, SQLITE_STATIC);
     sqlite3_step(stmt);
     extract_id(msg);
     sqlite3_reset(stmt);
@@ -457,7 +452,7 @@ void Storage::save_triggers() {
       sqlite3_bind_null(stmt, 4);
     else
       sqlite3_bind_text(stmt, 4,
-                        km_message_to_bytes(trigger->trigger_message).c_str(),
+                        single_message_to_hex_bytes(trigger->trigger_message).c_str(),
                         -1, SQLITE_STATIC);
     if (trigger->output_message != nullptr) {
       sqlite3_bind_null(stmt, 5);
@@ -764,31 +759,38 @@ void Storage::extract_id(DBObj *db_obj) {
     (db_obj)->set_id(sqlite3_last_insert_rowid(db));
 }
 
-PmMessage Storage::km_message_from_bytes(char *bytes) {
+// FIXME use standard Message output format 007f35b0
+//
+// Parses a single array of chars of length <= 6 representing a single
+// non-separated MIDI messages like 'b0357f'. Returns a PmMessage. If
+// `bytes` is null, returns a message containing all zeroes.
+PmMessage Storage::single_message_from_hex_bytes(char *bytes) {
   if (bytes == nullptr)
     return Pm_Message(0, 0, 0);
 
-  unsigned char b1 = 0, b2 = 0, b3 = 0;
-  b1 = hex_to_byte(bytes); bytes += 2;
-  if (*bytes) {
-    b2 = hex_to_byte(bytes); bytes += 2;
-    if (*bytes)
-      b3 = hex_to_byte(bytes); bytes += 2;
-  }
-  return Pm_Message(b1, b2, b3);
+  // FIXME same as inner loop of messages_from_chars in message.cpp
+  unsigned char byte;
+  PmMessage msg = 0;
+
+  byte = hex_to_byte(bytes); bytes += 2;
+  msg = byte;
+
+  byte = hex_to_byte(bytes); bytes += 2;
+  msg = (msg << 8) + byte;
+
+  byte = hex_to_byte(bytes); bytes += 2;
+  msg = (msg << 8) + byte;
+
+  byte = hex_to_byte(bytes);
+  msg = (msg << 8) + byte;
+
+  return msg;
 }
 
-string Storage::message_to_byte_str(Message *msg) {
-  string byte_str;
-  for (auto& km_msg : msg->messages) {
-    byte_str += km_message_to_bytes((PmMessage)km_msg);
-  }
-  return byte_str;
-}
-
-string Storage::km_message_to_bytes(PmMessage msg) {
+// FIXME use standard Message format 007f35b0
+string Storage::single_message_to_hex_bytes(PmMessage msg) {
   char buf[7];
 
-  sprintf(buf, "%02x%02x%02x", Pm_MessageStatus(msg), Pm_MessageData1(msg), Pm_MessageData2(msg));
+  sprintf(buf, "00%02x%02x%02x", Pm_MessageData2(msg), Pm_MessageData1(msg), Pm_MessageStatus(msg));
   return string(buf);
 }

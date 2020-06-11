@@ -69,9 +69,8 @@ private:
   void bind_int_or_null(sqlite3_stmt *stmt, int col_num, int val, int nullval=UNDEFINED);
   void extract_id(DBObj *db_obj);
 
-  PmMessage km_message_from_bytes(char *);
-  string message_to_byte_str(Message *);
-  string km_message_to_bytes(PmMessage msg);
+  PmMessage single_message_from_hex_bytes(char *);
+  string single_message_to_hex_bytes(PmMessage msg);
 };
 
 #endif /* STORAGE_H */

@@ -47,10 +47,6 @@ void Patch::send_message_to_outputs(Message *message) {
   for (auto& conn : connections)
     outputs.insert(conn->output);
 
-  for (auto& out : outputs) {
-    for (auto& msg : message->messages) {
-      event.message = msg;
-      out->write(&event, 1);
-    }
-  }
+  for (auto& out : outputs)
+    message->send_to(*out);
 }

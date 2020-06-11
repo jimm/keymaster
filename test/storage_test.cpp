@@ -32,13 +32,13 @@ TEST_CASE("load messages", CATCH_CATEGORY) {
 
   Message *msg = km->messages[0];
   REQUIRE(msg->name == "Tune Request");
-  REQUIRE(msg->messages[0] == Pm_Message(0xf6, 0, 0));
+  REQUIRE(msg->events[0].message == Pm_Message(0xf6, 0, 0));
 
   msg = km->messages[1];
   REQUIRE(msg->name == "Multiple Note-Offs");
-  REQUIRE(msg->messages[0] == Pm_Message(0x80, 64, 0));
-  REQUIRE(msg->messages[1] == Pm_Message(0x81, 64, 0));
-  REQUIRE(msg->messages[2] == Pm_Message(0x82, 42, 127));
+  REQUIRE(msg->events[0].message == Pm_Message(0x80, 64, 0));
+  REQUIRE(msg->events[1].message == Pm_Message(0x81, 64, 0));
+  REQUIRE(msg->events[2].message == Pm_Message(0x82, 42, 127));
 
   delete km;
 }
@@ -123,15 +123,8 @@ TEST_CASE("load start and stop messages", CATCH_CATEGORY) {
   Song *s = km->all_songs->songs[ANOTHER_INDEX];
   Patch *p = s->patches.back();
 
-  REQUIRE(p->start_message->messages.size() == 3);
-  REQUIRE(p->start_message->messages[0] == Pm_Message(0xb0, 0x7a, 0x00));
-  REQUIRE(p->start_message->messages[1] == Pm_Message(0xb0, 7, 127));
-  REQUIRE(p->start_message->messages[2] == Pm_Message(0xb1, 7, 127));
-
-  REQUIRE(p->stop_message->messages.size() == 3);
-  REQUIRE(p->stop_message->messages[0] == Pm_Message(0xb2, 7, 127));
-  REQUIRE(p->stop_message->messages[1] == Pm_Message(0xb3, 7, 127));
-  REQUIRE(p->stop_message->messages[2] == Pm_Message(0xb0, 0x7a, 127));
+  REQUIRE(p->start_message->id() == 3);
+  REQUIRE(p->stop_message->id() == 4);
 }
 
 TEST_CASE("load connections", CATCH_CATEGORY) {

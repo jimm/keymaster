@@ -43,6 +43,7 @@ TEST_CASE("name to num given num", CATCH_CATEGORY) {
 TEST_CASE("message from bytes", CATCH_CATEGORY) {
   char buf[BUFSIZ];
 
+  REQUIRE(message_from_bytes(nullptr) == Pm_Message(0, 0, 0));
   strcpy(buf, "0 0 0");
   REQUIRE(message_from_bytes(buf) == Pm_Message(0, 0, 0));
   strcpy(buf, "0x81, 64, 0x7f");

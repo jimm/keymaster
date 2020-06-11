@@ -5,21 +5,21 @@ insert into instruments (id, type, name, port_name) values
   (4, 1, 'second output', 'port two');
 
 insert into messages (id, name, bytes) values
-  (1, 'Tune Request', 'f6'),
-  (2, 'Multiple Note-Offs', '804000814000822a7f'),
-  (3, '_start', 'b07a00b0077fb1077f'),
-  (4, '_stop', 'b2077fb3077fb07a7f');
+  (1, 'Tune Request', '000000f6'),
+  (2, 'Multiple Note-Offs', '0000408000004081007f2a82'),
+  (3, '_start', '00007ab0007f07b0007f07b1'),
+  (4, '_stop', '007f07b2007f07b3007fa7b0');
 
 insert into triggers
   (id, trigger_key_code, input_id, trigger_message_bytes, action, message_id)
 values
   (1, 340, null, null, 'panic', null),
   (2, 341, null, null, 'super_panic', null),
-  (3, null, 1, 'b0327f', 'next_song', null),
-  (4, null, 1, 'b0337f', 'prev_song', null),
-  (5, null, 1, 'b0347f', 'next_patch', null),
-  (6, null, 1, 'b0357f', 'prev_patch', null),
-  (7, null, 1, 'b0367f', null, 1);
+  (3, null, 1, '007f32b0', 'next_song', null),
+  (4, null, 1, '007f33b0', 'prev_song', null),
+  (5, null, 1, '007f34b0', 'next_patch', null),
+  (6, null, 1, '007f35b0', 'prev_patch', null),
+  (7, null, 1, '007f36b0', null, 1);
 
 insert into songs (id, name, notes) values
   (1, 'To Each His Own', 'example notes'),
