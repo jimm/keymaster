@@ -27,8 +27,6 @@ public:
   KeyMaster();
   ~KeyMaster();
 
-  int load(const char *);
-
   // ================ running ================
   void start();
   void stop();
