@@ -491,7 +491,7 @@ bool Frame::edit_set_list(SetList *set_list) {
 
   KeyMaster *km = KeyMaster_instance();
   if (set_list == km->all_songs) {
-    wxMessageBox("Can't edit the master list of all songs",
+    wxMessageBox("Can't edit the main list of all songs",
                 "Set List Editor", wxOK | wxICON_INFORMATION);
     return false;
   }
