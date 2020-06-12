@@ -4,13 +4,13 @@
 #include "error.h"
 #include "output.h"
 
-Output::Output(int id, const char *name, const char *port_name, int port_num)
-  : Instrument(id, name, port_name, port_num)
+Output::Output(sqlite3_int64 id, PmDeviceID device_id, const char *device_name, const char *name)
+  : Instrument(id, device_id, device_name, name)
 {
 }
 
 bool Output::start_midi() {
-  PmError err = Pm_OpenOutput(&stream, port_num, 0, 128, 0, 0, 0);
+  PmError err = Pm_OpenOutput(&stream, device_id, 0, 128, 0, 0, 0);
   if (err == 0)
     return true;
 
@@ -39,6 +39,7 @@ void Output::write(PmEvent *buf, int len) {
     for (int i = 0; i < len && num_io_messages < MIDI_BUFSIZ-1; ++i)
       io_messages[num_io_messages++] = buf[i].message;
   }
+
   if (enabled && midi_monitor != nullptr)
     for (int i = 0; i < len && num_io_messages < MIDI_BUFSIZ-1; ++i)
       midi_monitor->monitor_output(this, buf[i].message);

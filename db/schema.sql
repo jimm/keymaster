@@ -12,7 +12,7 @@ create table instruments (
   id integer primary key,
   type integer not null default 0,  -- 0 == input, 1 == output
   name text,
-  port_name text
+  device_name text
 );
 
 create table messages (

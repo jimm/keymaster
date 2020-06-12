@@ -19,7 +19,7 @@ public:
   vector<Trigger *> triggers;
   bool running;
 
-  Input(int id, const char *name, const char *port_name, int port_num);
+  Input(sqlite3_int64 id, PmDeviceID device_id, const char *device_name, const char *name = nullptr);
 
   void add_connection(Connection *);
   void remove_connection(Connection *);

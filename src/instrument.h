@@ -10,8 +10,8 @@
 
 class Instrument : public DBObj, public Named {
 public:
-  string port_name;
-  int port_num;
+  PmDeviceID device_id;
+  string device_name;
   PortMidiStream *stream;
   MIDIMonitor *midi_monitor;
   bool enabled;
@@ -19,8 +19,8 @@ public:
   PmMessage io_messages[MIDI_BUFSIZ]; // testing only
   int num_io_messages;                // ditto
 
-  Instrument(sqlite3_int64 id, const char *name, const char *port_name,
-             int port_num);
+  Instrument(sqlite3_int64 id, PmDeviceID device_id, const char *device_name,
+             const char *name = nullptr);
   virtual ~Instrument() {}
 
   virtual void start();

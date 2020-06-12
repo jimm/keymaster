@@ -1,4 +1,4 @@
-insert into instruments (id, type, name, port_name) values
+insert into instruments (id, type, name, device_name) values
   (1, 0, 'first input', 'port one'),
   (2, 0, 'second input', 'port two'),
   (3, 1, 'first output', 'port one'),

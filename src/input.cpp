@@ -70,8 +70,8 @@ void *read_thread(void *in_voidptr) {
 }
 
 
-Input::Input(int id, const char *name, const char *port_name, int port_num)
-  : Instrument(id, name, port_name, port_num), running(false), read_pthread(nullptr)
+Input::Input(sqlite3_int64 id, PmDeviceID device_id, const char *device_name, const char *name)
+  : Instrument(id, device_id, device_name, name), running(false), read_pthread(nullptr)
 {
 }
 
@@ -162,7 +162,7 @@ void Input::stop() {
 }
 
 bool Input::start_midi() {
-  PmError err = Pm_OpenInput(&stream, port_num, 0, MIDI_BUFSIZ, 0, 0);
+  PmError err = Pm_OpenInput(&stream, device_id, 0, MIDI_BUFSIZ, 0, 0);
   if (err != 0) {
     char buf[BUFSIZ];
     sprintf(buf, "error opening input stream %s: %s\n", name.c_str(),

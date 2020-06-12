@@ -53,6 +53,6 @@ void InstrumentDialog::run() {
 
 void InstrumentDialog::add_instrument(wxListCtrl *list_box, Instrument *inst, int i) {
   list_box->InsertItem(i, inst->name.c_str());
-  list_box->SetItem(i, 1, inst->port_name.c_str());
+  list_box->SetItem(i, 1, inst->device_name.c_str());
   list_box->SetItem(i, 2, inst->enabled ? "enabled" : "<disabled>");
 }

@@ -25,9 +25,6 @@ private:
   sqlite3 *db;
   KeyMaster *km;
   string error_str;
-  int max_patch_id;
-  int max_conn_id;
-  vector<const PmDeviceInfo *> devices;
 
   void load_instruments();
   void load_messages();
@@ -61,7 +58,7 @@ private:
   void set_find_error_message(const char * const, sqlite3_int64,
                               const char * const, sqlite3_int64);
 
-  int compare_device_names(const char *name1, const char *name2);
+  bool device_names_equal(const char *device_name1, const char *device_name2);
 
   // SQL statement helpers
   int int_or_null(sqlite3_stmt *stmt, int col_num, int null_val=UNDEFINED);

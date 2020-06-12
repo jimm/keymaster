@@ -73,14 +73,18 @@ void KeyMaster::load_instruments() {
   if (testing)
     return;
 
+  devices.clear();
   int num_devices = Pm_CountDevices();
+  for (int i = 0; i < num_devices; ++i)
+    devices.push_back(Pm_GetDeviceInfo(i));
 
-  for (int i = 0; i < num_devices; ++i) {
-    const PmDeviceInfo *info = Pm_GetDeviceInfo(i);
+  for (int i = 0; i < devices.size(); ++i) {
+    const PmDeviceInfo *info = devices[i];
+    fprintf(stderr, "info device name \"%s\" in %d out %d\n", info->name, info->input, info->output); // DEBUG
     if (info->input)
-      inputs.push_back(new Input(UNDEFINED_ID, info->name, info->name, i));
+      inputs.push_back(new Input(UNDEFINED_ID, i, info->name));
     if (info->output)
-      outputs.push_back(new Output(UNDEFINED_ID, info->name, info->name, i));
+      outputs.push_back(new Output(UNDEFINED_ID, i, info->name));
   }
 }
 

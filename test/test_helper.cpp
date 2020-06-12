@@ -57,12 +57,9 @@ KeyMaster *load_test_data() {
 }
 
 Connection *create_conn() {
-  Input *in = new Input(UNDEFINED_ID, "in1", "in port name",
-                        CONNECTION_ALL_CHANNELS);
-  Output *out = new Output(UNDEFINED_ID, "out1", "out port name",
-                           CONNECTION_ALL_CHANNELS);
+  Input *in = new Input(UNDEFINED_ID, pmNoDevice, "in1", "in 1 port");
+  Output *out = new Output(UNDEFINED_ID, pmNoDevice, "out1", "out 1 port");
   Connection *conn = new Connection(UNDEFINED_ID, in, 0, out, 0);
-  vector<PmMessage> empty;
   conn->start();                // add conn to input
   return conn;
 }

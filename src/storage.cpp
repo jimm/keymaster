@@ -15,6 +15,9 @@
 
 using namespace std;
 
+#define INSTRUMENT_TYPE_INPUT 0
+#define INSTRUMENT_TYPE_OUTPUT 1
+
 Storage::Storage(const char *path) {
   int status = sqlite3_open(path, &db);
   if (status != 0) {
@@ -39,8 +42,9 @@ KeyMaster *Storage::load(bool testing) {
     return old_km;
 
   km = new KeyMaster();    // side-effect: KeyMaster static instance set
+  km->testing = testing;
+  km->load_instruments();
 
-  max_patch_id = max_conn_id = -1;
   load_instruments();
   load_messages();
   load_triggers();
@@ -48,7 +52,6 @@ KeyMaster *Storage::load(bool testing) {
   load_set_lists();
   create_default_patches();
 
-  km->testing = testing;
   return km;
 }
 
@@ -94,19 +97,46 @@ void Storage::initialize() {
 void Storage::load_instruments() {
   sqlite3_stmt *stmt;
   const char * const sql =
-    "select id, type, name, port_name from instruments order by name, port_name";
+    "select id, type, name, device_name from instruments order by name, device_name";
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     sqlite3_int64 id = sqlite3_column_int64(stmt, 0);
     int type = sqlite3_column_int(stmt, 1);
     const char *name = (const char *)sqlite3_column_text(stmt, 2);
-    const char *port_name = (const char *)sqlite3_column_text(stmt, 3);
-    PmDeviceID device_id = find_device(port_name, type);
-    if (type == 0)
-      km->inputs.push_back(new Input(id, name, port_name, device_id));
-    else
-      km->outputs.push_back(new Output(id, name, port_name, device_id));
+    const char *device_name = (const char *)sqlite3_column_text(stmt, 3);
+
+    // Try to match device with what's been created in km already. If it
+    // exists, update the db id and the name (not port name). If it does not
+    // exist, create a new one (which will be disabled).
+    fprintf(stderr, "\n\nlooking for port name \"%s\"\n", device_name); // DEBUG
+    PmDeviceID device_id = find_device(device_name, type);
+    fprintf(stderr, "found device id %d\n", device_id); // DEBUG
+    if (device_id != pmNoDevice) {
+      // update db id and name
+      if (type == INSTRUMENT_TYPE_INPUT) {
+        for (auto &input : km->inputs) {
+          if (input->device_id == device_id) {
+            input->set_id(id);
+            input->name = name;
+          }
+        }
+      }
+      else {
+        for (auto &output : km->outputs) {
+          if (output->device_id == device_id) {
+            output->set_id(id);
+            output->name = name;
+          }
+        }
+      }
+    }
+    else {
+      if (type == INSTRUMENT_TYPE_INPUT)
+        km->inputs.push_back(new Input(id, pmNoDevice, device_name, name));
+      else
+        km->outputs.push_back(new Output(id, pmNoDevice, device_name, name));
+    }
   }
   sqlite3_finalize(stmt);
 }
@@ -214,9 +244,6 @@ void Storage::load_patches(Song *s) {
     sqlite3_int64 stop_message_id = id_or_null(stmt, 3);
 
     Patch *p = new Patch(id, name);
-    if (id > max_patch_id)
-      max_patch_id = id;
-
     if (start_message_id != UNDEFINED_ID) {
       for (auto& message : km->messages) {
         if (message->id() == start_message_id)
@@ -257,14 +284,17 @@ void Storage::create_default_patches() {
       create_default_patch(song);
 }
 
+// This only works if input and output port names are the same. That's not
+// true for many keyboards such as the Korg Kronos and the Studiologic
+// Sledge.
 void Storage::create_default_patch(Song *s) {
-  Patch *p = new Patch(++max_patch_id, "Default Patch");
+  Patch *p = new Patch(UNDEFINED_ID, "Default Patch");
   s->patches.push_back(p);
   for (auto& input : km->inputs) {
     for (auto& output : km->outputs) {
-      if (output->port_name == input->port_name) {
+      if (output->device_name == input->device_name) {
         Connection *conn =
-          new Connection(++max_conn_id, input, CONNECTION_ALL_CHANNELS,
+          new Connection(UNDEFINED_ID, input, CONNECTION_ALL_CHANNELS,
                          output, CONNECTION_ALL_CHANNELS);
         p->connections.push_back(conn);
       }
@@ -302,8 +332,6 @@ void Storage::load_connections(Patch *p) {
     Input *input = find_input_by_id("connection", id, input_id);
     Output *output = find_output_by_id("connection", id, output_id);
     Connection *conn = new Connection(id, input, input_chan, output, output_chan);
-    if (id > max_conn_id)
-      max_conn_id = id;
     conn->prog.bank_msb = bank_msb;
     conn->prog.bank_lsb = bank_lsb;
     conn->prog.prog = prog;
@@ -392,14 +420,14 @@ void Storage::load_set_list_songs(SetList *slist) {
 void Storage::save_instruments() {
   sqlite3_stmt *stmt;
   const char * const sql =
-    "insert into instruments (id, type, name, port_name) values (?, ?, ?, ?)";
+    "insert into instruments (id, type, name, device_name) values (?, ?, ?, ?)";
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   for (auto& input : km->inputs) {
     bind_obj_id_or_null(stmt, 1, input);
     sqlite3_bind_int(stmt, 2, 0);
     sqlite3_bind_text(stmt, 3, input->name.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 4, input->port_name.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, input->device_name.c_str(), -1, SQLITE_STATIC);
     sqlite3_step(stmt);
     extract_id(input);
     sqlite3_reset(stmt);
@@ -408,7 +436,7 @@ void Storage::save_instruments() {
     bind_obj_id_or_null(stmt, 1, output);
     sqlite3_bind_int(stmt, 2, 1);
     sqlite3_bind_text(stmt, 3, output->name.c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 4, output->port_name.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, output->device_name.c_str(), -1, SQLITE_STATIC);
     sqlite3_step(stmt);
     extract_id(output);
     sqlite3_reset(stmt);
@@ -629,21 +657,17 @@ void Storage::save_set_list_songs(SetList *set_list) {
   sqlite3_finalize(stmt);
 }
 
-PmDeviceID Storage::find_device(const char *name, int device_type) {
+PmDeviceID Storage::find_device(const char *device_name, int device_type) {
   if (km->testing)
     return pmNoDevice;
 
-  if (devices.empty()) {
-    int num_devices = Pm_CountDevices();
-    for (int i = 0; i < num_devices; ++i)
-      devices.push_back(Pm_GetDeviceInfo(i));
-  }
-
-  for (int i = 0; i < devices.size(); ++i) {
-    const PmDeviceInfo *info = devices[i];
-    if (device_type == 0 && info->input && compare_device_names(name, (const char *)info->name) == 0)
-      return i;
-    if (device_type == 1 && info->output && compare_device_names(name, (const char *)info->name) == 0)
+  fprintf(stderr, "finding device with name \"%s\", type %d\n", device_name, device_type); // DEBUG
+  for (int i = 0; i < km->devices.size(); ++i) {
+    const PmDeviceInfo *info = km->devices[i];
+    fprintf(stderr, "  looking at info \"%s\", input %d output %d\n", info->name, info->input, info->output); // DEBUG
+    if (((device_type == 0 && info->input)
+         || (device_type == 1 && info->output))
+        && device_names_equal(device_name, (const char *)info->name))
       return i;
     ++i;
   }
@@ -708,29 +732,30 @@ void Storage::set_find_error_message(
 
 /*
  * Case-insensitive string comparison that ignores leading and trailing
- * whitespace and only compares up to the length of the shorter of the two
- * strings. For example, "ABCDXXX" and " abc" would be considered equal.
- *
- * Returns 0 if the two strings are equal, given those conditions. Assumes
- * both strings are non-NULL.
+ * whitespace and returns 0 if they are equal. Assumes both strings are
+ * non-NULL.
  */
-int Storage::compare_device_names(const char *name1, const char *name2) {
+bool Storage::device_names_equal(const char *name1, const char *name2) {
+  fprintf(stderr, "device_names_equal \"%s\", \"%s\"\n", name1, name2); // DEBUG
   while (isspace(*name1)) ++name1;
   while (isspace(*name2)) ++name2;
   if (*name1 == '\0' || *name2 == '\0')
-    return *name1 - *name2;
+  { fprintf(stderr, "both empty returning non-zero\n"); // DEBUG
+    return false;
+  }
 
   const char *end1 = name1 + strlen(name1) - 1;
   while(end1 > name1 && isspace(*end1)) end1--;
-  const char *end2 = name2 + strlen(name2) - 2;
+  const char *end2 = name2 + strlen(name2) - 1;
   while(end2 > name2 && isspace(*end2)) end2--;
 
   int len1 = (int)(end1 - name1) + 1;
   int len2 = (int)(end2 - name2) + 1;
 
   if (len1 != len2)
-    return len1 - len2;
-  return strncasecmp(name1, name2, len1);
+    return false;
+  fprintf(stderr, "strncasecmp \"%s\", \"%s\", len %d\n", name1, name2, len1); // DEBUG
+  return strncasecmp(name1, name2, len1) == 0;
 }
 
 int Storage::int_or_null(sqlite3_stmt *stmt, int col_num, int null_val) {

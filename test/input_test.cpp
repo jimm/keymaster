@@ -42,7 +42,7 @@ TEST_CASE("two connections", CATCH_CATEGORY) {
   Input *in = conn->input;
   Output *out = conn->output;
 
-  Output *out2 = new Output(UNDEFINED_ID, "out2", "out2 port name", CONNECTION_ALL_CHANNELS);
+  Output *out2 = new Output(UNDEFINED_ID, pmNoDevice, "out2", "out 2 port");
   Connection *conn2 = new Connection(UNDEFINED_ID, in, 0, out2, 0);
   conn2->start();
 
@@ -68,7 +68,7 @@ TEST_CASE("connection switch routes note offs correctly", CATCH_CATEGORY) {
   Input *in = conn->input;
   Output *out = conn->output;
 
-  Output *out2 = new Output(UNDEFINED_ID, "out2", "out2 port name", CONNECTION_ALL_CHANNELS);
+  Output *out2 = new Output(UNDEFINED_ID, pmNoDevice, "out2", "out 2 port");
   Connection *conn2 = new Connection(UNDEFINED_ID, in, 0, out2, 0);
 
   PmMessage *buf = test_events();
@@ -105,7 +105,7 @@ TEST_CASE("connection switch pays attention to note off channel", CATCH_CATEGORY
   Input *in = conn->input;
   Output *out = conn->output;
 
-  Output *out2 = new Output(UNDEFINED_ID, "out2", "out2 port name", CONNECTION_ALL_CHANNELS);
+  Output *out2 = new Output(UNDEFINED_ID, pmNoDevice, "out2", "out 2 port");
   Connection *conn2 = new Connection(UNDEFINED_ID, in, CONNECTION_ALL_CHANNELS,
                                      out2, CONNECTION_ALL_CHANNELS);
 
@@ -145,7 +145,7 @@ TEST_CASE("connection switch routes sustains correctly", CATCH_CATEGORY) {
   Input *in = conn->input;
   Output *out = conn->output;
 
-  Output *out2 = new Output(UNDEFINED_ID, "out2", "out2 port name", CONNECTION_ALL_CHANNELS);
+  Output *out2 = new Output(UNDEFINED_ID, pmNoDevice, "out2", "out 2 port");
   Connection *conn2 = new Connection(UNDEFINED_ID, in, 0, out2, 0);
 
   PmMessage buf[4] = {
@@ -182,7 +182,7 @@ TEST_CASE("connection switch pays attention to sustain channel", CATCH_CATEGORY)
   Input *in = conn->input;
   Output *out = conn->output;
 
-  Output *out2 = new Output(UNDEFINED_ID, "out2", "out2 port name", CONNECTION_ALL_CHANNELS);
+  Output *out2 = new Output(UNDEFINED_ID, pmNoDevice, "out2", "out 2 port");
   Connection *conn2 = new Connection(UNDEFINED_ID, in, CONNECTION_ALL_CHANNELS,
                                      out2, CONNECTION_ALL_CHANNELS);
 

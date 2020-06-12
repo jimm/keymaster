@@ -2,6 +2,7 @@
 #define KEYMASTER_H
 
 #include <vector>
+#include <portmidi.h>
 #include "set_list.h"
 #include "input.h"
 #include "output.h"
@@ -13,6 +14,7 @@ class Cursor;
 
 class KeyMaster {
 public:
+  vector<const PmDeviceInfo *> devices;
   vector<Input *> inputs;
   vector<Output *> outputs;
   vector<Trigger *> triggers;
@@ -33,6 +35,7 @@ public:
 
   // ================ initialization ================
   void initialize();
+  void load_instruments();
 
   // ================ movement ================
   void next_patch();
@@ -56,7 +59,6 @@ public:
 
 private:
   // ================ initialization ================
-  void load_instruments();
   void create_songs();
 };
 

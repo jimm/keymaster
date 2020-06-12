@@ -3,17 +3,15 @@
 #include "error.h"
 #include "instrument.h"
 
-Instrument::Instrument(sqlite3_int64 id, const char *name, const char *pname,
-                       int portmidi_port_num)
-  : DBObj(id), Named(name),
-    port_name(pname), midi_monitor(nullptr), enabled(false)
+Instrument::Instrument(sqlite3_int64 id, PmDeviceID dev_id, const char *dev_device_name, const char *c_name)
+  : DBObj(id), Named(c_name == nullptr ? dev_device_name : c_name),
+    device_id(dev_id), device_name(dev_device_name), midi_monitor(nullptr), enabled(false)
 {
-  port_num = portmidi_port_num;
   num_io_messages = 0;
 }
 
 bool Instrument::real_port() {
-  return port_num != pmNoDevice;
+  return device_id != pmNoDevice;
 }
 
 void Instrument::start() {
