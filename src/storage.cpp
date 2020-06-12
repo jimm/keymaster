@@ -633,16 +633,21 @@ PmDeviceID Storage::find_device(const char *name, int device_type) {
   if (km->testing)
     return pmNoDevice;
 
-  int num_devices = Pm_CountDevices();
-  for (int i = 0; i < num_devices; ++i) {
-    const PmDeviceInfo *info = Pm_GetDeviceInfo(i);
+  if (devices.empty()) {
+    int num_devices = Pm_CountDevices();
+    for (int i = 0; i < num_devices; ++i)
+      devices.push_back(Pm_GetDeviceInfo(i));
+  }
+
+  for (int i = 0; i < devices.size(); ++i) {
+    const PmDeviceInfo *info = devices[i];
     if (device_type == 0 && info->input && compare_device_names(name, (const char *)info->name) == 0)
       return i;
     if (device_type == 1 && info->output && compare_device_names(name, (const char *)info->name) == 0)
       return i;
+    ++i;
   }
   return pmNoDevice;
-
 }
 
 // ================================================================
@@ -702,10 +707,12 @@ void Storage::set_find_error_message(
 // ================================================================
 
 /*
- * Case-insensitive string comparison that also ignores leading and trailing
- * whitespace. Assumes both names are shorter than BUFSIZ. Returns 0 if the
- * two strings are equal, given those conditions. Assumes both strings are
- * non-NULL.
+ * Case-insensitive string comparison that ignores leading and trailing
+ * whitespace and only compares up to the length of the shorter of the two
+ * strings. For example, "ABCDXXX" and " abc" would be considered equal.
+ *
+ * Returns 0 if the two strings are equal, given those conditions. Assumes
+ * both strings are non-NULL.
  */
 int Storage::compare_device_names(const char *name1, const char *name2) {
   while (isspace(*name1)) ++name1;
@@ -721,7 +728,9 @@ int Storage::compare_device_names(const char *name1, const char *name2) {
   int len1 = (int)(end1 - name1) + 1;
   int len2 = (int)(end2 - name2) + 1;
 
-  return strncasecmp(name1, name2, min(len1, len2));
+  if (len1 != len2)
+    return len1 - len2;
+  return strncasecmp(name1, name2, len1);
 }
 
 int Storage::int_or_null(sqlite3_stmt *stmt, int col_num, int null_val) {

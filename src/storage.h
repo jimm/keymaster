@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <sqlite3.h>
+#include <portmidi.h>
 #include "keymaster.h"
 
 using namespace std;
@@ -26,6 +27,7 @@ private:
   string error_str;
   int max_patch_id;
   int max_conn_id;
+  vector<const PmDeviceInfo *> devices;
 
   void load_instruments();
   void load_messages();
