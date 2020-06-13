@@ -11,6 +11,10 @@ const int COLUMN_WIDTHS[] = {
   3*CW, 3*CW, 2*CW
 };
 
+int wxCALLBACK inst_list_sort(wxIntPtr item1, wxIntPtr item2, wxIntPtr sortData) {
+  return strcmp((const char *)item1, (const char *)item2);
+}
+
 InstrumentDialog::InstrumentDialog(wxWindow *parent, KeyMaster *keymaster)
   : wxDialog(parent, wxID_ANY, "Instruments"), km(keymaster)
 {     
@@ -27,9 +31,11 @@ InstrumentDialog::InstrumentDialog(wxWindow *parent, KeyMaster *keymaster)
   int i = 0;
   for (auto* inst : km->inputs)
     add_instrument(inputs, inst, i++);
+  inputs->SortItems(inst_list_sort, 0);
   i = 0;
   for (auto* inst : km->outputs)
     add_instrument(outputs, inst, i++);
+  outputs->SortItems(inst_list_sort, 0);
 
   wxSizer *buttons = CreateButtonSizer(wxOK);
 
@@ -55,4 +61,5 @@ void InstrumentDialog::add_instrument(wxListCtrl *list_box, Instrument *inst, in
   list_box->InsertItem(i, inst->name.c_str());
   list_box->SetItem(i, 1, inst->device_name.c_str());
   list_box->SetItem(i, 2, inst->enabled ? "enabled" : "<disabled>");
+  list_box->SetItemData(i, (long)inst->name.c_str()); // for sorting
 }
