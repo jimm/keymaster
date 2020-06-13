@@ -80,7 +80,6 @@ void KeyMaster::load_instruments() {
 
   for (int i = 0; i < devices.size(); ++i) {
     const PmDeviceInfo *info = devices[i];
-    fprintf(stderr, "info device name \"%s\" in %d out %d\n", info->name, info->input, info->output); // DEBUG
     if (info->input)
       inputs.push_back(new Input(UNDEFINED_ID, i, info->name));
     if (info->output)

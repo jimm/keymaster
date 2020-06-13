@@ -109,9 +109,7 @@ void Storage::load_instruments() {
     // Try to match device with what's been created in km already. If it
     // exists, update the db id and the name (not port name). If it does not
     // exist, create a new one (which will be disabled).
-    fprintf(stderr, "\n\nlooking for port name \"%s\"\n", device_name); // DEBUG
     PmDeviceID device_id = find_device(device_name, type);
-    fprintf(stderr, "found device id %d\n", device_id); // DEBUG
     if (device_id != pmNoDevice) {
       // update db id and name
       if (type == INSTRUMENT_TYPE_INPUT) {
@@ -661,10 +659,8 @@ PmDeviceID Storage::find_device(const char *device_name, int device_type) {
   if (km->testing)
     return pmNoDevice;
 
-  fprintf(stderr, "finding device with name \"%s\", type %d\n", device_name, device_type); // DEBUG
   for (int i = 0; i < km->devices.size(); ++i) {
     const PmDeviceInfo *info = km->devices[i];
-    fprintf(stderr, "  looking at info \"%s\", input %d output %d\n", info->name, info->input, info->output); // DEBUG
     if (((device_type == 0 && info->input)
          || (device_type == 1 && info->output))
         && device_names_equal(device_name, (const char *)info->name))
@@ -736,13 +732,10 @@ void Storage::set_find_error_message(
  * non-NULL.
  */
 bool Storage::device_names_equal(const char *name1, const char *name2) {
-  fprintf(stderr, "device_names_equal \"%s\", \"%s\"\n", name1, name2); // DEBUG
   while (isspace(*name1)) ++name1;
   while (isspace(*name2)) ++name2;
   if (*name1 == '\0' || *name2 == '\0')
-  { fprintf(stderr, "both empty returning non-zero\n"); // DEBUG
     return false;
-  }
 
   const char *end1 = name1 + strlen(name1) - 1;
   while(end1 > name1 && isspace(*end1)) end1--;
@@ -754,7 +747,6 @@ bool Storage::device_names_equal(const char *name1, const char *name2) {
 
   if (len1 != len2)
     return false;
-  fprintf(stderr, "strncasecmp \"%s\", \"%s\", len %d\n", name1, name2, len1); // DEBUG
   return strncasecmp(name1, name2, len1) == 0;
 }
 
