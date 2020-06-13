@@ -30,7 +30,6 @@ private:
   void init_portmidi();
   void close_portmidi();
   void list_all_devices();
-  void list_devices(const char *title, const PmDeviceInfo *infos[], int num_devices);
 };
 
 App *app_instance();

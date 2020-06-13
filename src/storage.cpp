@@ -12,6 +12,7 @@
 #include "storage.h"
 #include "formatter.h"
 #include "schema.sql.h"
+#include "device.h"
 
 using namespace std;
 
@@ -97,7 +98,7 @@ void Storage::initialize() {
 void Storage::load_instruments() {
   sqlite3_stmt *stmt;
   const char * const sql =
-    "select id, type, name, device_name from instruments order by name, device_name";
+    "select id, type, name, device_name from instruments";
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -111,25 +112,34 @@ void Storage::load_instruments() {
     // exist, create a new one (which will be disabled).
     PmDeviceID device_id = find_device(device_name, type);
     if (device_id != pmNoDevice) {
+      bool found = false;
+
       // update db id and name
       if (type == INSTRUMENT_TYPE_INPUT) {
         for (auto &input : km->inputs) {
-          if (input->device_id == device_id) {
+          if (input->device_id == device_id && input->id() == UNDEFINED_ID) {
+            fprintf(stderr, "  changing id from %lld to %lld\n", input->id(), id);
             input->set_id(id);
             input->name = name;
+            found = true;
           }
         }
       }
       else {
         for (auto &output : km->outputs) {
-          if (output->device_id == device_id) {
+          if (output->device_id == device_id && output->id() == UNDEFINED_ID) {
+            fprintf(stderr, "  changing id from %lld to %lld\n", output->id(), id);
             output->set_id(id);
             output->name = name;
+            found = true;
           }
         }
       }
+      if (!found)
+        goto CREATE_NEW_INSTRUMENT;
     }
     else {
+    CREATE_NEW_INSTRUMENT:
       if (type == INSTRUMENT_TYPE_INPUT)
         km->inputs.push_back(new Input(id, pmNoDevice, device_name, name));
       else
@@ -250,7 +260,7 @@ void Storage::load_patches(Song *s) {
       if (p->start_message == nullptr) {
         char error_buf[BUFSIZ];
         sprintf(error_buf,
-                "patch %lld (%s) can't find stop message with id %lld\n",
+                "patch %lld (%s) can't find start message with id %lld\n",
                 id, name, start_message_id);
         error_str = error_buf;
       }
@@ -655,21 +665,6 @@ void Storage::save_set_list_songs(SetList *set_list) {
   sqlite3_finalize(stmt);
 }
 
-PmDeviceID Storage::find_device(const char *device_name, int device_type) {
-  if (km->testing)
-    return pmNoDevice;
-
-  for (int i = 0; i < km->devices.size(); ++i) {
-    const PmDeviceInfo *info = km->devices[i];
-    if (((device_type == 0 && info->input)
-         || (device_type == 1 && info->output))
-        && device_names_equal(device_name, (const char *)info->name))
-      return i;
-    ++i;
-  }
-  return pmNoDevice;
-}
-
 // ================================================================
 // find by id
 // ================================================================
@@ -725,30 +720,6 @@ void Storage::set_find_error_message(
 }
 
 // ================================================================
-
-/*
- * Case-insensitive string comparison that ignores leading and trailing
- * whitespace and returns 0 if they are equal. Assumes both strings are
- * non-NULL.
- */
-bool Storage::device_names_equal(const char *name1, const char *name2) {
-  while (isspace(*name1)) ++name1;
-  while (isspace(*name2)) ++name2;
-  if (*name1 == '\0' || *name2 == '\0')
-    return false;
-
-  const char *end1 = name1 + strlen(name1) - 1;
-  while(end1 > name1 && isspace(*end1)) end1--;
-  const char *end2 = name2 + strlen(name2) - 1;
-  while(end2 > name2 && isspace(*end2)) end2--;
-
-  int len1 = (int)(end1 - name1) + 1;
-  int len2 = (int)(end2 - name2) + 1;
-
-  if (len1 != len2)
-    return false;
-  return strncasecmp(name1, name2, len1) == 0;
-}
 
 int Storage::int_or_null(sqlite3_stmt *stmt, int col_num, int null_val) {
   return sqlite3_column_type(stmt, col_num) == SQLITE_NULL

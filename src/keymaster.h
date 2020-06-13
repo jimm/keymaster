@@ -14,7 +14,6 @@ class Cursor;
 
 class KeyMaster {
 public:
-  vector<const PmDeviceInfo *> devices;
   vector<Input *> inputs;
   vector<Output *> outputs;
   vector<Trigger *> triggers;

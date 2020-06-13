@@ -3,6 +3,7 @@
 #include "app.h"
 #include "frame.h"
 #include "../keymaster.h"
+#include "../device.h"
 
 static const wxCmdLineEntryDesc g_cmdLineDesc [] = {
   { wxCMD_LINE_SWITCH, "l", "list-devices", "Display MIDI Devices" },
@@ -93,26 +94,25 @@ void App::close_portmidi() {
   Pm_Terminate();
 }
 
-void App::list_devices(const char *title, const PmDeviceInfo *infos[], int num_devices) {
-  printf("%s:\n", title);
-  for (int i = 0; i < num_devices; ++i)
-    if (infos[i] != nullptr) {
-      const char *name = infos[i]->name;
-      const char *q = (name[0] == ' ' || name[strlen(name)-1] == ' ') ? "\"" : "";
-      printf("  %2d: %s%s%s%s\n", i, q, name, q, infos[i]->opened ? " (open)" : "");
-    }
-}
-
+// type is 0 for input, 1 for output
 void App::list_all_devices() {
-  int num_devices = Pm_CountDevices();
-  const PmDeviceInfo *inputs[num_devices], *outputs[num_devices];
-
-  for (int i = 0; i < num_devices; ++i) {
-    const PmDeviceInfo *info = Pm_GetDeviceInfo(i);
-    inputs[i] = info->input ? info : 0;
-    outputs[i] = info->output ? info : 0;
+  printf("Inputs:\n");
+  for (auto &iter : devices()) {
+    const PmDeviceInfo *info = iter.second;
+    if (info->input == 1) {
+      const char *name = info->name;
+      const char *q = (name[0] == ' ' || name[strlen(name)-1] == ' ') ? "\"" : "";
+      printf("  %2d: %s%s%s%s\n", iter.first, q, name, q, info->opened ? " (open)" : "");
+    }
   }
 
-  list_devices("Inputs", inputs, num_devices);
-  list_devices("Outputs", outputs, num_devices);
+  printf("Outputs:\n");
+  for (auto &iter : devices()) {
+    const PmDeviceInfo *info = iter.second;
+    if (info->output == 1) {
+      const char *name = info->name;
+      const char *q = (name[0] == ' ' || name[strlen(name)-1] == ' ') ? "\"" : "";
+      printf("  %2d: %s%s%s%s\n", iter.first, q, name, q, info->opened ? " (open)" : "");
+    }
+  }
 }

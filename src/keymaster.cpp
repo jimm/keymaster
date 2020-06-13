@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "keymaster.h"
 #include "cursor.h"
+#include "device.h"
 
 #define PATCH_STOP  {if (cursor->patch() != nullptr) cursor->patch()->stop();}
 #define PATCH_START {if (cursor->patch() != nullptr) cursor->patch()->start();}
@@ -73,17 +74,12 @@ void KeyMaster::load_instruments() {
   if (testing)
     return;
 
-  devices.clear();
-  int num_devices = Pm_CountDevices();
-  for (int i = 0; i < num_devices; ++i)
-    devices.push_back(Pm_GetDeviceInfo(i));
-
-  for (int i = 0; i < devices.size(); ++i) {
-    const PmDeviceInfo *info = devices[i];
+  for (auto &iter : devices()) {
+    const PmDeviceInfo *info = iter.second;
     if (info->input)
-      inputs.push_back(new Input(UNDEFINED_ID, i, info->name));
+      inputs.push_back(new Input(UNDEFINED_ID, iter.first, info->name));
     if (info->output)
-      outputs.push_back(new Output(UNDEFINED_ID, i, info->name));
+      outputs.push_back(new Output(UNDEFINED_ID, iter.first, info->name));
   }
 }
 
