@@ -118,7 +118,6 @@ void Storage::load_instruments() {
       if (type == INSTRUMENT_TYPE_INPUT) {
         for (auto &input : km->inputs) {
           if (input->device_id == device_id && input->id() == UNDEFINED_ID) {
-            fprintf(stderr, "  changing id from %lld to %lld\n", input->id(), id);
             input->set_id(id);
             input->name = name;
             found = true;
@@ -128,7 +127,6 @@ void Storage::load_instruments() {
       else {
         for (auto &output : km->outputs) {
           if (output->device_id == device_id && output->id() == UNDEFINED_ID) {
-            fprintf(stderr, "  changing id from %lld to %lld\n", output->id(), id);
             output->set_id(id);
             output->name = name;
             found = true;
