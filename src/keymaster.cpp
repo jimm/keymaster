@@ -7,10 +7,10 @@
 #define PATCH_START {if (cursor->patch() != nullptr) cursor->patch()->start();}
 
 
-static KeyMaster *pm_instance = nullptr;
+static KeyMaster *km_instance = nullptr;
 
 KeyMaster *KeyMaster_instance() {
-  return pm_instance;
+  return km_instance;
 }
 
 // ================ allocation ================
@@ -21,12 +21,12 @@ KeyMaster::KeyMaster() {
   all_songs = new SetList(UNDEFINED_ID, (char *)"All Songs");
   set_lists.push_back(all_songs);
   cursor = new Cursor(this);
-  pm_instance = this;
+  km_instance = this;
 }
 
 KeyMaster::~KeyMaster() {
-  if (pm_instance == this)
-    pm_instance = 0;
+  if (km_instance == this)
+    km_instance = nullptr;
 
   for (auto& in : inputs)
     delete in;
@@ -51,11 +51,13 @@ void KeyMaster::start() {
   for (auto& in : inputs)
     in->start();
   running = true;
+  clock.start();
   PATCH_START;
 }
 
 void KeyMaster::stop() {
   PATCH_STOP;
+  clock.stop();
   running = false;
   for (auto& in : inputs)
     in->stop();

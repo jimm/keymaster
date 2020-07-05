@@ -4,16 +4,15 @@
 #define CATCH_CATEGORY "[connection]"
 
 TEST_CASE("start sends pc", CATCH_CATEGORY) {
-  Input *in = new Input(UNDEFINED_ID, pmNoDevice, "in 1 port", "in1");
-  Output *out = new Output(UNDEFINED_ID, pmNoDevice, "out 1 port", "out1");
-  Connection *conn = new Connection(UNDEFINED_ID, in, 0, out, 1);
+  Input in = Input(UNDEFINED_ID, pmNoDevice, "in 1 port", "in1");
+  Output out = Output(UNDEFINED_ID, pmNoDevice, "out 1 port", "out1");
+  Connection conn = Connection(UNDEFINED_ID, in, 0, out, 1);
   vector<PmMessage> empty;
 
-  conn->prog.prog = 123;
-  conn->start();
+  conn.prog.prog = 123;
+  conn.start();
   REQUIRE(conn->output->num_io_messages == 1);
   REQUIRE(conn->output->io_messages[0] == Pm_Message(PROGRAM_CHANGE + 1, 123, 0));
-  delete conn;
 }
 
 TEST_CASE("filter other input chan", CATCH_CATEGORY) {

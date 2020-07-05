@@ -6,6 +6,7 @@
 #include "input.h"
 #include "trigger.h"
 #include "consts.h"
+#include "keymaster.h"
 
 // 10 milliseconds, in nanoseconds
 #define SLEEP_NANOSECS 10000000L
@@ -195,6 +196,14 @@ void Input::read(PmMessage msg) {
   if (!enabled && real_port())
     return;
 
+  unsigned char status = Pm_MessageStatus(msg);
+  // KeyMaster_instance() will always be non-null; inputs are always
+  // attached to them.
+  if (status == START || status == CONTINUE)
+    KeyMaster_instance()->clock.start();
+  else if (status == STOP)
+    KeyMaster_instance()->clock.stop();
+
   for (auto& trigger : triggers)
     trigger->signal_message(msg);
 
@@ -230,6 +239,11 @@ PmMessage Input::message_from_read_queue() {
 // sustain offs.
 vector<Connection *> &Input::connections_for_message(PmMessage msg) {
   unsigned char status = Pm_MessageStatus(msg);
+
+  // Handle realtime bytes as quickly as possible
+  if (status >= CLOCK)
+    return connections;
+
   unsigned char high_nibble = status & 0xf0;
   unsigned char chan = status & 0x0f;
   unsigned char data1 = Pm_MessageData1(msg);
@@ -237,7 +251,6 @@ vector<Connection *> &Input::connections_for_message(PmMessage msg) {
   // Note off and sustain off messages must be sent to their original
   // connections, so for note on and sustain on messages we store the list
   // of current connections and for off messages we return that list.
-
   if (high_nibble == NOTE_OFF || (high_nibble == NOTE_ON && Pm_MessageData2(msg) == 0)) {
     if (notes_off_conns[chan][data1].empty())
       return connections;

@@ -7,6 +7,7 @@
 #include "input.h"
 #include "output.h"
 #include "message.h"
+#include "clock.h"
 
 using namespace std;
 
@@ -20,6 +21,7 @@ public:
   SetList *all_songs;
   vector<SetList *> set_lists;
   Cursor *cursor;
+  Clock clock;
   bool running;
   bool testing;
   vector<Message *> messages;
