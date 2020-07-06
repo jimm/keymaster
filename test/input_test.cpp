@@ -3,212 +3,158 @@
 
 #define CATCH_CATEGORY "[input]"
 
-const char *BAD_INPUT_COUNT = "bad num input messages";
-const char *BAD_OUTPUT_COUNT = "bad num output messages";
-const char *BAD_INPUT = "wrong input recorded";
-const char *BAD_OUTPUT = "wrong output recorded";
+PmMessage CONNECTION_TEST_EVENTS[] = {
+  Pm_Message(NOTE_ON, 64, 127),           // note on
+  Pm_Message(CONTROLLER, CC_VOLUME, 127), // volume
+  Pm_Message(NOTE_OFF, 64, 127),          // note off
+  Pm_Message(TUNE_REQUEST, 0, 0)          // tune request
+};
 
-PmMessage *test_events() {
-  PmMessage *buf = (PmMessage *)malloc(4 * sizeof(PmMessage));
-  buf[0] = Pm_Message(NOTE_ON, 64, 127);           // note on
-  buf[1] = Pm_Message(CONTROLLER, CC_VOLUME, 127); // volume
-  buf[2] = Pm_Message(NOTE_OFF, 64, 127);          // note off
-  buf[3] = Pm_Message(TUNE_REQUEST, 0, 0);         // tune request
-  return buf;
-}
+TEST_CASE("connection filtering", CATCH_CATEGORY) {
+  Input in(UNDEFINED_ID, pmNoDevice, "in1", "in 1 port");
+  Output out(UNDEFINED_ID, pmNoDevice, "out1", "out 1 port");
+  Output out2(UNDEFINED_ID, pmNoDevice, "out2", "out 2 port");
+  Connection conn(UNDEFINED_ID, &in, 0, &out, 0);
+  conn.start();
 
-TEST_CASE("through connection", CATCH_CATEGORY) {
-  Connection *conn = create_conn();
-  Input *in = conn->input;
-  Output *out = conn->output;
-  PmMessage *buf = test_events();
+  SECTION("through connection") {
+    for (int i = 0; i < 4; ++i)
+      in.read(CONNECTION_TEST_EVENTS[i]);
 
-  for (int i = 0; i < 4; ++i)
-    in->read(buf[i]);
+    REQUIRE(in.num_io_messages == 4);
+    REQUIRE(out.num_io_messages == 4);
+    for (int i = 0; i < 4; ++i) {
+      REQUIRE(in.io_messages[i] == CONNECTION_TEST_EVENTS[i]);
+      REQUIRE(out.io_messages[i] == CONNECTION_TEST_EVENTS[i]);
+    }
 
-  REQUIRE(in->num_io_messages == 4);
-  REQUIRE(out->num_io_messages == 4);
-  for (int i = 0; i < 4; ++i) {
-    REQUIRE(in->io_messages[i] == buf[i]);
-    REQUIRE(out->io_messages[i] == buf[i]);
   }
 
-  free(buf);
-  delete conn;
-}
+  SECTION("two connections") {
+    Connection conn2(UNDEFINED_ID, &in, 0, &out2, 0);
+    conn2.start();
 
-TEST_CASE("two connections", CATCH_CATEGORY) {
-  Connection *conn = create_conn();
-  Input *in = conn->input;
-  Output *out = conn->output;
+    for (int i = 0; i < 4; ++i)
+      in.read(CONNECTION_TEST_EVENTS[i]);
 
-  Output *out2 = new Output(UNDEFINED_ID, pmNoDevice, "out2", "out 2 port");
-  Connection *conn2 = new Connection(UNDEFINED_ID, in, 0, out2, 0);
-  conn2->start();
-
-  PmMessage *buf = test_events();
-  for (int i = 0; i < 4; ++i)
-    in->read(buf[i]);
-
-  REQUIRE(in->num_io_messages == 4);
-  REQUIRE(out->num_io_messages == 4);
-  REQUIRE(out2->num_io_messages == 4);
-  for (int i = 0; i < 4; ++i) {
-    REQUIRE(in->io_messages[i] == buf[i]);
-    REQUIRE(out->io_messages[i] == buf[i]);
-    REQUIRE(out2->io_messages[i] == buf[i]);
+    REQUIRE(in.num_io_messages == 4);
+    REQUIRE(out.num_io_messages == 4);
+    REQUIRE(out2.num_io_messages == 4);
+    for (int i = 0; i < 4; ++i) {
+      REQUIRE(in.io_messages[i] == CONNECTION_TEST_EVENTS[i]);
+      REQUIRE(out.io_messages[i] == CONNECTION_TEST_EVENTS[i]);
+      REQUIRE(out2.io_messages[i] == CONNECTION_TEST_EVENTS[i]);
+    }
   }
 
-  free(buf);
-  delete conn;
-}
+  SECTION("connection switch routes note offs correctly") {
+    Connection conn2(UNDEFINED_ID, &in, 0, &out2, 0);
 
-TEST_CASE("connection switch routes note offs correctly", CATCH_CATEGORY) {
-  Connection *conn = create_conn();
-  Input *in = conn->input;
-  Output *out = conn->output;
+    for (int i = 0; i < 2; ++i)
+      in.read(CONNECTION_TEST_EVENTS[i]);           // note on, volume
+    conn.stop();
+    conn2.start();
+    for (int i = 2; i < 4; ++i)
+      in.read(CONNECTION_TEST_EVENTS[i]);           // note off, tune request
+    conn2.stop();
 
-  Output *out2 = new Output(UNDEFINED_ID, pmNoDevice, "out2", "out 2 port");
-  Connection *conn2 = new Connection(UNDEFINED_ID, in, 0, out2, 0);
+    // Make sure input sent all four messages
+    REQUIRE(in.num_io_messages == 4);
+    for (int i = 0; i < 4; ++i)
+      REQUIRE(in.io_messages[i] == CONNECTION_TEST_EVENTS[i]);
 
-  PmMessage *buf = test_events();
+    // Make sure out got the note on, volume, and note off
+    REQUIRE(out.num_io_messages == 3);
+    for (int i = 0; i < 3; ++i)
+      REQUIRE(out.io_messages[i] == CONNECTION_TEST_EVENTS[i]);
 
-  for (int i = 0; i < 2; ++i)
-    in->read(buf[i]);           // note on, volume
-  conn->stop();
-  conn2->start();
-  for (int i = 2; i < 4; ++i)
-    in->read(buf[i]);           // note off, tune request
-  conn2->stop();
+    // Make sure out2 got the tune request
+    REQUIRE(out2.num_io_messages == 1);
+    REQUIRE(out2.io_messages[0] == CONNECTION_TEST_EVENTS[3]); // out2 got tune request
+  }
 
-  // Make sure input sent all four messages
-  REQUIRE(in->num_io_messages == 4);
-  for (int i = 0; i < 4; ++i)
-    REQUIRE(in->io_messages[i] == buf[i]);
+  SECTION("connection switch pays attention to note off channel") {
+    Connection conn2(UNDEFINED_ID, &in, CONNECTION_ALL_CHANNELS, &out2, CONNECTION_ALL_CHANNELS);
 
-  // Make sure out got the note on, volume, and note off
-  REQUIRE(out->num_io_messages == 3);
-  for (int i = 0; i < 3; ++i)
-    REQUIRE(out->io_messages[i] == buf[i]);
+    CONNECTION_TEST_EVENTS[2] = Pm_Message(NOTE_OFF + 3, 64, 127); // note off, different channel
 
-  // Make sure out2 got the tune request
-  REQUIRE(out2->num_io_messages == 1);
-  REQUIRE(out2->io_messages[0] == buf[3]); // out2 got tune request
+    for (int i = 0; i < 2; ++i)
+      in.read(CONNECTION_TEST_EVENTS[i]);           // note on, volume
+    conn.stop();
+    conn2.start();
+    for (int i = 2; i < 4; ++i)
+      in.read(CONNECTION_TEST_EVENTS[i]);           // note off (diff channel), tune request
+    conn2.stop();
 
-  free(buf);
-  delete conn2;
-  delete conn;
-}
+    // Make sure input sent all four messages
+    REQUIRE(in.num_io_messages == 4);
+    for (int i = 0; i < 4; ++i)
+      REQUIRE(in.io_messages[i] == CONNECTION_TEST_EVENTS[i]);
 
-TEST_CASE("connection switch pays attention to note off channel", CATCH_CATEGORY) {
-  Connection *conn = create_conn();
-  Input *in = conn->input;
-  Output *out = conn->output;
+    // Make sure out got the note on, volume, but not the note off
+    REQUIRE(out.num_io_messages == 2);
+    REQUIRE(out.io_messages[0] == CONNECTION_TEST_EVENTS[0]);
+    REQUIRE(out.io_messages[1] == CONNECTION_TEST_EVENTS[1]);
 
-  Output *out2 = new Output(UNDEFINED_ID, pmNoDevice, "out2", "out 2 port");
-  Connection *conn2 = new Connection(UNDEFINED_ID, in, CONNECTION_ALL_CHANNELS,
-                                     out2, CONNECTION_ALL_CHANNELS);
+    // Make sure out2 got the note off and the tune request
+    REQUIRE(out2.num_io_messages == 2);
+    REQUIRE(out2.io_messages[0] == CONNECTION_TEST_EVENTS[2]);
+    REQUIRE(out2.io_messages[1] == CONNECTION_TEST_EVENTS[3]);
+  }
 
-  PmMessage *buf = test_events();
-  buf[2] = Pm_Message(NOTE_OFF + 3, 64, 127); // note off, different channel
+  SECTION("connection switch routes sustains correctly") {
+    Connection conn2(UNDEFINED_ID, &in, 0, &out2, 0);
 
-  for (int i = 0; i < 2; ++i)
-    in->read(buf[i]);           // note on, volume
-  conn->stop();
-  conn2->start();
-  for (int i = 2; i < 4; ++i)
-    in->read(buf[i]);           // note off (diff channel), tune request
-  conn2->stop();
+    PmMessage CONNECTION_TEST_EVENTS[4] = {
+      Pm_Message(NOTE_ON, 64, 127), // note on
+      Pm_Message(CONTROLLER, CC_SUSTAIN, 127), // sustain on
+      Pm_Message(NOTE_OFF, 64, 127),           // note off
+      Pm_Message(CONTROLLER, CC_SUSTAIN, 0)    // sustain off
+    };
 
-  // Make sure input sent all four messages
-  REQUIRE(in->num_io_messages == 4);
-  for (int i = 0; i < 4; ++i)
-    REQUIRE(in->io_messages[i] == buf[i]);
+    for (int i = 0; i < 2; ++i)
+      in.read(CONNECTION_TEST_EVENTS[i]);           // note on, sustain on
+    conn.stop();
+    conn2.start();
+    for (int i = 2; i < 4; ++i)
+      in.read(CONNECTION_TEST_EVENTS[i]);           // note off, sustain off
+    conn2.stop();
 
-  // Make sure out got the note on, volume, but not the note off
-  REQUIRE(out->num_io_messages == 2);
-  REQUIRE(out->io_messages[0] == buf[0]);
-  REQUIRE(out->io_messages[1] == buf[1]);
+    // Make sure note off was sent to original output
+    REQUIRE(in.num_io_messages == 4);
+    REQUIRE(out.num_io_messages == 4);
+    REQUIRE(out2.num_io_messages == 0);
+    for (int i = 0; i < 4; ++i)
+      REQUIRE(in.io_messages[i] == CONNECTION_TEST_EVENTS[i]);
 
-  // Make sure out2 got the note off and the tune request
-  REQUIRE(out2->num_io_messages == 2);
-  REQUIRE(out2->io_messages[0] == buf[2]);
-  REQUIRE(out2->io_messages[1] == buf[3]);
+    for (int i = 0; i < 4; ++i)
+      REQUIRE(out.io_messages[i] == CONNECTION_TEST_EVENTS[i]);
+  }
 
-  free(buf);
-  delete conn2;
-  delete conn;
-}
+  SECTION("connection switch pays attention to sustain channel") {
+    Connection conn2(UNDEFINED_ID, &in, CONNECTION_ALL_CHANNELS, &out2, CONNECTION_ALL_CHANNELS);
 
-TEST_CASE("connection switch routes sustains correctly", CATCH_CATEGORY) {
-  Connection *conn = create_conn();
-  Input *in = conn->input;
-  Output *out = conn->output;
+    PmMessage CONNECTION_TEST_EVENTS[4] = {
+      Pm_Message(NOTE_ON, 64, 127),            // note on
+      Pm_Message(CONTROLLER, CC_SUSTAIN, 127), // sustain on
+      Pm_Message(NOTE_OFF, 64, 127),           // note off
+      Pm_Message(CONTROLLER + 3, CC_SUSTAIN, 0) // sustain off, different channel
+    };
 
-  Output *out2 = new Output(UNDEFINED_ID, pmNoDevice, "out2", "out 2 port");
-  Connection *conn2 = new Connection(UNDEFINED_ID, in, 0, out2, 0);
+    for (int i = 0; i < 2; ++i)
+      in.read(CONNECTION_TEST_EVENTS[i]);           // note on, sustain on
+    conn.stop();
+    conn2.start();
+    for (int i = 2; i < 4; ++i)
+      in.read(CONNECTION_TEST_EVENTS[i]);           // note off, sustain off
+    conn2.stop();
 
-  PmMessage buf[4] = {
-    Pm_Message(NOTE_ON, 64, 127), // note on
-    Pm_Message(CONTROLLER, CC_SUSTAIN, 127), // sustain on
-    Pm_Message(NOTE_OFF, 64, 127),           // note off
-    Pm_Message(CONTROLLER, CC_SUSTAIN, 0)    // sustain off
-  };
+    REQUIRE(out.num_io_messages == 3);
+    REQUIRE(out.io_messages[0] == CONNECTION_TEST_EVENTS[0]);
+    REQUIRE(out.io_messages[1] == CONNECTION_TEST_EVENTS[1]);
+    REQUIRE(out.io_messages[2] == CONNECTION_TEST_EVENTS[2]);
 
-  for (int i = 0; i < 2; ++i)
-    in->read(buf[i]);           // note on, sustain on
-  conn->stop();
-  conn2->start();
-  for (int i = 2; i < 4; ++i)
-    in->read(buf[i]);           // note off, sustain off
-  conn2->stop();
-
-  // Make sure note off was sent to original output
-  REQUIRE(in->num_io_messages == 4);
-  REQUIRE(out->num_io_messages == 4);
-  REQUIRE(out2->num_io_messages == 0);
-  for (int i = 0; i < 4; ++i)
-    REQUIRE(in->io_messages[i] == buf[i]);
-
-  for (int i = 0; i < 4; ++i)
-    REQUIRE(out->io_messages[i] == buf[i]);
-
-  delete conn2;
-  delete conn;
-}
-
-TEST_CASE("connection switch pays attention to sustain channel", CATCH_CATEGORY) {
-  Connection *conn = create_conn();
-  Input *in = conn->input;
-  Output *out = conn->output;
-
-  Output *out2 = new Output(UNDEFINED_ID, pmNoDevice, "out2", "out 2 port");
-  Connection *conn2 = new Connection(UNDEFINED_ID, in, CONNECTION_ALL_CHANNELS,
-                                     out2, CONNECTION_ALL_CHANNELS);
-
-  PmMessage buf[4] = {
-    Pm_Message(NOTE_ON, 64, 127),            // note on
-    Pm_Message(CONTROLLER, CC_SUSTAIN, 127), // sustain on
-    Pm_Message(NOTE_OFF, 64, 127),           // note off
-    Pm_Message(CONTROLLER + 3, CC_SUSTAIN, 0) // sustain off, different channel
-  };
-
-  for (int i = 0; i < 2; ++i)
-    in->read(buf[i]);           // note on, sustain on
-  conn->stop();
-  conn2->start();
-  for (int i = 2; i < 4; ++i)
-    in->read(buf[i]);           // note off, sustain off
-  conn2->stop();
-
-  REQUIRE(out->num_io_messages == 3);
-  REQUIRE(out->io_messages[0] == buf[0]);
-  REQUIRE(out->io_messages[1] == buf[1]);
-  REQUIRE(out->io_messages[2] == buf[2]);
-
-  REQUIRE(out2->num_io_messages == 1);
-  REQUIRE(out2->io_messages[0] == buf[3]);
-
-  delete conn2;
-  delete conn;
+    REQUIRE(out2.num_io_messages == 1);
+    REQUIRE(out2.io_messages[0] == CONNECTION_TEST_EVENTS[3]);
+  }
 }
