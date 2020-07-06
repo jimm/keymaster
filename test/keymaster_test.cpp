@@ -68,6 +68,7 @@ TEST_CASE("send start and stop messages", CATCH_CATEGORY) {
   assert_no_start_sent(km);
 
   km->stop();
+  delete km;
 }
 
 TEST_CASE("all songs sorted", CATCH_CATEGORY) {
@@ -75,6 +76,7 @@ TEST_CASE("all songs sorted", CATCH_CATEGORY) {
   REQUIRE(km->all_songs->songs[0]->name == "Another Song");
   REQUIRE(km->all_songs->songs[1]->name == "Song Without Explicit Patch");
   REQUIRE(km->all_songs->songs[2]->name == "To Each His Own");
+  delete km;
 }
 
 TEST_CASE("inserted song sorts properly", CATCH_CATEGORY) {
@@ -87,6 +89,7 @@ TEST_CASE("inserted song sorts properly", CATCH_CATEGORY) {
   REQUIRE(km->all_songs->songs[1]->name == "Bees, Bees!");
   REQUIRE(km->all_songs->songs[2]->name == "Song Without Explicit Patch");
   REQUIRE(km->all_songs->songs[3]->name == "To Each His Own");
+  delete km;
 }
 
 TEST_CASE("inserted song sorts properly, case-sensitively", CATCH_CATEGORY) {
@@ -99,4 +102,5 @@ TEST_CASE("inserted song sorts properly, case-sensitively", CATCH_CATEGORY) {
   REQUIRE(km->all_songs->songs[1]->name == "Song Without Explicit Patch");
   REQUIRE(km->all_songs->songs[2]->name == "To Each His Own");
   REQUIRE(km->all_songs->songs[3]->name == "a jar full of bees");
+  delete km;
 }
