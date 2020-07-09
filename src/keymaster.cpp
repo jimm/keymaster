@@ -4,7 +4,7 @@
 #include "device.h"
 
 #define PATCH_STOP  {if (cursor->patch() != nullptr) cursor->patch()->stop();}
-#define PATCH_START {if (cursor->patch() != nullptr) cursor->patch()->start();}
+#define PATCH_START {update_clock(); if (cursor->patch() != nullptr) cursor->patch()->start();}
 
 
 static KeyMaster *km_instance = nullptr;
@@ -51,18 +51,29 @@ void KeyMaster::start() {
   for (auto& in : inputs)
     in->start();
   running = true;
-  clock.start();
   PATCH_START;
 }
 
 void KeyMaster::stop() {
   PATCH_STOP;
-  clock.stop();
+  stop_clock();
   running = false;
   for (auto& in : inputs)
     in->stop();
   for (auto& out : outputs)
     out->stop();
+}
+
+// ================ clock ================
+
+void KeyMaster::update_clock() {
+  Song *curr_song = cursor->song();
+  if (curr_song == nullptr || !curr_song->clock_on_at_start)
+    stop_clock();
+  else {
+    clock.set_bpm(curr_song->bpm);
+    start_clock();
+  }
 }
 
 // ================ initialization ================

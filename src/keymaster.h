@@ -34,6 +34,11 @@ public:
   void start();
   void stop();
 
+  // ================ clock ================
+  void start_clock() { clock.start(); }
+  void stop_clock() { clock.stop(); }
+  bool is_clock_running() { return clock.is_running(); }
+
   // ================ initialization ================
   void initialize();
   void load_instruments();
@@ -61,6 +66,9 @@ public:
 private:
   // ================ initialization ================
   void create_songs();
+
+  // ================ clock ================
+  void update_clock();
 };
 
 KeyMaster *KeyMaster_instance();

@@ -200,9 +200,9 @@ void Input::read(PmMessage msg) {
   // KeyMaster_instance() will always be non-null; inputs are always
   // attached to them.
   if (status == START || status == CONTINUE)
-    KeyMaster_instance()->clock.start();
+    KeyMaster_instance()->stop_clock();
   else if (status == STOP)
-    KeyMaster_instance()->clock.stop();
+    KeyMaster_instance()->start_clock();
 
   for (auto& trigger : triggers)
     trigger->signal_message(msg);

@@ -11,6 +11,8 @@ class Song : public DBObj, public Named {
 public:
   vector<Patch *> patches;
   string notes;
+  int bpm;
+  bool clock_on_at_start;
 
   Song(sqlite3_int64 id, const char *name);
   ~Song();

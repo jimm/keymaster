@@ -34,7 +34,9 @@ create table triggers (
 create table songs (
   id integer primary key,
   name text,
-  notes text
+  notes text,
+  bpm integer not null default 120,
+  clock_on_at_start integer not null default 0 -- boolean
 );
 
 create table patches (

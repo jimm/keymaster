@@ -28,8 +28,10 @@ Clock::~Clock() {
 }
 
 void Clock::set_bpm(float new_val) {
-  _bpm = new_val;
-  nanosecs_per_tick = (long)(2.5e9 / _bpm);
+  if (_bpm != new_val) {
+    _bpm = new_val;
+    nanosecs_per_tick = (long)(2.5e9 / _bpm);
+  }
 }
 
 void Clock::start() {

@@ -21,11 +21,11 @@ values
   (6, null, 1, '007f35b0', 'prev_patch', null),
   (7, null, 1, '007f36b0', null, 1);
 
-insert into songs (id, name, notes) values
-  (1, 'To Each His Own', 'example notes'),
+insert into songs (id, name, notes, bpm, clock_on_at_start) values
+  (1, 'To Each His Own', 'example notes', 82, 1),
   (2, 'Another Song', 'this song has note text
-that spans multiple lines'),
-  (3, 'Song Without Explicit Patch', null);
+that spans multiple lines', 120, 0),
+  (3, 'Song Without Explicit Patch', null, 120, 0);
 
 insert into patches (id, song_id, position, name, start_message_id, stop_message_id) values
   (1, 1, 0, 'Vanilla Through, Filter Two''s Sustain', null, null),

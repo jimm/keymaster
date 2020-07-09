@@ -217,16 +217,20 @@ void Storage::load_triggers() {
 
 void Storage::load_songs() {
   sqlite3_stmt *stmt;
-  const char * const sql = "select id, name, notes from songs order by name";
+  const char * const sql = "select id, name, notes, bpm, clock_on_at_start from songs order by name";
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     sqlite3_int64 id = sqlite3_column_int64(stmt, 0);
     const char *name = (const char *)sqlite3_column_text(stmt, 1);
     const char *notes = (const char *)sqlite3_column_text(stmt, 2);
+    int bpm = sqlite3_column_int(stmt, 3);
+    int clock_on_at_start = sqlite3_column_int(stmt, 4);
 
     Song *s = new Song(id, name);
     if (notes != nullptr) s->notes = notes;
+    s->bpm = bpm;
+    s->clock_on_at_start = clock_on_at_start != 0;
     km->all_songs->songs.push_back(s);
     load_patches(s);
   }
@@ -516,7 +520,7 @@ void Storage::save_triggers() {
 void Storage::save_songs() {
   sqlite3_stmt *stmt;
   const char * const sql =
-    "insert into songs (id, name, notes) values (?, ?, ?)";
+    "insert into songs (id, name, notes, bpm, clock_on_at_start) values (?, ?, ?, ?, ?)";
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   for (auto& song : km->all_songs->songs) {
@@ -526,6 +530,8 @@ void Storage::save_songs() {
       sqlite3_bind_null(stmt, 3);
     else
       sqlite3_bind_text(stmt, 3, song->notes.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_int(stmt, 4, song->bpm);
+    sqlite3_bind_int(stmt, 5, song->clock_on_at_start ? 1 : 0);
     sqlite3_step(stmt);
     extract_id(song);
     sqlite3_reset(stmt);
