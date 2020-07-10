@@ -18,6 +18,7 @@
 #include "connection_editor.h"
 #include "set_list_editor.h"
 #include "patch_editor.h"
+#include "clock_panel.h"
 #include "../keymaster.h"
 #include "../cursor.h"
 #include "../storage.h"
@@ -29,6 +30,7 @@
 #define LIST_WIDTH 200
 #define TALL_LIST_HEIGHT 300
 #define SHORT_LIST_HEIGHT 200
+#define CLOCK_BPM_HEIGHT 16
 #define NOTES_WIDTH 200
 
 wxDEFINE_EVENT(Frame_MenuUpdate, wxCommandEvent);
@@ -106,7 +108,8 @@ void Frame::make_frame_panels() {
 
   sizer->Add(make_set_list_songs_panel(this), POS(0, 0), SPAN(3, 1), wxEXPAND);
   sizer->Add(make_song_patches_panel(this), POS(0, 1), SPAN(3, 1), wxEXPAND);
-  sizer->Add(make_notes_panel(this), POS(0, 2), SPAN(3, 1), wxEXPAND);
+  sizer->Add(make_clock_panel(this), POS(0, 2), SPAN(1, 1), wxEXPAND);
+  sizer->Add(make_notes_panel(this), POS(1, 2), SPAN(2, 1), wxEXPAND);
 
   sizer->Add(make_patch_conns_panel(this), POS(3, 0), SPAN(1, 3), wxEXPAND);
 
@@ -182,6 +185,10 @@ wxWindow * Frame::make_triggers_panel(wxWindow *parent) {
 
   p->SetSizerAndFit(sizer);
   return p;
+}
+
+wxWindow * Frame::make_clock_panel(wxWindow *parent) {
+  return clock_panel = new ClockPanel(parent);
 }
 
 wxWindow * Frame::make_notes_panel(wxWindow *parent) {
@@ -821,6 +828,7 @@ void Frame::save() {
 }
 
 void Frame::update() {
+  clock_panel->update();
   update_lists();
   update_song_notes();
   update_menu_items();

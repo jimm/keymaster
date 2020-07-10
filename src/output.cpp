@@ -24,7 +24,9 @@ bool Output::start_midi() {
 void Output::write(PmEvent *buf, int len) {
   if (real_port()) {
     if (enabled) {
+      output_mutex.lock();
       PmError err = Pm_Write(stream, buf, len);
+      output_mutex.unlock();
       if (err != 0) {
         char err_msg_buf[BUFSIZ];
         sprintf(err_msg_buf, "error writing MIDI to %s: %s\n",

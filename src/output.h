@@ -11,6 +11,8 @@ public:
   void write(PmEvent *buf, int len);
 
 protected:
+  mutex output_mutex;
+
   virtual bool start_midi();
 };
 

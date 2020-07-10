@@ -49,6 +49,7 @@ class PatchConnections;
 class MessageList;
 class TriggerList;
 class SetListEditor;
+class ClockPanel;
 
 class Frame: public wxFrame {
 public:
@@ -92,6 +93,7 @@ private:
   SetListBox *lc_set_list;
   SongBox *lc_song_patches;
   PatchConnections *lc_patch_conns;
+  ClockPanel *clock_panel;
   MessageList *lc_messages;
   TriggerList *lc_triggers;
   wxTextCtrl *lc_notes;
@@ -162,6 +164,7 @@ private:
   wxWindow * make_song_patches_panel(wxWindow *);
   wxWindow * make_messages_panel(wxWindow *);
   wxWindow * make_triggers_panel(wxWindow *);
+  wxWindow * make_clock_panel(wxWindow *);
   wxWindow * make_notes_panel(wxWindow *);
   wxWindow * make_patch_conns_panel(wxWindow *);
 

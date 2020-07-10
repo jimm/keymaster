@@ -5,7 +5,8 @@
 #define CATCH_CATEGORY "[clock]"
 
 TEST_CASE("clock bpm math", CATCH_CATEGORY) {
-  auto clock = Clock();
+  auto inputs = vector<Input *>();
+  auto clock = Clock(inputs);
 
   REQUIRE(clock.bpm() == 120.0);
   REQUIRE(clock.nanosecs_per_tick == (long)(5.0e8 / 24.0));

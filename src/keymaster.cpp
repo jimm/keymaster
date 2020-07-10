@@ -15,7 +15,7 @@ KeyMaster *KeyMaster_instance() {
 
 // ================ allocation ================
 
-KeyMaster::KeyMaster() {
+KeyMaster::KeyMaster() : clock(inputs) {
   running = false;
   testing = false;
   all_songs = new SetList(UNDEFINED_ID, (char *)"All Songs");
@@ -55,8 +55,8 @@ void KeyMaster::start() {
 }
 
 void KeyMaster::stop() {
-  PATCH_STOP;
   stop_clock();
+  PATCH_STOP;
   running = false;
   for (auto& in : inputs)
     in->stop();
@@ -71,7 +71,7 @@ void KeyMaster::update_clock() {
   if (curr_song == nullptr || !curr_song->clock_on_at_start)
     stop_clock();
   else {
-    clock.set_bpm(curr_song->bpm);
+    set_clock_bpm(curr_song->bpm);
     start_clock();
   }
 }

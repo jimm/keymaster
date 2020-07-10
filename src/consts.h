@@ -15,6 +15,8 @@
 // Number of note per MIDI channel
 #define NOTES_PER_CHANNEL 128
 
+#define CLOCK_TICKS_PER_QUARTER_NOTE 24
+
 // Channel messages
 
 // Note, val
@@ -46,7 +48,6 @@
 #define EOX 0xF7
 
 // System realtime messages
-// MIDI clock (24 per quarter note)
 #define CLOCK 0xF8
 // Sequence start
 #define START 0xFA

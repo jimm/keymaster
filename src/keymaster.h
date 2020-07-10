@@ -37,6 +37,8 @@ public:
   // ================ clock ================
   void start_clock() { clock.start(); }
   void stop_clock() { clock.stop(); }
+  void toggle_clock() { if (is_clock_running()) clock.stop(); else clock.start(); }
+  void set_clock_bpm(int bpm) { clock.set_bpm(bpm); }
   bool is_clock_running() { return clock.is_running(); }
 
   // ================ initialization ================

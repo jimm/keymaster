@@ -57,6 +57,10 @@ void Monitor::monitor_output(Output *output, PmMessage msg) {
 }
 
 void Monitor::add_message(Instrument *inst, wxListCtrl *list, PmMessage msg, deque<MonitorMessage> &message_list) {
+  unsigned char status = Pm_MessageStatus(msg);
+  if (status == CLOCK || status == ACTIVE_SENSE)
+    return;
+
   if (message_list.size() >= MONITOR_LIST_LEN)
     message_list.pop_front();
   message_list.push_back(MonitorMessage(inst, msg));
