@@ -5,6 +5,7 @@
 #ifndef WX_PRECOMP
  #include <wx/wx.h>
 #endif
+#include <wx/tglbtn.h>
 #include "../clock_monitor.h"
 
 class ClockPanel : public wxPanel, public ClockMonitor {
@@ -21,10 +22,9 @@ public:
 
 private:
   wxTextCtrl *lc_clock_bpm;
-  wxBitmapButton *onoff_button;
+  wxToggleButton *onoff_button;
   wxTimer timer;
-  wxBitmap clock_on_bitmap;
-  wxBitmap clock_off_bitmap;
+  float display_bpm;
 
   void set_clock_bpm(wxCommandEvent& event);
   void toggle_clock(wxCommandEvent& event);

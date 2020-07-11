@@ -155,7 +155,9 @@ wxWindow * Frame::make_song_patches_panel(wxWindow *parent) {
                                 wxSize(LIST_WIDTH, TALL_LIST_HEIGHT));
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  sizer->Add(new wxStaticText(p, wxID_ANY, "Patches"), wxSizerFlags().Align(wxALIGN_LEFT));
+  // I don't know why the space is required at the end of "Patches ". The
+  // last char is always getting chopped off.
+  sizer->Add(new wxStaticText(p, wxID_ANY, "Patches "), wxSizerFlags().Align(wxALIGN_LEFT));
   sizer->Add(lc_song_patches, wxSizerFlags(1).Expand().Border());
 
   p->SetSizerAndFit(sizer);

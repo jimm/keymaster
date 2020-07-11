@@ -1,11 +1,9 @@
 #include "clock_panel.h"
 #include "../keymaster.h"
 #include "../clock.h"
-#include "clock_on.xpm"
-#include "clock_off.xpm"
 
-#define BPM_WIDTH 48
-#define BPM_HEIGHT 24
+#define BPM_WIDTH 52
+#define BPM_HEIGHT 20
 #define TIMER_MILLISECS 10
 #define TIMER_ID 20000
 
@@ -15,28 +13,30 @@ enum {
 };
 
 wxBEGIN_EVENT_TABLE(ClockPanel, wxPanel)
-  EVT_TEXT(ID_ClockBPM, ClockPanel::set_clock_bpm)
-  EVT_BUTTON(ID_ClockToggle, ClockPanel::toggle_clock)
+  EVT_TEXT_ENTER(ID_ClockBPM, ClockPanel::set_clock_bpm)
+  EVT_TOGGLEBUTTON(ID_ClockToggle, ClockPanel::toggle_clock)
   EVT_TIMER(TIMER_ID, ClockPanel::on_timer)
 wxEND_EVENT_TABLE()
 
 
 ClockPanel::ClockPanel(wxWindow *parent)
-: wxPanel(parent, wxID_ANY), timer(this, TIMER_ID),
-  clock_on_bitmap(clock_on_xpm), clock_off_bitmap(clock_off_xpm)
+: wxPanel(parent, wxID_ANY), timer(this, TIMER_ID), display_bpm(0)
 {     
-  lc_clock_bpm = new wxTextCtrl(this, ID_ClockBPM, "120", wxDefaultPosition,
-                                wxSize(BPM_WIDTH, BPM_HEIGHT));
+  lc_clock_bpm = new wxTextCtrl(this, ID_ClockBPM, "", wxDefaultPosition,
+                                wxSize(BPM_WIDTH, BPM_HEIGHT), wxTE_PROCESS_ENTER);
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  sizer->Add(new wxStaticText(this, wxID_ANY, "Clock"), wxSizerFlags().Align(wxALIGN_LEFT));
+  // I don't know why the space is required at the end of "Clock ". The
+  // last char is always getting chopped off.
+  sizer->Add(new wxStaticText(this, wxID_ANY, "Clock "), wxSizerFlags().Align(wxALIGN_LEFT));
 
   wxBoxSizer *control_sizer = new wxBoxSizer(wxHORIZONTAL);
-  control_sizer->Add(lc_clock_bpm, wxSizerFlags(1).Expand().Border());
-  control_sizer->Add(new wxStaticText(this, wxID_ANY, "BPM"), wxSizerFlags().Align(wxALIGN_LEFT));
+  control_sizer->Add(lc_clock_bpm, wxSizerFlags(1).Expand().Border().Align(wxALIGN_CENTER_VERTICAL));
+  // Spaces after "BPM" are for visual spacing
+  control_sizer->Add(new wxStaticText(this, wxID_ANY, "BPM  "), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
 
-  onoff_button = new wxBitmapButton(this, ID_ClockToggle, clock_off_bitmap);
-  control_sizer->Add(onoff_button, wxSizerFlags().Align(wxALIGN_RIGHT));
+  onoff_button = new wxToggleButton(this, ID_ClockToggle, "off");
+  control_sizer->Add(onoff_button, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
 
   sizer->Add(control_sizer);
 
@@ -62,11 +62,13 @@ void ClockPanel::monitor_bpm(int bpm) {
 }
 
 void ClockPanel::monitor_start() {
-  onoff_button->SetBitmap(clock_on_bitmap);
+  onoff_button->SetLabelText("on");
+  onoff_button->SetValue(true);
 }
 
 void ClockPanel::monitor_stop() {
-  onoff_button->SetBitmap(clock_off_bitmap);
+  onoff_button->SetLabelText("off");
+  onoff_button->SetValue(false);
 }
 
 void ClockPanel::monitor_beat() {
@@ -77,7 +79,7 @@ void ClockPanel::set_clock_bpm(wxCommandEvent& event) {
   KeyMaster *km = KeyMaster_instance();
   if (km == nullptr)
     return;
-  int bpm = atof(lc_clock_bpm->GetValue());
+  float bpm = atof(lc_clock_bpm->GetValue());
   if (bpm != 0)
     km->set_clock_bpm(bpm);
 }
@@ -101,6 +103,20 @@ void ClockPanel::update() {
     return;
   Clock &clock = km->clock;
 
-  lc_clock_bpm->SetValue(wxString::Format("%f", clock.bpm()));
-  onoff_button->SetBitmap(clock.is_running() ? clock_on_bitmap : clock_off_bitmap);
+  float bpm = clock.bpm();
+  if (bpm != display_bpm) {
+    // Only format the BPM string when the value has changed
+    char buf[16];
+    sprintf(buf, "%0.2f", clock.bpm());
+    char *p = buf + strlen(buf) - 1;
+    while (*p-- == '0') ;
+    if (*p != '.') ++p;
+    *p = 0;
+
+    lc_clock_bpm->SetValue(buf);
+    display_bpm = bpm;
+  }
+
+  onoff_button->SetLabelText(clock.is_running() ? "on" : "off");
+  onoff_button->SetValue(clock.is_running());
 }
