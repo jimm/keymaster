@@ -1,5 +1,6 @@
 #include "clock_panel.h"
 #include "../keymaster.h"
+#include "../formatter.h"
 #include "../clock.h"
 
 #define BPM_WIDTH 52
@@ -107,12 +108,7 @@ void ClockPanel::update() {
   if (bpm != display_bpm) {
     // Only format the BPM string when the value has changed
     char buf[16];
-    sprintf(buf, "%0.2f", clock.bpm());
-    char *p = buf + strlen(buf) - 1;
-    while (*p-- == '0') ;
-    if (*p != '.') ++p;
-    *p = 0;
-
+    format_float(clock.bpm(), buf);
     lc_clock_bpm->SetValue(buf);
     display_bpm = bpm;
   }

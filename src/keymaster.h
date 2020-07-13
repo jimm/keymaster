@@ -40,6 +40,8 @@ public:
   void toggle_clock() { if (is_clock_running()) clock.stop(); else clock.start(); }
   void set_clock_bpm(int bpm) { clock.set_bpm(bpm); }
   bool is_clock_running() { return clock.is_running(); }
+  // Get BPM and start/stop from current song and update state of the clock
+  void update_clock();
 
   // ================ initialization ================
   void initialize();
@@ -70,7 +72,6 @@ private:
   void create_songs();
 
   // ================ clock ================
-  void update_clock();
 };
 
 KeyMaster *KeyMaster_instance();

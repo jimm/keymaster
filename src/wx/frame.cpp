@@ -17,6 +17,7 @@
 #include "trigger_editor.h"
 #include "connection_editor.h"
 #include "set_list_editor.h"
+#include "song_editor.h"
 #include "patch_editor.h"
 #include "clock_panel.h"
 #include "../keymaster.h"
@@ -520,15 +521,12 @@ bool Frame::edit_song(Song *song) {
   if (song == nullptr)
     return false;
 
-  wxTextEntryDialog prompt(this, "Song Name", "Song Editor", song->name);
-  if (prompt.ShowModal() == wxID_OK) {
-    wxString str = prompt.GetValue();
-    if (!str.IsEmpty()) {
-      song->name = str.ToStdString();
-      KeyMaster_instance()->sort_all_songs();
-      update();
-      return true;
-    }
+  if (SongEditor(this, song).ShowModal() == wxID_OK) {
+    KeyMaster *km = KeyMaster_instance();
+    km->sort_all_songs();
+    km->update_clock();
+    update();
+    return true;
   }
   return false;
 }

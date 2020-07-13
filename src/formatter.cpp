@@ -128,6 +128,16 @@ void format_controllers(Connection *conn, char *buf) {
   *buf = 0;
 }
 
+// Translate floating-point value (to a precision of 0.001) to a string,
+// removing trailing zeroes and decimal point if possible.
+void format_float(float val, char *buf) {
+  sprintf(buf, "%0.2f", val);
+  char *p = buf + strlen(buf) - 1;
+  while (*p == '0') --p;
+  if (*p != '.') ++p;
+  *p = 0;
+}
+
 // Handles "0x" prefix and negative numbers.
 int int_from_chars(const char *str) {
   str += strspn(str, " \t");

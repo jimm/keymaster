@@ -49,3 +49,22 @@ TEST_CASE("message from bytes", CATCH_CATEGORY) {
   strcpy(buf, "0x81, 64, 0x7f");
   REQUIRE(message_from_bytes(buf) == Pm_Message(0x81, 64, 0x7f));
 }
+
+TEST_CASE("format float", CATCH_CATEGORY) {
+  char buf[BUFSIZ];
+
+  format_float(0.0, buf);
+  REQUIRE(strcmp(buf, "0") == 0);
+
+  format_float(120.0, buf);
+  REQUIRE(strcmp(buf, "120") == 0);
+
+  format_float(120.030009, buf);
+  REQUIRE(strcmp(buf, "120.03") == 0);
+
+  format_float(120.10005, buf);
+  REQUIRE(strcmp(buf, "120.1") == 0);
+
+  format_float(120.00005, buf);
+  REQUIRE(strcmp(buf, "120") == 0);
+}

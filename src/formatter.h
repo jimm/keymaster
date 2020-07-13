@@ -10,6 +10,10 @@ int note_name_to_num(const char *str); // str may point to an integer string lik
 void format_program(program prog, char *buf);
 void format_controllers(Connection *conn, char *buf);
 
+// Translate floating-point value (to a precision of 0.001) to a string,
+// removing trailing zeroes and decimal point if possible.
+void format_float(float val, char *buf);
+
 // Handles "0x" prefix and negative numbers.
 int int_from_chars(const char *str);
 
