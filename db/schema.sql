@@ -1,17 +1,33 @@
-create table if not exists instruments (
+drop table if exists schema_version;
+drop table if exists set_lists;
+drop table if exists set_lists_songs;
+drop table if exists controller_mappings;
+drop table if exists connections;
+drop table if exists patches;
+drop table if exists songs;
+drop table if exists triggers;
+drop table if exists messages;
+drop table if exists instruments;
+
+create table schema_version (
+  version integer not null
+);
+insert into schema_version (version) values (1);
+
+create table instruments (
   id integer primary key,
   type integer not null default 0,  -- 0 == input, 1 == output
   name text,
   device_name text
 );
 
-create table if not exists messages (
+create table messages (
   id integer primary key,
   name name not null,
   bytes text not null
 );
 
-create table if not exists triggers (
+create table triggers (
   id integer primary key,
   trigger_key_code integer,     -- either this or bytes must not be NULL
                                 -- both may be not NULL
@@ -21,7 +37,7 @@ create table if not exists triggers (
   message_id integer references messages(id)
 );
 
-create table if not exists songs (
+create table songs (
   id integer primary key,
   name text,
   notes text,
@@ -29,7 +45,7 @@ create table if not exists songs (
   clock_on_at_start integer not null default 0 -- boolean
 );
 
-create table if not exists patches (
+create table patches (
   id integer primary key,
   song_id integer not null references songs(id),
   position integer not null default 0,
@@ -38,7 +54,7 @@ create table if not exists patches (
   stop_message_id integer references messages(id)
 );
 
-create table if not exists connections (
+create table connections (
   id integer primary key,
   patch_id integer not null references patches(id),
   position integer not null default 0,
@@ -55,7 +71,7 @@ create table if not exists connections (
   pass_through_sysex integer not null default 0 -- boolean
 );
 
-create table if not exists controller_mappings (
+create table controller_mappings (
   id integer primary key,
   connection_id integer not null references connections(id),
   cc_num integer not null,
@@ -69,12 +85,12 @@ create table if not exists controller_mappings (
   max_out integer not null
 );
 
-create table if not exists set_lists (
+create table set_lists (
   id integer primary key,
   name text
 );
 
-create table if not exists set_lists_songs (
+create table set_lists_songs (
   set_list_id integer not null references set_lists(id),
   song_id integer not null null references songs(id),
   position integer not null default 0
