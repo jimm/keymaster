@@ -24,8 +24,10 @@ public:
 private:
   sqlite3 *db;
   KeyMaster *km;
+  int loading_version;
   string error_str;
 
+  void load_schema_version();
   void load_instruments();
   void load_messages();
   void load_triggers();

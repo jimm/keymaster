@@ -1,5 +1,6 @@
 // THIS FILE IS GENERATED FROM db/schema.sql
 static const char * const SCHEMA_SQL = R"(
+drop table if exists schema_version;
 drop table if exists set_lists;
 drop table if exists set_lists_songs;
 drop table if exists controller_mappings;
@@ -9,6 +10,11 @@ drop table if exists songs;
 drop table if exists triggers;
 drop table if exists messages;
 drop table if exists instruments;
+
+create table schema_version (
+  version integer not null
+);
+insert into schema_version (version) values (1);
 
 create table instruments (
   id integer primary key,

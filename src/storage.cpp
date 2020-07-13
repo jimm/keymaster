@@ -16,10 +16,11 @@
 
 using namespace std;
 
+#define SCHEMA_VERSION 1
 #define INSTRUMENT_TYPE_INPUT 0
 #define INSTRUMENT_TYPE_OUTPUT 1
 
-Storage::Storage(const char *path) {
+Storage::Storage(const char *path) : loading_version(0) {
   int status = sqlite3_open(path, &db);
   if (status != 0) {
     db = nullptr;
@@ -46,6 +47,7 @@ KeyMaster *Storage::load(bool testing) {
   km->testing = testing;
   km->load_instruments();
 
+  load_schema_version();
   load_instruments();
   load_messages();
   load_triggers();
@@ -94,6 +96,20 @@ void Storage::initialize() {
 // ================================================================
 // load helpers
 // ================================================================
+
+void Storage::load_schema_version() {
+  sqlite3_stmt *stmt;
+  const char * const sql = "select version from schema_version";
+  sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
+  if (sqlite3_step(stmt) == SQLITE_ROW) {
+    loading_version = sqlite3_column_int(stmt, 1);
+  }
+  sqlite3_finalize(stmt);
+
+  if (loading_version > SCHEMA_VERSION)
+    fprintf(stderr, "warning: db schema version is v%d, but I only understand v%d\n",
+            loading_version, SCHEMA_VERSION);
+}
 
 void Storage::load_instruments() {
   sqlite3_stmt *stmt;
