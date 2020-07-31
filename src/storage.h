@@ -21,6 +21,8 @@ public:
   bool has_error();
   string error();
 
+  int schema_version();         // for testing
+
 private:
   sqlite3 *db;
   KeyMaster *km;
@@ -38,6 +40,7 @@ private:
   void load_set_lists();
   void load_set_list_songs(SetList *);
 
+  void save_schema_version();
   void save_instruments();
   void save_messages();
   void save_triggers();

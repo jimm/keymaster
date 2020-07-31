@@ -93,6 +93,10 @@ void Storage::initialize() {
   }
 }
 
+int Storage::schema_version() {
+  return SCHEMA_VERSION;
+}
+
 // ================================================================
 // load helpers
 // ================================================================
@@ -442,6 +446,16 @@ void Storage::load_set_list_songs(SetList *slist) {
 // ================================================================
 // save helpers
 // ================================================================
+
+void Storage::save_schema_version() {
+  sqlite3_stmt *stmt;
+  const char * const sql = "insert into schema_version values (?)";
+
+  sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
+  sqlite3_bind_int(stmt, 1, SCHEMA_VERSION);
+  sqlite3_step(stmt);
+  sqlite3_finalize(stmt);
+}
 
 void Storage::save_instruments() {
   sqlite3_stmt *stmt;
