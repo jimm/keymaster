@@ -1,11 +1,9 @@
 #include <wx/gbsizer.h>
 #include "controller_editor.h"
+#include "macros.h"
 #include "../connection.h"
 #include "../controller.h"
 #include "../formatter.h"
-
-#define POS(row, col) wxGBPosition(row, col)
-#define SPAN(rowspan, colspan) wxGBSpan(rowspan, colspan)
 
 wxBEGIN_EVENT_TABLE(ControllerEditor, wxDialog)
   EVT_BUTTON(wxID_OK, ControllerEditor::save)

@@ -1,11 +1,9 @@
 #include "song_editor.h"
+#include "macros.h"
 #include "../formatter.h"
 #include "../keymaster.h"
 #include "../song.h"
 
-#define TEXT_EDIT_HEIGHT 22
-#define NAME_WIDTH 250
-#define NAME_HEIGHT TEXT_EDIT_HEIGHT
 #define BPM_WIDTH 52
 #define BPM_HEIGHT TEXT_EDIT_HEIGHT
 
@@ -31,8 +29,8 @@ wxWindow *SongEditor::make_name_panel(wxWindow *parent) {
   wxSizerFlags panel_flags =
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL).Expand().Border(wxTOP|wxLEFT|wxRIGHT);
 
-  sizer->Add(new wxStaticText(p, wxID_ANY, "Name"), panel_flags);
-  name_text = new wxTextCtrl(p, ID_SE_Name, song->name, wxDefaultPosition, wxSize(NAME_WIDTH, NAME_HEIGHT));
+  sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Name")), panel_flags);
+  name_text = new wxTextCtrl(p, ID_SE_Name, song->name, wxDefaultPosition, NAME_CTRL_SIZE);
   sizer->Add(name_text, panel_flags);
 
   p->SetSizerAndFit(sizer);
@@ -56,7 +54,7 @@ wxWindow *SongEditor::make_clock_panel(wxWindow *parent) {
   cb_clock_start->SetValue(song->clock_on_at_start);
   field_sizer->Add(cb_clock_start, panel_flags);
 
-  outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Clock"));
+  outer_sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Clock")));
   outer_sizer->Add(field_sizer);
 
   p->SetSizerAndFit(outer_sizer);

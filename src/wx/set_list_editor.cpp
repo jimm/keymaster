@@ -1,4 +1,5 @@
 #include "set_list_editor.h"
+#include "macros.h"
 #include "../keymaster.h"
 #include "../set_list.h"
 
@@ -43,8 +44,8 @@ wxWindow *SetListEditor::make_name_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
   wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
 
-  sizer->Add(new wxStaticText(p, wxID_ANY, "Name"));
-  name_text = new wxTextCtrl(p, ID_SLE_Name);
+  sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Name")));
+  name_text = new wxTextCtrl(p, ID_SLE_Name, "", wxDefaultPosition, NAME_CTRL_SIZE);
   sizer->Add(name_text);
 
   p->SetSizerAndFit(sizer);

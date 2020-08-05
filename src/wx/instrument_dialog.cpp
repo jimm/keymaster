@@ -40,7 +40,7 @@ InstrumentDialog::InstrumentDialog(wxWindow *parent, KeyMaster *keymaster)
   wxSizer *buttons = CreateButtonSizer(wxOK);
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  wxSizerFlags label_flags = wxSizerFlags().Align(wxALIGN_LEFT).Border();
+  wxSizerFlags label_flags = wxSizerFlags().Align(wxALIGN_LEFT).Expand().Border();
   wxSizerFlags list_flags = wxSizerFlags().Expand().Border();
 
   sizer->Add(new wxStaticText(this, wxID_ANY, "Inputs"), label_flags);

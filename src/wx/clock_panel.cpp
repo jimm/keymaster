@@ -1,4 +1,5 @@
 #include "clock_panel.h"
+#include "macros.h"
 #include "../keymaster.h"
 #include "../formatter.h"
 #include "../clock.h"
@@ -27,14 +28,12 @@ ClockPanel::ClockPanel(wxWindow *parent)
                                 wxSize(BPM_WIDTH, BPM_HEIGHT), wxTE_PROCESS_ENTER);
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  // I don't know why the space is required at the end of "Clock ". The
-  // last char is always getting chopped off.
-  sizer->Add(new wxStaticText(this, wxID_ANY, "Clock "), wxSizerFlags().Align(wxALIGN_LEFT));
+  sizer->Add(new wxStaticText(this, wxID_ANY, TITLE_STR("Clock")), wxSizerFlags().Align(wxALIGN_LEFT));
 
   wxBoxSizer *control_sizer = new wxBoxSizer(wxHORIZONTAL);
   control_sizer->Add(lc_clock_bpm, wxSizerFlags(1).Expand().Border().Align(wxALIGN_CENTER_VERTICAL));
   // Spaces after "BPM" are for visual spacing
-  control_sizer->Add(new wxStaticText(this, wxID_ANY, "BPM  "), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
+  control_sizer->Add(new wxStaticText(this, wxID_ANY, TITLE_STR("BPM")), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
 
   onoff_button = new wxToggleButton(this, ID_ClockToggle, "off");
   control_sizer->Add(onoff_button, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));

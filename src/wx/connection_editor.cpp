@@ -1,6 +1,7 @@
 #include "connection_editor.h"
 #include "controller_mappings.h"
 #include "controller_editor.h"
+#include "macros.h"
 #include "events.h"
 #include "../keymaster.h"
 #include "../connection.h"
@@ -39,7 +40,7 @@ ConnectionEditor::ConnectionEditor(wxWindow *parent, Connection *c)
 wxWindow *ConnectionEditor::make_input_panel(wxWindow *parent) {
   return make_instrument_panel(
     parent, ID_CE_InputDropdown, ID_CE_InputChannel,
-    "Input", &cb_input, &cb_input_chan,
+    TITLE_STR("Input"), &cb_input, &cb_input_chan,
     reinterpret_cast<vector<Instrument *> &>(km->inputs),
     connection->input, connection->input_chan);
 }
@@ -47,7 +48,7 @@ wxWindow *ConnectionEditor::make_input_panel(wxWindow *parent) {
 wxWindow *ConnectionEditor::make_output_panel(wxWindow *parent) {
   return make_instrument_panel(
     parent, ID_CE_OutputDropdown, ID_CE_OutputChannel,
-    "Output", &cb_output, &cb_output_chan,
+    TITLE_STR("Output"), &cb_output, &cb_output_chan,
     reinterpret_cast<vector<Instrument *> &>(km->outputs),
     connection->output, connection->output_chan);
 }
@@ -145,13 +146,13 @@ wxWindow *ConnectionEditor::make_zone_panel(wxWindow *parent) {
   char buf[BUFSIZ];
   note_num_to_name(connection->zone.low, buf);
   wxString val(buf);
-  field_sizer->Add(new wxStaticText(p, wxID_ANY, "Low"), center_flags);
+  field_sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Low")), center_flags);
   tc_zone_low = new wxTextCtrl(p, ID_CE_ZoneLow, val);
   field_sizer->Add(tc_zone_low, center_flags);
 
   note_num_to_name(connection->zone.high, buf);
   val = buf;
-  field_sizer->Add(new wxStaticText(p, wxID_ANY, "High"), center_flags);
+  field_sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("High")), center_flags);
   tc_zone_high = new wxTextCtrl(p, ID_CE_ZoneHigh, val);
   field_sizer->Add(tc_zone_high, center_flags);
 

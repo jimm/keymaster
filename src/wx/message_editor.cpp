@@ -1,5 +1,6 @@
 #include <wx/gbsizer.h>
 #include "message_editor.h"
+#include "macros.h"
 #include "../keymaster.h"
 #include "../message.h"
 #include "../formatter.h"
@@ -36,8 +37,8 @@ wxWindow *MessageEditor::make_name_panel(wxWindow *parent) {
   wxSizerFlags center_flags =
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL);
 
-  sizer->Add(new wxStaticText(p, wxID_ANY, "Name"), center_flags);
-  name_text = new wxTextCtrl(p, ID_ME_Name, message->name, wxDefaultPosition);
+  sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Name")), center_flags);
+  name_text = new wxTextCtrl(p, ID_ME_Name, message->name, wxDefaultPosition, NAME_CTRL_SIZE);
   sizer->Add(name_text, center_flags);
 
   p->SetSizerAndFit(sizer);

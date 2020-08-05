@@ -1,4 +1,5 @@
 #include "patch_editor.h"
+#include "macros.h"
 #include "../keymaster.h"
 #include "../patch.h"
 
@@ -25,8 +26,8 @@ wxWindow *PatchEditor::make_name_panel(wxWindow *parent) {
   wxSizerFlags center_flags =
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL);
 
-  sizer->Add(new wxStaticText(p, wxID_ANY, "Name"), center_flags);
-  name_text = new wxTextCtrl(p, ID_PE_Name, patch->name, wxDefaultPosition);
+  sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Name")), center_flags);
+  name_text = new wxTextCtrl(p, ID_PE_Name, patch->name, wxDefaultPosition, NAME_CTRL_SIZE);
   sizer->Add(name_text, center_flags);
 
   p->SetSizerAndFit(sizer);
@@ -35,13 +36,13 @@ wxWindow *PatchEditor::make_name_panel(wxWindow *parent) {
 
 wxWindow *PatchEditor::make_start_panel(wxWindow *parent) {
   return make_message_panel(
-    parent, ID_PE_StartMessageDropdown, "Start", patch->start_message,
+    parent, ID_PE_StartMessageDropdown, TITLE_STR("Start"), patch->start_message,
     &cb_start_message);
 }
 
 wxWindow *PatchEditor::make_stop_panel(wxWindow *parent) {
   return make_message_panel(
-    parent, ID_PE_StopMessageDropdown, "Stop", patch->stop_message,
+    parent, ID_PE_StopMessageDropdown, TITLE_STR("Stop"), patch->stop_message,
     &cb_stop_message);
 }
 

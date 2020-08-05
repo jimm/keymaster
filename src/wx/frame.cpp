@@ -5,6 +5,7 @@
 #include <wx/gbsizer.h>
 #include <unistd.h>
 #include "frame.h"
+#include "macros.h"
 #include "set_list_box.h"
 #include "set_list_list_box.h"
 #include "song_box.h"
@@ -24,9 +25,6 @@
 #include "../cursor.h"
 #include "../storage.h"
 #include "../editor.h"
-
-#define POS(row, col) wxGBPosition(row, col)
-#define SPAN(rowspan, colspan) wxGBSpan(rowspan, colspan)
 
 #define LIST_WIDTH 200
 #define TALL_LIST_HEIGHT 300
@@ -143,7 +141,7 @@ wxWindow * Frame::make_set_lists_panel(wxWindow *parent) {
                                       wxSize(LIST_WIDTH, SHORT_LIST_HEIGHT));
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  sizer->Add(new wxStaticText(p, wxID_ANY, "Set Lists"), wxSizerFlags().Align(wxALIGN_LEFT));
+  sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Set Lists")), wxSizerFlags().Align(wxALIGN_LEFT));
   sizer->Add(lc_set_lists, wxSizerFlags(1).Expand().Border());
 
   p->SetSizerAndFit(sizer);
@@ -156,9 +154,7 @@ wxWindow * Frame::make_song_patches_panel(wxWindow *parent) {
                                 wxSize(LIST_WIDTH, TALL_LIST_HEIGHT));
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  // I don't know why the space is required at the end of "Patches ". The
-  // last char is always getting chopped off.
-  sizer->Add(new wxStaticText(p, wxID_ANY, "Patches "), wxSizerFlags().Align(wxALIGN_LEFT));
+  sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Patches")), wxSizerFlags().Align(wxALIGN_LEFT));
   sizer->Add(lc_song_patches, wxSizerFlags(1).Expand().Border());
 
   p->SetSizerAndFit(sizer);
