@@ -19,11 +19,11 @@ ControllerEditor::ControllerEditor(wxWindow *parent, Connection *conn,
 {
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
 
-  wxSizerFlags panel_sizer = wxSizerFlags().Border(wxTOP|wxLEFT|wxRIGHT);
+  wxSizerFlags panel_sizer = wxSizerFlags().Expand().Border(wxTOP|wxLEFT|wxRIGHT);
   sizer->Add(make_numbers_panel(this), panel_sizer);
   sizer->Add(make_val_mapping_panel(this), panel_sizer);
   sizer->Add(make_filtered_panel(this), panel_sizer);
-  sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL));
+  sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), panel_sizer);
   SetSizerAndFit(sizer);
   Show(true);
 }

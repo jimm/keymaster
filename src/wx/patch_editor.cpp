@@ -11,11 +11,11 @@ PatchEditor::PatchEditor(wxWindow *parent, Patch *patch_ptr)
     patch(patch_ptr)
 {
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  wxSizerFlags panel_flags = wxSizerFlags().Border(wxTOP|wxLEFT|wxRIGHT);
+  wxSizerFlags panel_flags = wxSizerFlags().Expand().Border(wxTOP|wxLEFT|wxRIGHT);
   sizer->Add(make_name_panel(this), panel_flags);
   sizer->Add(make_start_panel(this), panel_flags);
   sizer->Add(make_stop_panel(this), panel_flags);
-  sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL));
+  sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), panel_flags);
   SetSizerAndFit(sizer);
 }
 

@@ -16,7 +16,7 @@ MessageEditor::MessageEditor(wxWindow *parent, Message *m)
     km(KeyMaster_instance()), message(m)
 {
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  wxSizerFlags panel_flags = wxSizerFlags().Border(wxTOP|wxLEFT|wxRIGHT);
+  wxSizerFlags panel_flags = wxSizerFlags().Expand().Border(wxTOP|wxLEFT|wxRIGHT);
 
   sizer->Add(make_name_panel(this), panel_flags);
   message_text = new wxTextCtrl(this, ID_ME_MessageText, message_to_text(),
@@ -25,7 +25,7 @@ MessageEditor::MessageEditor(wxWindow *parent, Message *m)
   sizer->Add(message_text,
              wxSizerFlags().Expand().Border(wxTOP|wxLEFT|wxRIGHT));
 
-  sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL));
+  sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), panel_flags);
 
   SetSizerAndFit(sizer);
 }

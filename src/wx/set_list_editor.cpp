@@ -32,7 +32,8 @@ SetListEditor::SetListEditor(wxWindow *parent, SetList *slist)
   list_sizer->Add(make_set_list_panel(this), wxEXPAND);
 
   sizer->Add(list_sizer);
-  sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL));
+  wxSizerFlags panel_flags = wxSizerFlags().Expand().Border(wxTOP|wxLEFT|wxRIGHT);
+  sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), panel_flags);
 
   SetSizerAndFit(sizer);
   Show(true);
