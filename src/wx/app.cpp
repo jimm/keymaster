@@ -88,6 +88,10 @@ void App::init_portmidi() {
     fprintf(stderr, "error initializing PortMidi: %s\n", Pm_GetErrorText(err));
     exit(1);
   }
+
+  // Pm_Initialize(), when it looks for default devices, can set errno to a
+  // non-zero value. Reinitialize it here.
+  errno = 0;
 }
 
 void App::close_portmidi() {
