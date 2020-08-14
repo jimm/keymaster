@@ -34,6 +34,7 @@ enum {
   ID_DestroySetList,
   ID_ListInstruments,
   ID_Monitor,
+  ID_ClockToggle,
   ID_RegularPanic,
   ID_SuperPanic,
   ID_MessageList,
@@ -111,6 +112,7 @@ private:
 
   void create_new_keymaster();
 
+  void toggle_clock(wxCommandEvent &_event);
   void regular_panic(wxCommandEvent &_event);
   void super_panic(wxCommandEvent &_event);
   bool handle_trigger_key(int key_code);

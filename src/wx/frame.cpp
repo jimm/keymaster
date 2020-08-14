@@ -59,6 +59,7 @@ wxBEGIN_EVENT_TABLE(Frame, wxFrame)
   EVT_MENU(ID_DestroySetList, Frame::destroy_set_list)
   EVT_MENU(ID_ListInstruments, Frame::OnListInstruments)
   EVT_MENU(ID_Monitor, Frame::OnMonitor)
+  EVT_MENU(ID_ClockToggle, Frame::toggle_clock)
   EVT_MENU(ID_RegularPanic, Frame::regular_panic)
   EVT_MENU(ID_SuperPanic, Frame::super_panic)
   EVT_MENU(wxID_ABOUT, Frame::OnAbout)
@@ -252,9 +253,11 @@ void Frame::make_menu_bar() {
                       "Open the MIDI Monitor window");
 
   wxMenu *menu_midi = new wxMenu;
-  menu_midi->Append(ID_RegularPanic, "&Send All Notes Off\tCtrl-.",
+  menu_midi->Append(ID_ClockToggle, "Start/Stop MIDI Clock\tCtrl-K", "Start or stop the MIDI clock");
+  menu_midi->AppendSeparator();
+  menu_midi->Append(ID_RegularPanic, "Send &All Notes Off\tCtrl-.",
                    "Send All Notes Off controller message on all channels");
-  menu_midi->Append(ID_SuperPanic, "&Send Super-Panic\tCtrl-/",
+  menu_midi->Append(ID_SuperPanic, "Send Super-&Panic\tCtrl-/",
                    "Send Notes Off messages, all notes, all channels");
 
   wxMenu *menu_help = new wxMenu;
@@ -669,7 +672,12 @@ int Frame::handle_global_key_event(wxKeyEvent &event) {
   return true;
 }
 
-// ================ MIDI panic ================
+// ================ MIDI menu actions ================
+
+void Frame::toggle_clock(wxCommandEvent &_event) {
+  KeyMaster_instance()->toggle_clock();
+  clock_panel->update();
+}
 
 void Frame::regular_panic(wxCommandEvent &_event) {
   KeyMaster *km = KeyMaster_instance();
