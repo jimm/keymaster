@@ -68,6 +68,9 @@ void Trigger::perform_action() {
   case TA_SUPER_PANIC:
     km->panic(true);
     break;
+  case TA_TOGGLE_CLOCK:
+    km->toggle_clock();
+    break;
   case TA_MESSAGE:
     output_message->send_to_all_outputs();
     break;

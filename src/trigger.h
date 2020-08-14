@@ -14,6 +14,7 @@ typedef enum TriggerAction {
   TA_PREV_PATCH,
   TA_PANIC,
   TA_SUPER_PANIC,
+  TA_TOGGLE_CLOCK,
   TA_MESSAGE
 } TriggerAction;
 

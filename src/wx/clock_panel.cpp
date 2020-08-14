@@ -44,7 +44,7 @@ ClockPanel::ClockPanel(wxWindow *parent)
 
   KeyMaster *km = KeyMaster_instance();
   if (km != nullptr)
-    km->clock.set_monitor(this);
+    km->clock.add_observer(this);
 
   update();
   timer.Start(TIMER_MILLISECS);
@@ -54,25 +54,27 @@ ClockPanel::~ClockPanel() {
   KeyMaster *km = KeyMaster_instance();
   if (km == nullptr)
     return;
-  km->clock.set_monitor(nullptr);
+  km->clock.remove_observer(this);
 }
 
-void ClockPanel::monitor_bpm(int bpm) {
-  lc_clock_bpm->SetValue(wxString::Format("%f", bpm));
-}
-
-void ClockPanel::monitor_start() {
-  onoff_button->SetLabelText("on");
-  onoff_button->SetValue(true);
-}
-
-void ClockPanel::monitor_stop() {
-  onoff_button->SetLabelText("off");
-  onoff_button->SetValue(false);
-}
-
-void ClockPanel::monitor_beat() {
-  // TODO turn on flashing light for a short while
+void ClockPanel::update(Observable *o, void *arg) {
+  ClockChange clock_update = (ClockChange)(long)arg;
+  switch (clock_update) {
+  case ClockChangeBpm:
+    lc_clock_bpm->SetValue(wxString::Format("%f", KeyMaster_instance()->clock.bpm()));
+    break;
+  case ClockChangeStart:
+    onoff_button->SetLabelText("on");
+    onoff_button->SetValue(true);
+    break;
+  case ClockChangeStop:
+    onoff_button->SetLabelText("off");
+    onoff_button->SetValue(false);
+    break;
+  case ClockChangeBeat:
+    // TODO turn on flashing light for a short while
+    break;
+  }
 }
 
 void ClockPanel::set_clock_bpm(wxCommandEvent& event) {

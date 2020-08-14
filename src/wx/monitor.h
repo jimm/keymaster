@@ -6,12 +6,15 @@
 #ifndef WX_PRECOMP
  #include <wx/wx.h>
 #endif
-#include "../midi_monitor.h"
+#include "portmidi.h"
+#include "../observer.h"
 
 using namespace std;
 
 class KeyMaster;
 class Instrument;
+class Input;
+class Output;
 
 class MonitorMessage {
 public:
@@ -21,13 +24,12 @@ public:
   MonitorMessage(Instrument *inst, PmMessage msg) : instrument(inst), message(msg) {}
 };
 
-class Monitor : public wxFrame, public MIDIMonitor {
+class Monitor : public wxFrame, public Observer {
 public:
   Monitor();
   virtual ~Monitor();
 
-  virtual void monitor_input(Input *input, PmMessage msg);
-  virtual void monitor_output(Output *output, PmMessage msg);
+  virtual void update(Observable *o, void *arg);
 
 private:
   wxListCtrl *input_list;
@@ -40,6 +42,9 @@ private:
   wxWindow *make_input_panel(wxWindow *parent);
   wxWindow *make_output_panel(wxWindow *parent);
   wxWindow *make_panel(wxWindow *parent, const char * const title, wxListCtrl **list_ptr);
+
+  void monitor_input(Input *input, PmMessage msg);
+  void monitor_output(Output *output, PmMessage msg);
   void add_message(Instrument *inst, wxListCtrl *list, PmMessage msg, deque<MonitorMessage> &message_list);
 
   void on_timer(wxTimerEvent &event);

@@ -17,7 +17,7 @@ void *clock_send_thread(void *clock_ptr) {
 }
 
 Clock::Clock(vector<Input *> &km_inputs)
-  : inputs(km_inputs), thread(nullptr), clock_monitor(nullptr)
+  : inputs(km_inputs), thread(nullptr)
 {
   set_bpm(120);
 }
@@ -31,8 +31,7 @@ void Clock::set_bpm(float new_val) {
   if (_bpm != new_val) {
     _bpm = new_val;
     nanosecs_per_tick = (long)(2.5e9 / _bpm);
-    if (clock_monitor != nullptr)
-      clock_monitor->monitor_bpm(_bpm);
+    changed((void *)ClockChangeBpm);
   }
 }
 
@@ -41,16 +40,15 @@ void Clock::start() {
     return;
   tick_within_beat = 0;
   int status = pthread_create(&thread, 0, clock_send_thread, this);
-  if (status == 0 && clock_monitor != nullptr)
-    clock_monitor->monitor_start();
+  if (status == 0)
+    changed((void *)ClockChangeStart);
 }
 
 void Clock::stop() {
   if (thread == nullptr)
     return;
   thread = nullptr;
-  if (clock_monitor != nullptr)
-    clock_monitor->monitor_stop();
+  changed((void *)ClockChangeStop);
   tick_within_beat = 0;
 }
 
@@ -66,10 +64,8 @@ long Clock::tick() {
   for (auto &input : inputs)
     input->read(CLOCK_MESSAGE);
 
-  if (tick_within_beat == 0) {
-    if (clock_monitor != nullptr)
-      clock_monitor->monitor_beat();
-  }
+  if (tick_within_beat == 0)
+    changed((void *)ClockChangeBeat);
   else {
     if (++tick_within_beat == CLOCK_TICKS_PER_QUARTER_NOTE)
       tick_within_beat = 0;

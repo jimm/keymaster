@@ -8,6 +8,7 @@
 #endif
 #include "events.h"
 #include "../keymaster.h"
+#include "../observer.h"
 
 enum {
   ID_GoNextSong = 1,
@@ -52,7 +53,7 @@ class TriggerList;
 class SetListEditor;
 class ClockPanel;
 
-class Frame: public wxFrame {
+class Frame: public wxFrame, public Observer {
 public:
   Frame(const wxString& title);
   virtual ~Frame() {}
@@ -63,6 +64,8 @@ public:
 
   int handle_global_key_event(wxKeyEvent &event);
 
+
+  virtual void update(Observable *o, void *arg);
   void update(wxCommandEvent& event) { update(); }
   void update();
 

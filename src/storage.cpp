@@ -220,6 +220,8 @@ void Storage::load_triggers() {
       action = TA_PANIC;
     else if (strcmp(action_name, "super_panic") == 0)
       action = TA_SUPER_PANIC;
+    else if (strcmp(action_name, "toggle_clock") == 0)
+      action = TA_TOGGLE_CLOCK;
 
     Trigger *t = new Trigger(id, action, output_message);
     km->triggers.push_back(t);
@@ -535,6 +537,7 @@ void Storage::save_triggers() {
       case TA_PREV_PATCH: action = "prev_patch"; break;
       case TA_PANIC: action = "panic"; break;
       case TA_SUPER_PANIC: action = "super_panic"; break;
+      case TA_TOGGLE_CLOCK: action = "toggle_clock"; break;
       default: break;
       }
       sqlite3_bind_text(stmt, 5, action, -1, SQLITE_STATIC);

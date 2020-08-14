@@ -21,6 +21,8 @@ public:
 
   Input(sqlite3_int64 id, PmDeviceID device_id, const char *device_name, const char *name = nullptr);
 
+  virtual bool is_input() { return true; }
+
   void add_connection(Connection *);
   void remove_connection(Connection *);
 

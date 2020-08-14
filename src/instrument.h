@@ -4,16 +4,15 @@
 #include <portmidi.h>
 #include "db_obj.h"
 #include "named.h"
-#include "midi_monitor.h"
+#include "observable.h"
 
 #define MIDI_BUFSIZ 128
 
-class Instrument : public DBObj, public Named {
+class Instrument : public DBObj, public Named, public Observable {
 public:
   PmDeviceID device_id;
   string device_name;
   PortMidiStream *stream;
-  MIDIMonitor *midi_monitor;
   bool enabled;
 
   PmMessage io_messages[MIDI_BUFSIZ]; // testing only
@@ -23,14 +22,14 @@ public:
              const char *name = nullptr);
   virtual ~Instrument() {}
 
+  virtual bool is_input() { return false; }
+  virtual bool is_output() { return false; }
+
   virtual void start();
   virtual void stop();
   bool real_port();
 
   void clear();                 // testing only
-
-  // m may be nullptr
-  void set_monitor(MIDIMonitor *m) { midi_monitor = m; }
 
 protected:
   virtual bool start_midi() { return false; }

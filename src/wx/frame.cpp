@@ -676,7 +676,8 @@ int Frame::handle_global_key_event(wxKeyEvent &event) {
 
 void Frame::toggle_clock(wxCommandEvent &_event) {
   KeyMaster_instance()->toggle_clock();
-  clock_panel->update();
+  // clock will send "changed" message which we observe which will tell us
+  // to update the clock panel.
 }
 
 void Frame::regular_panic(wxCommandEvent &_event) {
@@ -772,6 +773,7 @@ void Frame::initialize() {
   KeyMaster *km = new KeyMaster();
   km->initialize();
   km->start();
+  km->clock.add_observer(this);
   update();
 }
 
@@ -785,6 +787,7 @@ void Frame::load(wxString path) {
   }
 
   KeyMaster *old_km = KeyMaster_instance();
+  old_km->clock.remove_observer(this);
   bool testing = old_km != nullptr && old_km->testing;
   Storage storage(path);
   KeyMaster *km = storage.load(testing);
@@ -801,6 +804,7 @@ void Frame::load(wxString path) {
     delete old_km;
   }
   km->start();                  // initializes cursor
+  km->clock.add_observer(this);
   update();                     // must come after start
 }
 
@@ -814,12 +818,14 @@ void Frame::create_new_keymaster() {
 
   if (old_km != nullptr) {
     old_km->stop();
+    old_km->clock.remove_observer(this);
     delete old_km;
   }
 
   show_user_message("Created new project", 15);
   file_path = "";
   km->start();                  // initializes cursor
+  km->clock.add_observer(this);
   update();                     // must come after start
 }
 
@@ -829,6 +835,20 @@ void Frame::save() {
 
   Storage storage(file_path);
   storage.save(KeyMaster_instance());
+}
+
+void Frame::update(Observable *o, void *arg) {
+  // Right now we only observe the clock
+  ClockChange clock_update = (ClockChange)(long)arg;
+  switch (clock_update) {
+  case ClockChangeBpm:
+  case ClockChangeStart:
+  case ClockChangeStop:
+    clock_panel->update();
+    break;
+  default:                      // ignore beats, for example
+    break;
+  }
 }
 
 void Frame::update() {

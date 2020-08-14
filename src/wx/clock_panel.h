@@ -6,18 +6,14 @@
  #include <wx/wx.h>
 #endif
 #include <wx/tglbtn.h>
-#include "../clock_monitor.h"
+#include "../observer.h"
 
-class ClockPanel : public wxPanel, public ClockMonitor {
+class ClockPanel : public wxPanel, public Observer {
 public:
   ClockPanel(wxWindow *parent);
   virtual ~ClockPanel();
 
-  void monitor_bpm(int bpm);
-  void monitor_start();
-  void monitor_stop();
-  void monitor_beat();
-
+  virtual void update(Observable *o, void *arg);
   void update();
 
 private:

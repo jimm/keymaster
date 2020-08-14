@@ -1,6 +1,8 @@
 #include <wx/listctrl.h>
 #include "monitor.h"
 #include "../keymaster.h"
+#include "../input.h"
+#include "../output.h"
 
 #define LIST_WIDTH 335
 #define LIST_HEIGHT 500
@@ -33,9 +35,9 @@ Monitor::Monitor()
 
   KeyMaster *km = KeyMaster_instance();
   for (auto& input : km->inputs)
-    input->set_monitor(this);
+    input->add_observer(this);
   for (auto& output : km->outputs)
-    output->set_monitor(this);
+    output->add_observer(this);
 
   timer.Start(TIMER_MILLISECS);
 }
@@ -43,17 +45,16 @@ Monitor::Monitor()
 Monitor::~Monitor() {
   KeyMaster *km = KeyMaster_instance();
   for (auto& input : km->inputs)
-    input->set_monitor(nullptr);
+    input->remove_observer(this);
   for (auto& output : km->outputs)
-    output->set_monitor(nullptr);
+    output->remove_observer(this);
 }
 
-void Monitor::monitor_input(Input *input, PmMessage msg) {
-  add_message(input, input_list, msg, input_messages);
-}
-
-void Monitor::monitor_output(Output *output, PmMessage msg) {
-  add_message(output, output_list, msg, output_messages);
+void Monitor::update(Observable *o, void *arg) {
+  if (((Instrument *)o)->is_input())
+    add_message((Input *)o, input_list, (PmMessage)(long)arg, input_messages);
+  else
+    add_message((Output *)o, output_list, (PmMessage)(long)arg, output_messages);
 }
 
 void Monitor::add_message(Instrument *inst, wxListCtrl *list, PmMessage msg, deque<MonitorMessage> &message_list) {

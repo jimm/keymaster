@@ -42,7 +42,7 @@ void Output::write(PmEvent *buf, int len) {
       io_messages[num_io_messages++] = buf[i].message;
   }
 
-  if (enabled && midi_monitor != nullptr)
+  if (enabled)
     for (int i = 0; i < len && num_io_messages < MIDI_BUFSIZ-1; ++i)
-      midi_monitor->monitor_output(this, buf[i].message);
+      changed((void *)(long)buf[i].message);
 }

@@ -3,16 +3,22 @@
 
 #include <vector>
 #include <pthread.h>
-#include "clock_monitor.h"
+#include "observable.h"
 
 class Input;
 
-class Clock {
+enum ClockChange {
+  ClockChangeBpm,
+  ClockChangeStart,
+  ClockChangeStop,
+  ClockChangeBeat
+};
+
+class Clock : public Observable {
 public:
   std::vector<Input *> &inputs;
   long nanosecs_per_tick;
   int tick_within_beat;
-  ClockMonitor *clock_monitor;
 
   Clock(std::vector<Input *> &inputs);
   ~Clock();
@@ -24,9 +30,6 @@ public:
   void stop();
   long tick();
   bool is_running() { return thread != nullptr; }
-
-  // m may be nullptr
-  void set_monitor(ClockMonitor *m) { clock_monitor = m; }
 
 protected:
   float _bpm;

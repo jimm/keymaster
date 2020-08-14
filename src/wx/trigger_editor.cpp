@@ -109,6 +109,9 @@ wxWindow *TriggerEditor::make_action_dropdown(wxWindow *parent) {
   case TA_SUPER_PANIC:
     initial_value = "Super Panic";
     break;
+  case TA_TOGGLE_CLOCK:
+    initial_value = "Toggle Clock";
+    break;
   case TA_MESSAGE:
     initial_value = trigger->output_message->name;
     break;
@@ -147,6 +150,8 @@ void TriggerEditor::save(wxCommandEvent& _) {
     trigger->action = TA_PANIC;
   else if (val == "Super Panic")
     trigger->action = TA_SUPER_PANIC;
+  else if (val == "Toggle Clock")
+    trigger->action = TA_TOGGLE_CLOCK;
   else {
     trigger->action = TA_MESSAGE;
     for (auto &msg : km->messages) {

@@ -76,6 +76,9 @@ void TriggerList::update() {
     case TA_SUPER_PANIC:
       str = "super panic";
       break;
+    case TA_TOGGLE_CLOCK:
+      str = "toggle clock";
+      break;
     case TA_MESSAGE:
       str = trigger->output_message->name;
       break;

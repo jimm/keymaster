@@ -5,7 +5,7 @@
 
 Instrument::Instrument(sqlite3_int64 id, PmDeviceID dev_id, const char *dev_device_name, const char *c_name)
   : DBObj(id), Named(c_name == nullptr ? dev_device_name : c_name),
-    device_id(dev_id), device_name(dev_device_name), midi_monitor(nullptr), enabled(false)
+    device_id(dev_id), device_name(dev_device_name), enabled(false)
 {
   num_io_messages = 0;
 }
