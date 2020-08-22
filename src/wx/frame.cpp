@@ -787,8 +787,10 @@ void Frame::load(wxString path) {
   }
 
   KeyMaster *old_km = KeyMaster_instance();
-  old_km->clock.remove_observer(this);
+  if (old_km != nullptr)
+    old_km->clock.remove_observer(this);
   bool testing = old_km != nullptr && old_km->testing;
+
   Storage storage(path);
   KeyMaster *km = storage.load(testing);
   if (storage.has_error()) {
