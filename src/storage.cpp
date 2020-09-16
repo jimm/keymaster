@@ -33,6 +33,10 @@ Storage::Storage(const char *path) : loading_version(0) {
 Storage::~Storage() {
   if (db != nullptr)
     sqlite3_close(db);
+
+  // sqlite3_prepare_v3() seems to set errno to 2 for no good reason that I
+  // can tell. Reinitialize it here.
+  errno = 0;
 }
 
 // Does not stop old km or start new km.
