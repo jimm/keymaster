@@ -8,19 +8,17 @@
 void assert_no_start_sent(KeyMaster *km) {
   for (auto& out : km->outputs) {
     for (int i = 0; i < out->num_io_messages; ++i)
-      if (out->io_messages[i] == Pm_Message(0xb0, 7, 0x7f))
-        REQUIRE("assert no start sent" == "start was sent");
+      REQUIRE_FALSE(out->io_messages[i] == Pm_Message(0xb0, 7, 0x7f));
   }
-  REQUIRE(true);
+  SUCCEED();
 }
 
 void assert_no_stop_sent(KeyMaster *km) {
   for (auto& out : km->outputs) {
     for (int i = 0; i < out->num_io_messages; ++i)
-      if (out->io_messages[i] == Pm_Message(0xb2, 7, 0x7f))
-        REQUIRE("assert no stop sent" == "stop was sent");
+      REQUIRE_FALSE(out->io_messages[i] == Pm_Message(0xb2, 7, 0x7f));
   }
-  REQUIRE(true);
+  SUCCEED();
 }
 
 void assert_start_sent(KeyMaster *km) {
@@ -29,6 +27,7 @@ void assert_start_sent(KeyMaster *km) {
       if (out->io_messages[i] == Pm_Message(0xb0, 7, 0x7f))
         return;
   }
+  REQUIRE("start message not sent" == nullptr); // FAIL
 }
 
 void assert_stop_sent(KeyMaster *km) {
@@ -37,7 +36,7 @@ void assert_stop_sent(KeyMaster *km) {
   for (int i = 0; i < out->num_io_messages; ++i)
     if (out->io_messages[i] == Pm_Message(0xb2, 7, 0x7f))
       return;
-  REQUIRE("assert stop sent" == "stop message not sent");
+  REQUIRE("stop message not sent" == nullptr); // FAIL
 }
 
 void clear_out_io_messages(KeyMaster *km) {
