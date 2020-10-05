@@ -324,7 +324,7 @@ void Storage::create_default_patches() {
 // true for many keyboards such as the Korg Kronos and the Studiologic
 // Sledge.
 void Storage::create_default_patch(Song *s) {
-  Patch *p = new Patch(UNDEFINED_ID, "Default Patch");
+  Patch *p = new Patch(UNDEFINED_ID, s->name.c_str());
   s->patches.push_back(p);
   if (km->inputs.empty() || km->outputs.empty())
     return;
