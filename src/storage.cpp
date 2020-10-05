@@ -320,9 +320,7 @@ void Storage::create_default_patches() {
       create_default_patch(song);
 }
 
-// This only works if input and output port names are the same. That's not
-// true for many keyboards such as the Korg Kronos and the Studiologic
-// Sledge.
+// Connects first input to first output. Name of patch == song name.
 void Storage::create_default_patch(Song *s) {
   Patch *p = new Patch(UNDEFINED_ID, s->name.c_str());
   s->patches.push_back(p);
