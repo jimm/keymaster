@@ -326,16 +326,14 @@ void Storage::create_default_patches() {
 void Storage::create_default_patch(Song *s) {
   Patch *p = new Patch(UNDEFINED_ID, "Default Patch");
   s->patches.push_back(p);
-  for (auto& input : km->inputs) {
-    for (auto& output : km->outputs) {
-      if (output->device_name == input->device_name) {
-        Connection *conn =
-          new Connection(UNDEFINED_ID, input, CONNECTION_ALL_CHANNELS,
-                         output, CONNECTION_ALL_CHANNELS);
-        p->connections.push_back(conn);
-      }
-    }
-  }
+  if (km->inputs.empty() || km->outputs.empty())
+    return;
+  Input *input = km->inputs.front();
+  Output *output = km->outputs.front();
+  Connection *conn =
+    new Connection(UNDEFINED_ID, input, CONNECTION_ALL_CHANNELS,
+                   output, CONNECTION_ALL_CHANNELS);
+  p->connections.push_back(conn);
 }
 
 void Storage::load_connections(Patch *p) {

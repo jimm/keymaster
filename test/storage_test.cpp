@@ -226,9 +226,9 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
     REQUIRE(s->patches.size() == 1);
     Patch *p = s->patches[0];
     REQUIRE(p->name == "Default Patch");
-    REQUIRE(p->connections.size() == 2);
+    REQUIRE(p->connections.size() == 1);
     REQUIRE(p->connections[0]->input->name == "first input");
-    REQUIRE(p->connections[1]->input->name == "second input");
+    REQUIRE(p->connections[0]->output->name == "first output");
   }
 
   delete km;
