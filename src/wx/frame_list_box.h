@@ -10,6 +10,8 @@ class FrameListBox : public wxListBox {
 public:
   FrameListBox(wxWindow *parent, wxWindowID id, wxPoint pos, wxSize size, long style);
 
+  virtual void update();
+
 protected:
   virtual bool TryAfter(wxEvent &event);
 };

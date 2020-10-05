@@ -22,10 +22,12 @@ void SetListListBox::update() {
   for (auto& set_list : km->set_lists) {
     if (set_list == cursor->set_list()) {
       SetSelection(i);
-      return;
+      break;;
     }
     ++i;
   }
+
+  FrameListBox::update();
 }
 
 void SetListListBox::jump() {

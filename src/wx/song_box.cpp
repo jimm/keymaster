@@ -30,10 +30,12 @@ void SongBox::update() {
   for (auto& patch : song->patches) {
     if (patch == cursor->patch()) {
       SetSelection(i);
-      return;
+      break;
     }
     ++i;
   }
+
+  FrameListBox::update();
 }
 
 void SongBox::jump() {

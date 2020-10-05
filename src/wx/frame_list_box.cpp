@@ -10,6 +10,13 @@ FrameListBox::FrameListBox(wxWindow *parent, wxWindowID id, wxPoint pos, wxSize 
 {
 }
 
+// Ensure that the selected item is visible.
+void FrameListBox::update() {
+  int selection = GetSelection();
+  if (selection != wxNOT_FOUND)
+    EnsureVisible(selection);
+}
+
 // If `event` is a list (de)selection event, broadcast a Frame_MenuUpdate
 // event.
 bool FrameListBox::TryAfter(wxEvent &event) {

@@ -30,10 +30,12 @@ void SetListBox::update() {
   for (auto& song : set_list->songs) {
     if (song == cursor->song()) {
       SetSelection(i);
-      return;
+      break;
     }
     ++i;
   }
+
+  FrameListBox::update();
 }
 
 void SetListBox::jump() {
