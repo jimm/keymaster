@@ -297,11 +297,11 @@ void ConnectionEditor::update() {
 
 void ConnectionEditor::save(wxCommandEvent& _) {
   connection->input = km->inputs[cb_input->GetCurrentSelection()];
-  int n = cb_input->GetCurrentSelection();
+  int n = cb_input_chan->GetCurrentSelection();
   connection->input_chan = (n == 0 ? CONNECTION_ALL_CHANNELS : n - 1);
 
   connection->output = km->outputs[cb_output->GetCurrentSelection()];
-  n = cb_output->GetCurrentSelection();
+  n = cb_output_chan->GetCurrentSelection();
   connection->output_chan = (n == 0 ? CONNECTION_ALL_CHANNELS : n - 1);
 
   connection->prog.bank_msb = int_or_undefined_from_field(tc_bank_msb);
