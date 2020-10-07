@@ -64,11 +64,8 @@ wxBEGIN_EVENT_TABLE(Frame, wxFrame)
   EVT_MENU(ID_SuperPanic, Frame::super_panic)
   EVT_MENU(wxID_ABOUT, Frame::OnAbout)
 
-  EVT_LISTBOX(ID_SetListList, Frame::jump_to_set_list)
   EVT_LISTBOX_DCLICK(ID_SetListList, Frame::edit_set_list)
-  EVT_LISTBOX(ID_SetListSongs, Frame::jump_to_song)
   EVT_LISTBOX_DCLICK(ID_SetListSongs, Frame::edit_song)
-  EVT_LISTBOX(ID_SongPatches, Frame::jump_to_patch)
   EVT_LISTBOX_DCLICK(ID_SongPatches, Frame::edit_patch)
   EVT_LISTBOX(ID_MessageList, Frame::send_message)
   EVT_LISTBOX_DCLICK(ID_MessageList, Frame::edit_message)
@@ -346,27 +343,6 @@ void Frame::find_song() {
       km->goto_song(str.ToStdString());
       update();
     }
-  }
-}
-
-void Frame::jump_to_set_list(wxCommandEvent &event) {
-  if (event.GetEventType() == wxEVT_LISTBOX && event.IsSelection()) {
-    lc_set_lists->jump();
-    update();
-  }
-}
-
-void Frame::jump_to_song(wxCommandEvent &event) {
-  if (event.GetEventType() == wxEVT_LISTBOX && event.IsSelection()) {
-    lc_set_list->jump();
-    update();
-  }
-}
-
-void Frame::jump_to_patch(wxCommandEvent &event) {
-  if (event.GetEventType() == wxEVT_LISTBOX && event.IsSelection()) {
-    lc_song_patches->jump();
-    update();
   }
 }
 
