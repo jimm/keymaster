@@ -86,6 +86,10 @@ public:
   void find_set_list();
   void find_song();
 
+  void jump_to_set_list();
+  void jump_to_song();
+  void jump_to_patch();
+
 private:
   wxString file_path;
   wxMenuBar *menu_bar;
@@ -122,6 +126,10 @@ private:
   void prev_patch(wxCommandEvent &_event) { prev_patch(); }
   void find_set_list(wxCommandEvent &_event) { find_set_list(); }
   void find_song(wxCommandEvent &_event) { find_song(); }
+
+  void jump_to_set_list(wxCommandEvent& event);
+  void jump_to_song(wxCommandEvent& event);
+  void jump_to_patch(wxCommandEvent& event);
 
   void create_message(wxCommandEvent& event);
   void create_trigger(wxCommandEvent& event);
