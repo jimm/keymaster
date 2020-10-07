@@ -331,7 +331,7 @@ void Storage::create_default_patch(Song *s) {
   Connection *conn =
     new Connection(UNDEFINED_ID, input, CONNECTION_ALL_CHANNELS,
                    output, CONNECTION_ALL_CHANNELS);
-  p->connections.push_back(conn);
+  p->add_connection(conn);
 }
 
 void Storage::load_connections(Patch *p) {
@@ -374,7 +374,7 @@ void Storage::load_connections(Patch *p) {
 
     load_controller_mappings(conn);
 
-    p->connections.push_back(conn);
+    p->add_connection(conn);
   }
   sqlite3_finalize(stmt);
 }

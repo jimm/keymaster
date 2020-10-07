@@ -10,7 +10,7 @@ TEST_CASE("start msgs", CATCH_CATEGORY) {
   Message message(UNDEFINED_ID, "A Message");
   message.from_chars("00001232");
 
-  p.connections.push_back(conn);
+  p.add_connection(conn);
   p.start_message = &message;
 
   p.start();
@@ -28,7 +28,7 @@ TEST_CASE("stop msgs", CATCH_CATEGORY) {
   Message message(UNDEFINED_ID, "A Message");
   message.from_chars("00001232");
 
-  p.connections.push_back(conn);
+  p.add_connection(conn);
   p.stop_message = &message;
 
   p.running = true;

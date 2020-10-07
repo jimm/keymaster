@@ -33,6 +33,8 @@ public:
   int xpose;
   bool pass_through_sysex;
   bool processing_sysex;
+  bool running;
+  bool changing_was_running;
   Controller *cc_maps[128];
 
   Connection(sqlite3_int64 id, Input *input, int input_chan, Output *output,
@@ -40,7 +42,11 @@ public:
   ~Connection();
 
   void start();
+  bool is_running();
   void stop();
+
+  void begin_changes();
+  void end_changes();
 
   void midi_in(PmMessage msg);
 

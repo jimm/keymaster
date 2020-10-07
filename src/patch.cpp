@@ -38,6 +38,24 @@ void Patch::stop() {
   running = false;
 }
 
+void Patch::add_connection(Connection *conn) {
+  connections.push_back(conn);
+  if (is_running())
+    conn->start();
+}
+
+// Caller must destroy the connection.
+void Patch::remove_connection(Connection *conn) {
+  for (vector<Connection *>::iterator i = connections.begin(); i != connections.end(); ++i) {
+    if (*i == conn) {
+      if (is_running())
+        conn->stop();
+      connections.erase(i);
+      break;
+    }
+  }
+}
+
 void Patch::send_message_to_outputs(Message *message) {
   if (message == nullptr)
     return;

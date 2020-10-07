@@ -112,7 +112,7 @@ void KeyMaster::create_songs() {
 
       Connection *conn = new Connection(UNDEFINED_ID, input, CONNECTION_ALL_CHANNELS,
                                         output, CONNECTION_ALL_CHANNELS);
-      patch->connections.push_back(conn);
+      patch->add_connection(conn);
 
       ++output_num;
     }
@@ -131,7 +131,7 @@ void KeyMaster::create_songs() {
           UNDEFINED,
           input, CONNECTION_ALL_CHANNELS,
           output, CONNECTION_ALL_CHANNELS);
-        patch->connections.push_back(conn);
+        patch->add_connection(conn);
       }
     }
   }

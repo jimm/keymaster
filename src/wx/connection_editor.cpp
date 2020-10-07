@@ -296,6 +296,8 @@ void ConnectionEditor::update() {
 }
 
 void ConnectionEditor::save(wxCommandEvent& _) {
+  connection->begin_changes();
+
   connection->input = km->inputs[cb_input->GetCurrentSelection()];
   int n = cb_input_chan->GetCurrentSelection();
   connection->input_chan = (n == 0 ? CONNECTION_ALL_CHANNELS : n - 1);
@@ -314,6 +316,7 @@ void ConnectionEditor::save(wxCommandEvent& _) {
 
   // Don't need to update cc_maps because that's done on the fly
 
+  connection->end_changes();
   EndModal(wxID_OK);
 }
 

@@ -12,7 +12,8 @@ Connection::Connection(sqlite3_int64 id, Input *in, int in_chan, Output *out,
   : DBObj(id),
     input(in), input_chan(in_chan),
     output(out), output_chan(out_chan),
-    xpose(0), pass_through_sysex(false), processing_sysex(false)
+    xpose(0), pass_through_sysex(false), processing_sysex(false),
+    running(false), changing_was_running(false)
 {
   prog.bank_msb = prog.bank_lsb = prog.prog = UNDEFINED;
   zone.low = 0;
@@ -28,6 +29,9 @@ Connection::~Connection() {
 }
 
 void Connection::start() {
+  if (running)
+    return;
+
   if (output_chan != CONNECTION_ALL_CHANNELS) {
     if (prog.bank_msb >= 0)
       midi_out(Pm_Message(CONTROLLER + output_chan, CC_BANK_SELECT_MSB, prog.bank_msb));
@@ -39,10 +43,35 @@ void Connection::start() {
 
   processing_sysex = false;
   input->add_connection(this);
+  running = true;
+}
+
+bool Connection::is_running() {
+  return running;
 }
 
 void Connection::stop() {
+  if (!running)
+    return;
   input->remove_connection(this);
+  running = false;
+}
+
+// Call this when a Connection is being edited so that it can restart itself
+// if it is running.
+void Connection::begin_changes() {
+  changing_was_running = is_running();
+  if (changing_was_running)
+    stop();
+}
+
+// Call this when done making changes so the Connection can restart itself
+// if it was running.
+void Connection::end_changes() {
+  if (changing_was_running) {
+    start();
+    changing_was_running = false;
+  }
 }
 
 // Takes a MIDI message `msg` from an input, processes it, and sends it to

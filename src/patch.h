@@ -22,6 +22,9 @@ public:
   bool is_running();
   void stop();
 
+  void add_connection(Connection *conn);
+  void remove_connection(Connection *conn);
+
 private:
   void send_message_to_outputs(Message *message);
 };

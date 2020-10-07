@@ -81,7 +81,7 @@ void Editor::add_patch(Patch *patch, Song *song) {
 void Editor::add_connection(Connection *connection, Patch *patch)
 {
   if (patch != nullptr)
-    patch->connections.push_back(connection);
+    patch->add_connection(connection);
 }
 
 void Editor::add_set_list(SetList *set_list) {
@@ -196,19 +196,8 @@ void Editor::destroy_patch(Song *song, Patch *patch) {
 }
 
 void Editor::destroy_connection(Patch *patch, Connection *connection) {
-  if (patch == km->cursor->patch())
-    patch->stop();
-
-  for (ITER(Connection) i = patch->connections.begin(); i != patch->connections.end(); ++i) {
-    if (*i == connection) {
-      patch->connections.erase(i);
-      delete connection;
-      break;
-    }
-  }
-  // shouldn't get here, assuming connection is in patch
-  if (patch == km->cursor->patch())
-    patch->start();
+  patch->remove_connection(connection);
+  delete connection;
 }
 
 void Editor::destroy_set_list(SetList *set_list) {

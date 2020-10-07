@@ -549,11 +549,13 @@ void Frame::edit_connection(wxListEvent& event) {
 }
 
 bool Frame::edit_connection(Connection *conn) {
-  if (conn != nullptr)
-    if (ConnectionEditor(this, conn).ShowModal() == wxID_OK) {
-      update();
-      return true;
-    }
+  if (conn == nullptr)
+    return false;
+
+  if (ConnectionEditor(this, conn).ShowModal() == wxID_OK) {
+    update();
+    return true;
+  }
   return false;
 }
 

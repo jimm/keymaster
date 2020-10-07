@@ -158,3 +158,47 @@ TEST_CASE("filter and modify", CATCH_CATEGORY) {
     REQUIRE(conn.output->io_messages[2] == Pm_Message(3, 1, EOX));
   }
 }
+
+TEST_CASE("editing when not running", CATCH_CATEGORY) {
+  Input in(UNDEFINED_ID, pmNoDevice, "in 1 port", "in1");
+  Output out(UNDEFINED_ID, pmNoDevice, "out 1 port", "out1");
+  Connection conn(UNDEFINED_ID, &in, 0, &out, 1);
+
+  REQUIRE(conn.xpose == 0);
+  REQUIRE(!conn.is_running());
+  conn.begin_changes();
+  conn.xpose = 12;
+  conn.end_changes();
+
+  REQUIRE(!conn.is_running());
+  REQUIRE(conn.xpose == 12);
+  REQUIRE(conn.input == &in);
+  REQUIRE(conn.output == &out);
+}
+
+TEST_CASE("editing when running and input changes", CATCH_CATEGORY) {
+  Input in_old(UNDEFINED_ID, pmNoDevice, "in 1 port", "in1");
+  Input in_new(UNDEFINED_ID, pmNoDevice, "in 1 port", "in1");
+  Output out(UNDEFINED_ID, pmNoDevice, "out 1 port", "out1");
+  Connection conn(UNDEFINED_ID, &in_old, 0, &out, 1);
+
+  conn.start();
+
+  REQUIRE(conn.is_running());
+  conn.begin_changes();
+  REQUIRE(!conn.is_running());
+
+  conn.xpose = 12;
+  conn.input = &in_new;
+
+  conn.end_changes();
+  REQUIRE(conn.is_running());
+
+  REQUIRE(conn.xpose == 12);
+  REQUIRE(conn.input == &in_new);
+  REQUIRE(conn.output == &out);
+  REQUIRE(in_old.connections.empty());
+  REQUIRE(in_new.connections.front() == &conn);
+
+  conn.stop();
+}
