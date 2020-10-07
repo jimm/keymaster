@@ -37,3 +37,11 @@ void SetListBox::update() {
 
   FrameListBox::update();
 }
+
+void SetListBox::jump() {
+  int selection = GetSelection();
+  if (selection != wxNOT_FOUND) {
+    KeyMaster *km = KeyMaster_instance();
+    km->jump_to_song_index(selection);
+  }
+}

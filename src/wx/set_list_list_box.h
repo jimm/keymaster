@@ -12,6 +12,7 @@ public:
   SetListListBox(wxWindow *parent, wxWindowID id, wxSize size);
 
   void update();
+  void jump();
 };
 
 #endif /* SET_LIST_LIST_BOX_H */

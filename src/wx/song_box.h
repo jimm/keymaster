@@ -14,6 +14,7 @@ public:
   SongBox(wxWindow *parent, wxWindowID id, wxSize size);
 
   void update();
+  void jump();
 
 private:
   Song *song;

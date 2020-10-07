@@ -37,3 +37,11 @@ void SongBox::update() {
 
   FrameListBox::update();
 }
+
+void SongBox::jump() {
+  int selection = GetSelection();
+  if (selection != wxNOT_FOUND) {
+    KeyMaster *km = KeyMaster_instance();
+    km->jump_to_patch_index(selection);
+  }
+}

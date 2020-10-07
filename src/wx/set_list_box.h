@@ -14,6 +14,7 @@ public:
   SetListBox(wxWindow *parent, wxWindowID id, wxSize size);
 
   void update();
+  void jump();
 
 private:
   SetList *set_list;
