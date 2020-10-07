@@ -54,6 +54,9 @@ public:
   void prev_song();
 
   // ================ going places ================
+  void goto_song(Song *song);
+  void goto_patch(Patch *patch);
+
   void goto_song(string name_regex);
   void goto_set_list(string name_regex);
 

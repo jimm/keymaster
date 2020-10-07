@@ -165,6 +165,18 @@ void KeyMaster::prev_song() {
 
 // ================ going places ================
 
+void KeyMaster::goto_song(Song *song) {
+  PATCH_STOP;
+  cursor->goto_song(song);
+  PATCH_START;
+}
+
+void KeyMaster::goto_patch(Patch *patch) {
+  PATCH_STOP;
+  cursor->goto_patch(patch);
+  PATCH_START;
+}
+
 void KeyMaster::goto_song(string name_regex) {
   PATCH_STOP;
   cursor->goto_song(name_regex);

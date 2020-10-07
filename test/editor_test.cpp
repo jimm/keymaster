@@ -191,7 +191,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     REQUIRE(created2 == song->patches.back());
 
     REQUIRE(song->patches.size() == 4);
-    REQUIRE(c->patch() == song->patches.front());
+    REQUIRE(c->patch() == song->patches.back()); // cursor moves to last added patch
 
     c->patch_index = 2;              // first created patch
     REQUIRE(c->patch() == created1); // sanity check

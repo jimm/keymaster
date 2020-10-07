@@ -154,6 +154,38 @@ void Cursor::jump_to_patch_index(int i) {
   patch_index = i;
 }
 
+// If `song` is in current set list, make it the current song. If not, don't
+// do anything.
+void Cursor::goto_song(Song *song) {
+  SetList *sl = set_list();
+  int i = 0;
+  for (auto &sl_song : sl->songs) {
+    if (sl_song == song) {
+      song_index = i;
+      patch_index = 0;
+      return;
+    }
+    ++i;
+  }
+}
+
+// If `patch` is in current song, make it the current patch. If not, don't
+// do anything.
+void Cursor::goto_patch(Patch *patch) {
+  Song *curr_song = song();
+  if (curr_song == nullptr)
+    return;
+
+  int i = 0;
+  for (auto &s_patch : curr_song->patches) {
+    if (s_patch == patch) {
+      patch_index = i;
+      return;
+    }
+    ++i;
+  }
+}
+
 void Cursor::goto_song(string name_regex) {
   SetList *sl = set_list();
   Song *new_song = nullptr;

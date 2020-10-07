@@ -53,8 +53,10 @@ void Editor::add_song(Song *song) {
   km->sort_all_songs();
 
   SetList *curr_set_list = km->cursor->set_list();
-  if (curr_set_list == km->all_songs)
+  if (curr_set_list == km->all_songs) {
+    km->goto_song(song);
     return;
+  }
 
   vector<Song *> &slist = curr_set_list->songs;
   Song *curr_song = km->cursor->song();
@@ -68,6 +70,8 @@ void Editor::add_song(Song *song) {
       }
     }
   }
+
+  km->goto_song(song);
 }
 
 void Editor::add_patch(Patch *patch) {
@@ -76,6 +80,7 @@ void Editor::add_patch(Patch *patch) {
 
 void Editor::add_patch(Patch *patch, Song *song) {
   song->patches.push_back(patch);
+  km->goto_patch(patch);
 }
 
 void Editor::add_connection(Connection *connection, Patch *patch)

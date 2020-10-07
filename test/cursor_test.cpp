@@ -171,43 +171,74 @@ TEST_CASE("cursor", CATCH_CATEGORY) {
 
 // ================ goto
 
-  SECTION("goto song") {
+  SECTION("goto with regex") {
+    SECTION("song") {
+      c->goto_song("nother");
+      Song *s = c->song();
+      REQUIRE(s != nullptr);
+      REQUIRE(s->name == "Another Song");
 
-    c->goto_song("nother");
-    Song *s = c->song();
-    REQUIRE(s != nullptr);
-    REQUIRE(s->name == "Another Song");
+    }
 
+    SECTION("song, no such song") {
+      Song *before = c->song();
+      REQUIRE(before != nullptr);
+
+      c->goto_song("nosuch");
+      Song *s = c->song();
+      REQUIRE(s == before);
+
+    }
+
+    SECTION("set list") {
+      c->goto_set_list("two");
+      SetList *sl = c->set_list();
+      REQUIRE(sl != nullptr);
+      REQUIRE(sl->name == "Set List Two");
+
+    }
+
+    SECTION("set list, no such set list") {
+      SetList *before = c->set_list();
+      REQUIRE(before != nullptr);
+
+      c->goto_set_list("nosuch");
+      SetList *sl = c->set_list();
+      REQUIRE(sl == before);
+    }
   }
 
-  SECTION("goto song no such song") {
+  SECTION("goto with pointer") {
+    SECTION("song") {
+      c->goto_set_list("two");
 
-    Song *before = c->song();
-    REQUIRE(before != nullptr);
+      SECTION("in set list") {
+      }
 
-    c->goto_song("nosuch");
-    Song *s = c->song();
-    REQUIRE(s == before);
+      SECTION("not in set list") {
+      }
+    }
 
+    SECTION("patch") {
+      Song *song = c->song();
+
+      SECTION("in song") {
+        Patch *patch = song->patches.back();
+        REQUIRE(c->patch() != patch);
+        c->goto_patch(patch);
+        REQUIRE(c->song() == song);
+        REQUIRE(c->patch() == patch);
+      }
+
+      SECTION("not in song") {
+        Patch *before_patch = c->patch();
+
+        c->goto_patch(nullptr);
+        REQUIRE(c->song() == song);
+        REQUIRE(c->patch() == before_patch);
+      }
+    }
   }
 
-  SECTION("goto set list") {
-
-    c->goto_set_list("two");
-    SetList *sl = c->set_list();
-    REQUIRE(sl != nullptr);
-    REQUIRE(sl->name == "Set List Two");
-
-  }
-
-  SECTION("goto set list no such set list") {
-
-    SetList *before = c->set_list();
-    REQUIRE(before != nullptr);
-
-    c->goto_set_list("nosuch");
-    SetList *sl = c->set_list();
-    REQUIRE(sl == before);
-  }
   delete km;
 }

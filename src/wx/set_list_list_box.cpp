@@ -29,11 +29,3 @@ void SetListListBox::update() {
 
   FrameListBox::update();
 }
-
-void SetListListBox::jump() {
-  int selection = GetSelection();
-  if (selection != wxNOT_FOUND) {
-    KeyMaster *km = KeyMaster_instance();
-    km->jump_to_set_list_index(selection);
-  }
-}

@@ -40,6 +40,9 @@ public:
   void jump_to_song_index(int i);
   void jump_to_patch_index(int i);
 
+  void goto_song(Song *song);
+  void goto_patch(Patch *patch);
+
   void goto_song(string name_regex);
   void goto_set_list(string name_regex);
 };
