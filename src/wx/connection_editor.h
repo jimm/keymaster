@@ -115,6 +115,8 @@ private:
   void edit_controller_mapping(wxListEvent& event);
   bool edit_controller_mapping(Controller *controller);
 
+  void output_channel_changed(wxCommandEvent& _);
+
   void update_buttons(wxListEvent& event) { update_buttons(); }
   void update_buttons();
   void update_filter_check_boxes();

@@ -11,6 +11,7 @@ wxBEGIN_EVENT_TABLE(ConnectionEditor, wxDialog)
   EVT_BUTTON(ID_CE_AddControllerMapping, ConnectionEditor::add_controller_mapping)
   EVT_BUTTON(ID_CE_DelControllerMapping, ConnectionEditor::del_controller_mapping)
   EVT_BUTTON(wxID_OK, ConnectionEditor::save)
+  EVT_COMBOBOX(ID_CE_OutputChannel, ConnectionEditor::output_channel_changed)
   EVT_LIST_ITEM_ACTIVATED(ID_CE_ControllerMappings, ConnectionEditor::edit_controller_mapping)
   EVT_LIST_ITEM_SELECTED(ID_CE_ControllerMappings, ConnectionEditor::update_buttons)
   EVT_LIST_ITEM_DESELECTED(ID_CE_ControllerMappings, ConnectionEditor::update_buttons)
@@ -318,6 +319,20 @@ void ConnectionEditor::del_controller_mapping(wxCommandEvent& event) {
 
   connection->remove_cc_num(controller_num);
   update();
+}
+
+void ConnectionEditor::output_channel_changed(wxCommandEvent& _) {
+  int n = cb_output_chan->GetCurrentSelection();
+  if (n == 0) {                 // all channels
+    tc_bank_msb->Disable();
+    tc_bank_lsb->Disable();
+    tc_prog->Disable();
+  }
+  else {
+    tc_bank_msb->Enable();
+    tc_bank_lsb->Enable();
+    tc_prog->Enable();
+  }
 }
 
 void ConnectionEditor::update() {
