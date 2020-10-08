@@ -7,10 +7,10 @@
 #define CW 36
 
 const char * const COLUMN_HEADERS[] = {
-  "Input", "Chan", "Output", "Chan", "Zone", "Xpose", "Prog", "CC Filt/Map"
+  "Input", "Chan", "Output", "Chan", "Zone", "Xpose", "Vel X", "Prog", "CC Filt/Map"
 };
 const int COLUMN_WIDTHS[] = {
-  3*CW, 1*CW, 3*CW, 1*CW, 2*CW, 1*CW, 3*CW, 6*CW
+  3*CW, 1*CW, 3*CW, 1*CW, 2*CW, 1*CW, 1*CW, 3*CW, 6*CW
 };
 
 PatchConnections::PatchConnections(wxWindow *parent, wxWindowID id)
@@ -44,24 +44,28 @@ void PatchConnections::update() {
     char buf[BUFSIZ];
 
     InsertItem(i, conn->input->name.c_str());
-    SetItem(i, 1, conn->input_chan == -1 ? "all" : wxString::Format("%d", conn->input_chan + 1));
-    SetItem(i, 2, conn->output->name.c_str());
-    SetItem(i, 3, conn->output_chan == -1 ? "all" : wxString::Format("%d", conn->output_chan + 1));
+    int col = 1;
+    SetItem(i, col++, conn->input_chan == -1 ? "all" : wxString::Format("%d", conn->input_chan + 1));
+    SetItem(i, col++, conn->output->name.c_str());
+    SetItem(i, col++, conn->output_chan == -1 ? "all" : wxString::Format("%d", conn->output_chan + 1));
 
     char buf2[8];
     note_num_to_name(conn->zone.low, buf);
     note_num_to_name(conn->zone.high, buf2);
     if (conn->zone.low != -1 || conn->zone.high != -1)
-      SetItem(i, 4, wxString::Format("%s - %s", buf, buf2));
+      SetItem(i, col++, wxString::Format("%s - %s", buf, buf2));
 
     if (conn->xpose != -1)
-      SetItem(i, 5, wxString::Format("%c%2d", conn->xpose < 0 ? '-' : ' ', abs(conn->xpose)));
+      SetItem(i, col++, wxString::Format("%c%2d", conn->xpose < 0 ? '-' : ' ', abs(conn->xpose)));
+
+    if (conn->velocity_xpose != -1)
+      SetItem(i, col++, wxString::Format("%c%2d", conn->velocity_xpose < 0 ? '-' : ' ', abs(conn->velocity_xpose)));
 
     format_program(conn->prog, buf);
-    SetItem(i, 6, buf);
+    SetItem(i, col++, buf);
 
     format_controllers(conn, buf);
-    SetItem(i, 7, buf);
+    SetItem(i, col++, buf);
     ++i;
   }
 }

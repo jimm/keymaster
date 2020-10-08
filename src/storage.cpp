@@ -340,7 +340,7 @@ void Storage::load_connections(Patch *p) {
     "select id,"
     "   input_id, input_chan, output_id, output_chan,"
     "   bank_msb, bank_lsb, prog,"
-    "   zone_low, zone_high, xpose,"
+    "   zone_low, zone_high, xpose, velocity_xpose,"
     "   note, poly_pressure, chan_pressure, program_change, pitch_bend,"
     "   controller, song_pointer, song_select, tune_request, sysex,"
     "   clock, start_continue_stop, system_reset"
@@ -364,6 +364,7 @@ void Storage::load_connections(Patch *p) {
     int zone_low = int_or_null(stmt, col++, 0);
     int zone_high = int_or_null(stmt, col++, 127);
     int xpose = int_or_null(stmt, col++, 0);
+    int velocity_xpose = int_or_null(stmt, col++, 0);
 
     int note = sqlite3_column_int(stmt, col++);
     int poly_pressure = sqlite3_column_int(stmt, col++);
@@ -390,6 +391,7 @@ void Storage::load_connections(Patch *p) {
     conn->zone.low = zone_low;
     conn->zone.high = zone_high;
     conn->xpose = xpose;
+    conn->velocity_xpose = velocity_xpose;
     mf.note = note;
     mf.poly_pressure = poly_pressure;
     mf.chan_pressure = chan_pressure;
@@ -634,11 +636,11 @@ void Storage::save_connections(Patch *patch) {
   const char * const sql =
     "insert into connections"
     "   (id, patch_id, position, input_id, input_chan, output_id, output_chan,"
-    "    bank_msb, bank_lsb, prog, zone_low, zone_high, xpose,"
+    "    bank_msb, bank_lsb, prog, zone_low, zone_high, xpose, velocity_xpose,"
     "    note, poly_pressure, chan_pressure, program_change, pitch_bend,"
     "    controller, song_pointer, song_select, tune_request, sysex,"
     "    clock, start_continue_stop, system_reset)"
-    " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   int position = 0;
@@ -658,6 +660,7 @@ void Storage::save_connections(Patch *patch) {
     sqlite3_bind_int(stmt, col++, conn->zone.low);
     sqlite3_bind_int(stmt, col++, conn->zone.high);
     sqlite3_bind_int(stmt, col++, conn->xpose);
+    sqlite3_bind_int(stmt, col++, conn->velocity_xpose);
 
     MessageFilter &mf = conn->message_filter;
     sqlite3_bind_int(stmt, col++, mf.note ? 1 : 0);

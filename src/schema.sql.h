@@ -62,9 +62,10 @@ create table connections (
   bank_msb int,
   bank_lsb int,
   prog int,
-  zone_low integer not null,
-  zone_high integer not null,
-  xpose integer not null,
+  zone_low integer not null default 0,
+  zone_high integer not null default 127,
+  xpose integer not null default 0,
+  velocity_xpose integer not null default 0,
   -- pass-through booleans
   note integer not null default 1,
   poly_pressure integer not null default 1,

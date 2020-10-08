@@ -166,16 +166,30 @@ wxWindow *ConnectionEditor::make_zone_panel(wxWindow *parent) {
 
 wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
-  wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
-  wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-  wxString val = wxString::Format("%d", connection->xpose);
-  tc_xpose = new wxTextCtrl(p, ID_CE_Transpose, val);
-  field_sizer->Add(tc_xpose);
+  wxBoxSizer *xpose_sizer = new wxBoxSizer(wxVERTICAL);
+  wxBoxSizer *xpose_field_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-  outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Transpose"));
-  outer_sizer->Add(field_sizer);
+  wxString xpose_val = wxString::Format("%d", connection->xpose);
+  tc_xpose = new wxTextCtrl(p, ID_CE_Transpose, xpose_val);
+  xpose_field_sizer->Add(tc_xpose);
 
+  xpose_sizer->Add(new wxStaticText(p, wxID_ANY, "Transpose"));
+  xpose_sizer->Add(xpose_field_sizer);
+
+  wxBoxSizer *vel_xpose_sizer = new wxBoxSizer(wxVERTICAL);
+  wxBoxSizer *vel_xpose_field_sizer = new wxBoxSizer(wxHORIZONTAL);
+
+  wxString vel_xpose_val = wxString::Format("%d", connection->velocity_xpose);
+  tc_vel_xpose = new wxTextCtrl(p, ID_CE_VelocityTranspose, vel_xpose_val);
+  vel_xpose_field_sizer->Add(tc_vel_xpose);
+
+  vel_xpose_sizer->Add(new wxStaticText(p, wxID_ANY, "Velocity Transpose"));
+  vel_xpose_sizer->Add(vel_xpose_field_sizer);
+
+  wxBoxSizer *outer_sizer = new wxBoxSizer(wxHORIZONTAL);
+  outer_sizer->Add(xpose_sizer);
+  outer_sizer->Add(vel_xpose_sizer);
   p->SetSizerAndFit(outer_sizer);
   return p;
 }
@@ -375,6 +389,7 @@ void ConnectionEditor::save(wxCommandEvent& _) {
   connection->zone.low = note_name_to_num(tc_zone_low->GetValue());
   connection->zone.high = note_name_to_num(tc_zone_high->GetValue());
   connection->xpose = int_from_chars(tc_xpose->GetValue());
+  connection->velocity_xpose = int_from_chars(tc_vel_xpose->GetValue());
 
   MessageFilter &mf = connection->message_filter;
   mf.note = cb_pass_note->IsChecked();

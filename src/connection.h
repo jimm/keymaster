@@ -32,6 +32,7 @@ public:
   program prog;
   zone zone;
   int xpose;
+  int velocity_xpose;
   MessageFilter message_filter;
   bool processing_sysex;
   bool running;

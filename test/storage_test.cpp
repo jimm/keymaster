@@ -152,7 +152,7 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
     REQUIRE(conn->prog.prog == 12);
   }
 
-  SECTION("load xpose") {
+  SECTION("load xpose and velocity_xpose") {
     Song *s = km->all_songs->songs[TO_EACH_INDEX];
     Patch *p = s->patches[0];
     Connection *conn = p->connections[0];
@@ -161,8 +161,10 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
     p = s->patches.back();
     conn = p->connections[0];
     REQUIRE(conn->xpose == 12);
+    REQUIRE(conn->velocity_xpose == 0);
     conn = p->connections.back();
     REQUIRE(conn->xpose == -12);
+    REQUIRE(conn->velocity_xpose == 42);
   }
 
   SECTION("load zone") {
