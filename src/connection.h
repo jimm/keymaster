@@ -4,6 +4,7 @@
 #include <vector>
 #include <portmidi.h>
 #include "db_obj.h"
+#include "message_filter.h"
 #include "controller.h"
 
 using namespace std;
@@ -31,7 +32,7 @@ public:
   program prog;
   zone zone;
   int xpose;
-  bool pass_through_sysex;
+  MessageFilter message_filter;
   bool processing_sysex;
   bool running;
   bool changing_was_running;
@@ -54,8 +55,9 @@ public:
   void remove_cc_num(int cc_num);
 
 private:
-  int input_channel_ok(PmMessage msg);
-  int inside_zone(PmMessage msg);
+  int input_channel_ok(int status);
+  int inside_zone(int note);
+
   void midi_out(PmMessage msg);
 };
 

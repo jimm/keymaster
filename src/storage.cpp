@@ -340,7 +340,10 @@ void Storage::load_connections(Patch *p) {
     "select id,"
     "   input_id, input_chan, output_id, output_chan,"
     "   bank_msb, bank_lsb, prog,"
-    "   zone_low, zone_high, xpose, pass_through_sysex"
+    "   zone_low, zone_high, xpose,"
+    "   note, poly_pressure, chan_pressure, program_change, pitch_bend,"
+    "   controller, song_pointer, song_select, tune_request, sysex,"
+    "   clock, start_continue_stop, system_reset"
     " from connections"
     " where patch_id = ?"
     " order by position";
@@ -348,29 +351,58 @@ void Storage::load_connections(Patch *p) {
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   sqlite3_bind_int64(stmt, 1, p->id());
   while (sqlite3_step(stmt) == SQLITE_ROW) {
-    sqlite3_int64 id = sqlite3_column_int64(stmt, 0);
-    sqlite3_int64 input_id = sqlite3_column_int64(stmt, 1);
-    int input_chan = int_or_null(stmt, 2, CONNECTION_ALL_CHANNELS);
-    sqlite3_int64 output_id = sqlite3_column_int64(stmt, 3);
-    int output_chan = int_or_null(stmt, 4, CONNECTION_ALL_CHANNELS);
-    int bank_msb = int_or_null(stmt, 5);
-    int bank_lsb = int_or_null(stmt, 6);
-    int prog = int_or_null(stmt, 7);
-    int zone_low = int_or_null(stmt, 8, 0);
-    int zone_high = int_or_null(stmt, 9, 127);
-    int xpose = int_or_null(stmt, 10, 0);
-    int pass_through_sysex_bool = sqlite3_column_int(stmt, 11);
+    int col = 0;
+
+    sqlite3_int64 id = sqlite3_column_int64(stmt, col++);
+    sqlite3_int64 input_id = sqlite3_column_int64(stmt, col++);
+    int input_chan = int_or_null(stmt, col++, CONNECTION_ALL_CHANNELS);
+    sqlite3_int64 output_id = sqlite3_column_int64(stmt, col++);
+    int output_chan = int_or_null(stmt, col++, CONNECTION_ALL_CHANNELS);
+    int bank_msb = int_or_null(stmt, col++);
+    int bank_lsb = int_or_null(stmt, col++);
+    int prog = int_or_null(stmt, col++);
+    int zone_low = int_or_null(stmt, col++, 0);
+    int zone_high = int_or_null(stmt, col++, 127);
+    int xpose = int_or_null(stmt, col++, 0);
+
+    int note = sqlite3_column_int(stmt, col++);
+    int poly_pressure = sqlite3_column_int(stmt, col++);
+    int chan_pressure = sqlite3_column_int(stmt, col++);
+    int program_change = sqlite3_column_int(stmt, col++);
+    int pitch_bend = sqlite3_column_int(stmt, col++);
+    int controller = sqlite3_column_int(stmt, col++);
+    int song_pointer = sqlite3_column_int(stmt, col++);
+    int song_select = sqlite3_column_int(stmt, col++);
+    int tune_request = sqlite3_column_int(stmt, col++);
+    int sysex = sqlite3_column_int(stmt, col++);
+    int clock = sqlite3_column_int(stmt, col++);
+    int start_continue_stop = sqlite3_column_int(stmt, col++);
+    int system_reset = sqlite3_column_int(stmt, col++);
 
     Input *input = find_input_by_id("connection", id, input_id);
     Output *output = find_output_by_id("connection", id, output_id);
     Connection *conn = new Connection(id, input, input_chan, output, output_chan);
+    MessageFilter &mf = conn->message_filter;
+
     conn->prog.bank_msb = bank_msb;
     conn->prog.bank_lsb = bank_lsb;
     conn->prog.prog = prog;
     conn->zone.low = zone_low;
     conn->zone.high = zone_high;
     conn->xpose = xpose;
-    conn->pass_through_sysex = pass_through_sysex_bool != 0;
+    mf.note = note;
+    mf.poly_pressure = poly_pressure;
+    mf.chan_pressure = chan_pressure;
+    mf.program_change = program_change;
+    mf.pitch_bend = pitch_bend;
+    mf.controller = controller;
+    mf.song_pointer = song_pointer;
+    mf.song_select = song_select;
+    mf.tune_request = tune_request;
+    mf.sysex = sysex;
+    mf.clock = clock;
+    mf.start_continue_stop = start_continue_stop;
+    mf.system_reset = system_reset;
 
     load_controller_mappings(conn);
 
@@ -602,26 +634,46 @@ void Storage::save_connections(Patch *patch) {
   const char * const sql =
     "insert into connections"
     "   (id, patch_id, position, input_id, input_chan, output_id, output_chan,"
-    "    bank_msb, bank_lsb, prog, zone_low, zone_high, xpose, pass_through_sysex)"
-    " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    "    bank_msb, bank_lsb, prog, zone_low, zone_high, xpose,"
+    "    note, poly_pressure, chan_pressure, program_change, pitch_bend,"
+    "    controller, song_pointer, song_select, tune_request, sysex,"
+    "    clock, start_continue_stop, system_reset)"
+    " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   int position = 0;
   for (auto& conn : patch->connections) {
-    bind_obj_id_or_null(stmt, 1, conn);
-    sqlite3_bind_int64(stmt, 2, patch->id());
-    sqlite3_bind_int(stmt, 3, position++);
-    sqlite3_bind_int64(stmt, 4, conn->input->id());
-    bind_int_or_null(stmt, 5, conn->input_chan, CONNECTION_ALL_CHANNELS);
-    sqlite3_bind_int64(stmt, 6, conn->output->id());
-    bind_int_or_null(stmt, 7, conn->output_chan, CONNECTION_ALL_CHANNELS);
-    bind_int_or_null(stmt, 8, conn->prog.bank_msb);
-    bind_int_or_null(stmt, 9, conn->prog.bank_lsb);
-    bind_int_or_null(stmt, 10, conn->prog.prog);
-    sqlite3_bind_int(stmt, 11, conn->zone.low);
-    sqlite3_bind_int(stmt, 12, conn->zone.high);
-    sqlite3_bind_int(stmt, 13, conn->xpose);
-    sqlite3_bind_int(stmt, 14, conn->pass_through_sysex ? 1 : 0);
+    int col = 1;
+
+    bind_obj_id_or_null(stmt, col++, conn);
+    sqlite3_bind_int64(stmt, col++, patch->id());
+    sqlite3_bind_int(stmt, col++, position++);
+    sqlite3_bind_int64(stmt, col++, conn->input->id());
+    bind_int_or_null(stmt, col++, conn->input_chan, CONNECTION_ALL_CHANNELS);
+    sqlite3_bind_int64(stmt, col++, conn->output->id());
+    bind_int_or_null(stmt, col++, conn->output_chan, CONNECTION_ALL_CHANNELS);
+    bind_int_or_null(stmt, col++, conn->prog.bank_msb);
+    bind_int_or_null(stmt, col++, conn->prog.bank_lsb);
+    bind_int_or_null(stmt, col++, conn->prog.prog);
+    sqlite3_bind_int(stmt, col++, conn->zone.low);
+    sqlite3_bind_int(stmt, col++, conn->zone.high);
+    sqlite3_bind_int(stmt, col++, conn->xpose);
+
+    MessageFilter &mf = conn->message_filter;
+    sqlite3_bind_int(stmt, col++, mf.note ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.poly_pressure ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.chan_pressure ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.program_change ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.pitch_bend ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.controller ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.song_pointer ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.song_select ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.tune_request ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.sysex ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.clock ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.start_continue_stop ? 1 : 0);
+    sqlite3_bind_int(stmt, col++, mf.system_reset ? 1 : 0);
+
     sqlite3_step(stmt);
     extract_id(conn);
     sqlite3_reset(stmt);

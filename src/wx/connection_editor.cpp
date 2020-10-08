@@ -28,7 +28,7 @@ ConnectionEditor::ConnectionEditor(wxWindow *parent, Connection *c)
   sizer->Add(make_program_panel(this), panel_flags);
   sizer->Add(make_zone_panel(this), panel_flags);
   sizer->Add(make_xpose_panel(this), panel_flags);
-  sizer->Add(make_sysex_panel(this), panel_flags);
+  sizer->Add(make_filter_panel(this), panel_flags);
   sizer->Add(make_cc_maps_panel(this), panel_flags);
   sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), panel_flags);
 
@@ -179,17 +179,47 @@ wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
   return p;
 }
 
-wxWindow *ConnectionEditor::make_sysex_panel(wxWindow *parent) {
+wxWindow *ConnectionEditor::make_filter_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
+
+  cb_pass_note = new wxCheckBox(p, ID_CE_PassThroughNote, "Note On/Off");
+  cb_pass_poly_pressure = new wxCheckBox(p, ID_CE_PassThroughPolyPressure, "Polyphonic Pressure");
+  cb_pass_chan_pressure = new wxCheckBox(p, ID_CE_PassThroughChanPressure, "Channel Pressure");
+  cb_pass_program_change = new wxCheckBox(p, ID_CE_PassThroughProgramChange, "Program Change");
+  cb_pass_pitch_bend = new wxCheckBox(p, ID_CE_PassThroughPitchBend, "Pitch Bend / Bank MSB/LSB");
+  cb_pass_controller = new wxCheckBox(p, ID_CE_PassThroughController, "Controller");
+  cb_pass_song_pointer = new wxCheckBox(p, ID_CE_PassThroughSongPointer, "Song Pointer");
+  cb_pass_song_select = new wxCheckBox(p, ID_CE_PassThroughSongSelect, "Song Select");
+  cb_pass_tune_request = new wxCheckBox(p, ID_CE_PassThroughTuneRequest, "Tune Request");
+  cb_pass_sysex = new wxCheckBox(p, ID_CE_PassThroughSysex, "System Exclusive");
+  cb_pass_clock = new wxCheckBox(p, ID_CE_PassThroughClock, "Clock");
+  cb_pass_start_continue_stop = new wxCheckBox(p, ID_CE_PassThroughStartContinueStop, "Start/Continue/Stop");
+  cb_pass_system_reset = new wxCheckBox(p, ID_CE_PassThroughSystemReset, "System Reset");
+
+  wxBoxSizer *channel_sizer = new wxBoxSizer(wxVERTICAL);
+  channel_sizer->Add(cb_pass_note);
+  channel_sizer->Add(cb_pass_poly_pressure);
+  channel_sizer->Add(cb_pass_chan_pressure);
+  channel_sizer->Add(cb_pass_program_change);
+  channel_sizer->Add(cb_pass_pitch_bend);
+  channel_sizer->Add(cb_pass_controller);
+
+  wxBoxSizer *system_sizer = new wxBoxSizer(wxVERTICAL);
+  system_sizer->Add(cb_pass_song_pointer);
+  system_sizer->Add(cb_pass_song_select);
+  system_sizer->Add(cb_pass_tune_request);
+  system_sizer->Add(cb_pass_sysex);
+  system_sizer->Add(cb_pass_clock);
+  system_sizer->Add(cb_pass_start_continue_stop);
+  system_sizer->Add(cb_pass_system_reset);
+
   wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
-  wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
+  outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Message Filters"));
 
-  cb_sysex = new wxCheckBox(
-    p, ID_CE_PassThroughSysex, "Pass Through Sysex Messages");
-  field_sizer->Add(cb_sysex);
-
-  outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Sysex"));
-  outer_sizer->Add(field_sizer);
+  wxBoxSizer *side_by_side = new wxBoxSizer(wxHORIZONTAL);
+  side_by_side->Add(channel_sizer);
+  side_by_side->Add(system_sizer);
+  outer_sizer->Add(side_by_side);
 
   p->SetSizerAndFit(outer_sizer);
   return p;
@@ -292,7 +322,25 @@ void ConnectionEditor::del_controller_mapping(wxCommandEvent& event) {
 
 void ConnectionEditor::update() {
   lc_cc_mappings->update();
+  update_filter_check_boxes();
   update_buttons();
+}
+
+void ConnectionEditor::update_filter_check_boxes() {
+  MessageFilter &mf = connection->message_filter;
+  cb_pass_note->SetValue(mf.note);
+  cb_pass_poly_pressure->SetValue(mf.poly_pressure);
+  cb_pass_chan_pressure->SetValue(mf.chan_pressure);
+  cb_pass_program_change->SetValue(mf.program_change);
+  cb_pass_pitch_bend->SetValue(mf.pitch_bend);
+  cb_pass_controller->SetValue(mf.controller);
+  cb_pass_song_pointer->SetValue(mf.song_pointer);
+  cb_pass_song_select->SetValue(mf.song_select);
+  cb_pass_tune_request->SetValue(mf.tune_request);
+  cb_pass_sysex->SetValue(mf.sysex);
+  cb_pass_clock->SetValue(mf.clock);
+  cb_pass_start_continue_stop->SetValue(mf.start_continue_stop);
+  cb_pass_system_reset->SetValue(mf.system_reset);
 }
 
 void ConnectionEditor::save(wxCommandEvent& _) {
@@ -312,7 +360,21 @@ void ConnectionEditor::save(wxCommandEvent& _) {
   connection->zone.low = note_name_to_num(tc_zone_low->GetValue());
   connection->zone.high = note_name_to_num(tc_zone_high->GetValue());
   connection->xpose = int_from_chars(tc_xpose->GetValue());
-  connection->pass_through_sysex = cb_sysex->IsChecked();
+
+  MessageFilter &mf = connection->message_filter;
+  mf.note = cb_pass_note->IsChecked();
+  mf.poly_pressure = cb_pass_poly_pressure->IsChecked();
+  mf.chan_pressure = cb_pass_chan_pressure->IsChecked();
+  mf.program_change = cb_pass_program_change->IsChecked();
+  mf.pitch_bend = cb_pass_pitch_bend->IsChecked();
+  mf.controller = cb_pass_controller->IsChecked();
+  mf.song_pointer = cb_pass_song_pointer->IsChecked();
+  mf.song_select = cb_pass_song_select->IsChecked();
+  mf.tune_request = cb_pass_tune_request->IsChecked();
+  mf.sysex = cb_pass_sysex->IsChecked();
+  mf.clock = cb_pass_clock->IsChecked();
+  mf.start_continue_stop = cb_pass_start_continue_stop->IsChecked();
+  mf.system_reset = cb_pass_system_reset->IsChecked();
 
   // Don't need to update cc_maps because that's done on the fly
 

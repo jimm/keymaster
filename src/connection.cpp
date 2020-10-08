@@ -12,7 +12,7 @@ Connection::Connection(sqlite3_int64 id, Input *in, int in_chan, Output *out,
   : DBObj(id),
     input(in), input_chan(in_chan),
     output(out), output_chan(out_chan),
-    xpose(0), pass_through_sysex(false), processing_sysex(false),
+    xpose(0), processing_sysex(false),
     running(false), changing_was_running(false)
 {
   prog.bank_msb = prog.bank_lsb = prog.prog = UNDEFINED;
@@ -77,17 +77,29 @@ void Connection::end_changes() {
 // Takes a MIDI message `msg` from an input, processes it, and sends it to
 // an output (unless it's been filtered out).
 void Connection::midi_in(PmMessage msg) {
+  int status = Pm_MessageStatus(msg);
+
   // See if the message should even be processed, or if we should stop here.
-  if (!input_channel_ok(msg))
+  if (!input_channel_ok(status))
       return;
 
-  int status = Pm_MessageStatus(msg);
   int high_nibble = status & 0xf0;
   int data1 = Pm_MessageData1(msg);
   int data2 = Pm_MessageData2(msg);
 
   if (status == SYSEX)
     processing_sysex = true;
+
+  // Grab filter boolean for this status. If we're inside a sysex message,
+  // we need use SYSEX as the filter status, not the first byte of this
+  // message.
+  bool filter_this_status = message_filter.filter_out(processing_sysex ? SYSEX : status, data1);
+
+  // Return if we're filtering this message, exept if we're starting or in
+  // sysex. In that case we need to keep going because we need to process
+  // realtime bytes within the sysex.
+  if (!processing_sysex && filter_this_status)
+    return;
 
   // If this is a sysex message, we may or may not filter it out. In any
   // case we pass through any realtime bytes in the sysex message.
@@ -98,20 +110,20 @@ void Connection::midi_in(PmMessage msg) {
         (is_status(status) && status < 0xf8 && status != SYSEX))
       processing_sysex = false;
 
-    if (pass_through_sysex) {
+    if (!filter_this_status) {
       midi_out(msg);
       return;
     }
 
     // If any of the bytes are realtime bytes AND if we are filtering out
-    // sysex, send them.
-    if (is_realtime(status))
+    // sysex, send them anyway.
+    if (is_realtime(status) && !message_filter.filter_out(status, 0))
       midi_out(Pm_Message(status, 0, 0));
-    if (is_realtime(data1))
+    if (is_realtime(data1) && !message_filter.filter_out(data1, 0))
       midi_out(Pm_Message(data1, 0, 0));
-    if (is_realtime(data2))
+    if (is_realtime(data2) && !message_filter.filter_out(data2, 0))
       midi_out(Pm_Message(data2, 0, 0));
-    if (is_realtime(data3))
+    if (is_realtime(data3) && !message_filter.filter_out(data3, 0))
       midi_out(Pm_Message(data3, 0, 0));
     return;
   }
@@ -121,7 +133,7 @@ void Connection::midi_in(PmMessage msg) {
 
   switch (high_nibble) {
   case NOTE_ON: case NOTE_OFF: case POLY_PRESSURE:
-    if (inside_zone(msg)) {
+    if (inside_zone(data1)) {
       data1 += xpose;
       if (data1 >= 0 && data1 <= 127) {
         if (output_chan != CONNECTION_ALL_CHANNELS)
@@ -170,16 +182,14 @@ void Connection::remove_cc_num(int cc_num) {
 // - we accept any input channel
 // - it's a system message, not a channel message
 // - the input channel matches our selected `input_chan`
-int Connection::input_channel_ok(PmMessage msg) {
+int Connection::input_channel_ok(int status) {
   if (input_chan == CONNECTION_ALL_CHANNELS || processing_sysex)
     return true;
 
-  unsigned char status = Pm_MessageStatus(msg);
   return status >= SYSEX || input_chan == (status & 0x0f);
 }
 
-int Connection::inside_zone(PmMessage msg) {
-  int note = Pm_MessageData1(msg);
+int Connection::inside_zone(int note) {
   return note >= zone.low && note <= zone.high;
 }
 

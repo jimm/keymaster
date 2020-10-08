@@ -11,11 +11,6 @@ drop table if exists triggers;
 drop table if exists messages;
 drop table if exists instruments;
 
-create table schema_version (
-  version integer not null
-);
-insert into schema_version (version) values (1);
-
 create table instruments (
   id integer primary key,
   type integer not null default 0,  -- 0 == input, 1 == output
@@ -70,7 +65,20 @@ create table connections (
   zone_low integer not null,
   zone_high integer not null,
   xpose integer not null,
-  pass_through_sysex integer not null default 0 -- boolean
+  -- pass-through booleans
+  note integer not null default 1,
+  poly_pressure integer not null default 1,
+  chan_pressure integer not null default 1,
+  program_change integer not null default 0,
+  pitch_bend integer not null default 1,
+  controller integer not null default 1,
+  song_pointer integer not null default 1,
+  song_select integer not null default 1,
+  tune_request integer not null default 1,
+  sysex integer not null default 0,
+  clock integer not null default 1,
+  start_continue_stop integer not null default 1,
+  system_reset integer not null default 1
 );
 
 create table controller_mappings (
@@ -97,4 +105,9 @@ create table set_lists_songs (
   song_id integer not null null references songs(id),
   position integer not null default 0
 );
+
+create table schema_version (
+  version integer not null
+);
+insert into schema_version (version) values (0);
 )";

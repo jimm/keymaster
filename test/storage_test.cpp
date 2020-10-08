@@ -123,6 +123,10 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
     conn = p->connections[0];
     REQUIRE(conn->input_chan == 2);
     REQUIRE(conn->output_chan == 3);
+
+    MessageFilter &mf = conn->message_filter;
+    REQUIRE(mf.note);
+    REQUIRE(!mf.sysex);
   }
 
   SECTION("load bank msb lsb") {
@@ -270,6 +274,8 @@ TEST_CASE("save", CATCH_CATEGORY) {
 
   Song *song = km->all_songs->songs[0];
   REQUIRE(song->name == "Another Song");
+  REQUIRE(song->patches.size() == 2);
+  REQUIRE(song->patches[0]->name == "Two Inputs Merging");
   REQUIRE(song->patches[0]->connections.size() == 2);
 
   REQUIRE(km->set_lists.size() == 3);

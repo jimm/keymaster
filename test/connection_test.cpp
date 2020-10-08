@@ -132,30 +132,69 @@ TEST_CASE("filter and modify", CATCH_CATEGORY) {
 
   }
 
-  SECTION("filter sysex") {
+  SECTION("message filter") {
     conn.output->clear();
-    REQUIRE(conn.pass_through_sysex == false); // check default value
+    MessageFilter &mf = conn.message_filter;
+    vector<PmMessage> messages;
 
-    conn.midi_in(Pm_Message(NOTE_ON, 64, 127));
-    conn.midi_in(Pm_Message(SYSEX, 1, 2));
-    conn.midi_in(Pm_Message(3, 1, EOX));
-    conn.midi_in(Pm_Message(NOTE_OFF, 64, 127));
-    REQUIRE(conn.output->num_io_messages == 2);
-    REQUIRE(conn.output->io_messages[0] == Pm_Message(NOTE_ON, 64, 127));
-  }
+    // by default sysex, bank CC, and program change are filtered out
 
-  SECTION("pass through sysex") {
-    conn.output->clear();
-    conn.pass_through_sysex = true;
+    messages.push_back(Pm_Message(NOTE_ON, 64, 127));
+    messages.push_back(Pm_Message(START, 0, 0));
+    messages.push_back(Pm_Message(SYSEX, 1, 2));            // start of sysex
+    messages.push_back(Pm_Message(3, CLOCK, EOX));          // realtime inside SYSEX
+    messages.push_back(Pm_Message(CONTROLLER, 7, 127));     // volume CC
+    messages.push_back(Pm_Message(CONTROLLER, CC_BANK_SELECT_MSB, 127)); // bank MSB
+    messages.push_back(Pm_Message(PROGRAM_CHANGE, 2, 127));
+    messages.push_back(Pm_Message(POLY_PRESSURE, 64, 0));
+    messages.push_back(Pm_Message(CHANNEL_PRESSURE, 64, 0));
+    messages.push_back(Pm_Message(NOTE_OFF, 64, 127));
+    messages.push_back(Pm_Message(SYSTEM_RESET, 0, 0));
 
-    conn.midi_in(Pm_Message(NOTE_ON, 64, 127));
-    conn.midi_in(Pm_Message(SYSEX, 1, 2));
-    conn.midi_in(Pm_Message(3, 1, EOX));
-    conn.midi_in(Pm_Message(NOTE_OFF, 64, 127));
-    REQUIRE(conn.output->num_io_messages == 4);
-    REQUIRE(conn.output->io_messages[0] == Pm_Message(NOTE_ON, 64, 127));
-    REQUIRE(conn.output->io_messages[1] == Pm_Message(SYSEX, 1, 2));
-    REQUIRE(conn.output->io_messages[2] == Pm_Message(3, 1, EOX));
+    SECTION("filter sysex") {
+      REQUIRE(mf.sysex == false); // check default value
+      REQUIRE(mf.program_change == false); // check default value
+
+      for (auto msg : messages)
+        conn.midi_in(msg);
+
+      // Size is minus the two sysex messages, the bank MSB, and the prog
+      // chg but plus the clock inside of it.
+      int num_sent = conn.output->num_io_messages;
+      REQUIRE(num_sent == messages.size() - 4 + 1);
+      REQUIRE(conn.output->io_messages[0] == Pm_Message(NOTE_ON, 64, 127));
+      REQUIRE(conn.output->io_messages[2] == Pm_Message(CLOCK, 0, 0));
+      REQUIRE(conn.output->io_messages[num_sent - 1] == messages.back());
+    }
+
+    SECTION("pass through sysex and program changes") {
+      mf.sysex = true;
+      mf.program_change = true;
+
+      for (auto msg : messages)
+        conn.midi_in(msg);
+
+      int num_sent = conn.output->num_io_messages;
+      REQUIRE(num_sent == messages.size());
+      REQUIRE(conn.output->io_messages[0] == Pm_Message(NOTE_ON, 64, 127));
+      REQUIRE(conn.output->io_messages[2] == Pm_Message(SYSEX, 1, 2));
+      REQUIRE(conn.output->io_messages[3] == Pm_Message(3, CLOCK, EOX));
+      REQUIRE(conn.output->io_messages[num_sent - 1] == messages.back());
+    }
+
+    SECTION("filter note on and off") {
+      mf.sysex = true;
+      mf.program_change = true;
+      mf.note = false;
+
+      for (auto msg : messages)
+        conn.midi_in(msg);
+
+      int num_sent = conn.output->num_io_messages;
+      REQUIRE(num_sent == messages.size() - 2);
+      REQUIRE(conn.output->io_messages[0] == Pm_Message(START, 0, 0));
+      REQUIRE(conn.output->io_messages[num_sent - 2] == Pm_Message(CHANNEL_PRESSURE, 64, 0));
+    }
   }
 }
 

@@ -7,10 +7,10 @@
 #define CW 36
 
 const char * const COLUMN_HEADERS[] = {
-  "Input", "Chan", "Output", "Chan", "Zone", "Xpose", "Prog", "Sysex", "CC Filt/Map"
+  "Input", "Chan", "Output", "Chan", "Zone", "Xpose", "Prog", "CC Filt/Map"
 };
 const int COLUMN_WIDTHS[] = {
-  3*CW, 1*CW, 3*CW, 1*CW, 2*CW, 1*CW, 3*CW, int(1.5*CW), 6*CW
+  3*CW, 1*CW, 3*CW, 1*CW, 2*CW, 1*CW, 3*CW, 6*CW
 };
 
 PatchConnections::PatchConnections(wxWindow *parent, wxWindowID id)
@@ -60,10 +60,8 @@ void PatchConnections::update() {
     format_program(conn->prog, buf);
     SetItem(i, 6, buf);
 
-    SetItem(i, 7, conn->pass_through_sysex ? "yes" : "no");
-
     format_controllers(conn, buf);
-    SetItem(i, 8, buf);
+    SetItem(i, 7, buf);
     ++i;
   }
 }
