@@ -39,11 +39,6 @@ def output_curve(func, name):
     print("};\n")
 
 
-def generate_header(script_name):
-    for name in ["linear", "exponential", "inverse_exponential"]:
-        print(f"extern unsigned char {name}[128];")
-
-
 def generate_curves(script_name):
     print("#ifndef GENERATED_CURVES_H")
     print("#define GENERATED_CURVES_H\n")
