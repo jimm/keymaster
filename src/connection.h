@@ -6,6 +6,7 @@
 #include "db_obj.h"
 #include "message_filter.h"
 #include "controller.h"
+#include "curve.h"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ typedef struct zone {
   int low;
   int high;
 } zone;
-
+  
 class Connection : public DBObj {
 public:
   Input *input;
@@ -32,7 +33,7 @@ public:
   program prog;
   zone zone;
   int xpose;
-  int velocity_xpose;
+  Curve *velocity_curve;
   MessageFilter message_filter;
   bool processing_sysex;
   bool running;

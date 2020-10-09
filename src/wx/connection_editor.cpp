@@ -177,19 +177,24 @@ wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
   xpose_sizer->Add(new wxStaticText(p, wxID_ANY, "Transpose"));
   xpose_sizer->Add(xpose_field_sizer);
 
-  wxBoxSizer *vel_xpose_sizer = new wxBoxSizer(wxVERTICAL);
-  wxBoxSizer *vel_xpose_field_sizer = new wxBoxSizer(wxHORIZONTAL);
+  wxBoxSizer *vel_curve_sizer = new wxBoxSizer(wxVERTICAL);
+  wxBoxSizer *vel_curve_field_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-  wxString vel_xpose_val = wxString::Format("%d", connection->velocity_xpose);
-  tc_vel_xpose = new wxTextCtrl(p, ID_CE_VelocityTranspose, vel_xpose_val);
-  vel_xpose_field_sizer->Add(tc_vel_xpose);
+  // velocity curve dropdown
+  wxArrayString choices;
+  for (int i = 0; i < NUM_CURVE_SHAPES; ++i)
+    choices.Add(curves[i].name);
+  cb_vel_curve = new wxComboBox(p, ID_CE_VelocityCurve, connection->velocity_curve->name,
+                                wxDefaultPosition, wxDefaultSize, choices, wxCB_READONLY);
+  vel_curve_field_sizer->Add(cb_vel_curve);
 
-  vel_xpose_sizer->Add(new wxStaticText(p, wxID_ANY, "Velocity Transpose"));
-  vel_xpose_sizer->Add(vel_xpose_field_sizer);
+  vel_curve_sizer->Add(new wxStaticText(p, wxID_ANY, "Velocity Curve"));
+  vel_curve_sizer->Add(vel_curve_field_sizer);
 
   wxBoxSizer *outer_sizer = new wxBoxSizer(wxHORIZONTAL);
   outer_sizer->Add(xpose_sizer);
-  outer_sizer->Add(vel_xpose_sizer);
+  outer_sizer->AddSpacer(10);
+  outer_sizer->Add(vel_curve_sizer);
   p->SetSizerAndFit(outer_sizer);
   return p;
 }
@@ -389,7 +394,8 @@ void ConnectionEditor::save(wxCommandEvent& _) {
   connection->zone.low = note_name_to_num(tc_zone_low->GetValue());
   connection->zone.high = note_name_to_num(tc_zone_high->GetValue());
   connection->xpose = int_from_chars(tc_xpose->GetValue());
-  connection->velocity_xpose = int_from_chars(tc_vel_xpose->GetValue());
+  n = cb_vel_curve->GetCurrentSelection();
+  connection->velocity_curve = curve_with_shape(static_cast<CurveShape>(n));
 
   MessageFilter &mf = connection->message_filter;
   mf.note = cb_pass_note->IsChecked();

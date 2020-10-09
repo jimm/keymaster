@@ -65,7 +65,7 @@ create table connections (
   zone_low integer not null default 0,
   zone_high integer not null default 127,
   xpose integer not null default 0,
-  velocity_xpose integer not null default 0,
+  velocity_curve integer not null default 0,
   -- pass-through booleans
   note integer not null default 1,
   poly_pressure integer not null default 1,

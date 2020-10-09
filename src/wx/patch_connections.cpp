@@ -7,7 +7,7 @@
 #define CW 36
 
 const char * const COLUMN_HEADERS[] = {
-  "Input", "Chan", "Output", "Chan", "Zone", "Xpose", "Vel X", "Prog", "CC Filt/Map"
+  "Input", "Chan", "Output", "Chan", "Zone", "Xpose", "VelCrv", "Prog", "CC Filt/Map"
 };
 const int COLUMN_WIDTHS[] = {
   3*CW, 1*CW, 3*CW, 1*CW, 2*CW, 1*CW, 1*CW, 3*CW, 6*CW
@@ -58,8 +58,17 @@ void PatchConnections::update() {
     if (conn->xpose != -1)
       SetItem(i, col++, wxString::Format("%c%2d", conn->xpose < 0 ? '-' : ' ', abs(conn->xpose)));
 
-    if (conn->velocity_xpose != -1)
-      SetItem(i, col++, wxString::Format("%c%2d", conn->velocity_xpose < 0 ? '-' : ' ', abs(conn->velocity_xpose)));
+    switch (conn->velocity_curve->shape) {
+    case Linear:
+      SetItem(i, col++, "");
+      break;
+    case Exponential:
+      SetItem(i, col++, "exp");
+      break;
+    case InverseExponential:
+      SetItem(i, col++, "invexp");
+      break;
+    }
 
     format_program(conn->prog, buf);
     SetItem(i, col++, buf);

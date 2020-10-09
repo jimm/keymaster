@@ -20,7 +20,7 @@ enum {
   ID_CE_ZoneLow,
   ID_CE_ZoneHigh,
   ID_CE_Transpose,
-  ID_CE_VelocityTranspose,
+  ID_CE_VelocityCurve,
 
   // Filters
   ID_CE_PassThroughNote,
@@ -70,7 +70,7 @@ private:
   wxTextCtrl *tc_zone_low;
   wxTextCtrl *tc_zone_high;
   wxTextCtrl *tc_xpose;
-  wxTextCtrl *tc_vel_xpose;
+  wxComboBox *cb_vel_curve;
 
   // filters
   wxCheckBox *cb_pass_note;   // both on and off

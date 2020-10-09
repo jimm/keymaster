@@ -93,49 +93,22 @@ TEST_CASE("filter and modify", CATCH_CATEGORY) {
 
   }
 
-  SECTION("!velocity_xpose") {
+  SECTION("!velocity_curve") {
     conn.output->clear();
 
     conn.midi_in(Pm_Message(NOTE_ON, 64, 64));
-    conn.velocity_xpose = 12;
+    conn.velocity_curve = curve_with_shape(Exponential);
     conn.midi_in(Pm_Message(NOTE_ON, 64, 64));
-    conn.velocity_xpose = -12;
+    conn.velocity_curve = curve_with_shape(InverseExponential);
     conn.midi_in(Pm_Message(NOTE_ON, 64, 64));
     conn.midi_in(Pm_Message(NOTE_OFF, 64, 64));
 
     REQUIRE(conn.output->num_io_messages == 4);
     REQUIRE(conn.output->io_messages[0] == Pm_Message(NOTE_ON,  64, 64));
-    REQUIRE(conn.output->io_messages[1] == Pm_Message(NOTE_ON,  64, 64+12));
-    REQUIRE(conn.output->io_messages[2] == Pm_Message(NOTE_ON,  64, 64-12));
-    REQUIRE(conn.output->io_messages[3] == Pm_Message(NOTE_OFF, 64, 64-12));
+    REQUIRE(Pm_MessageData2(conn.output->io_messages[1]) < 64); // exponential
+    REQUIRE(Pm_MessageData2(conn.output->io_messages[2]) > 64); // inverse exponential
+    REQUIRE(Pm_MessageData2(conn.output->io_messages[3]) > 64);
 
-  }
-
-  SECTION("velocity_xpose out of range maxes out") {
-    conn.output->clear();
-
-    conn.midi_in(Pm_Message(NOTE_ON, 64, 64));
-    conn.velocity_xpose = 128;
-    conn.midi_in(Pm_Message(NOTE_ON, 64, 64));
-
-    REQUIRE(conn.output->num_io_messages == 2);
-    REQUIRE(conn.output->io_messages[0] == Pm_Message(NOTE_ON, 64, 64));
-    REQUIRE(conn.output->io_messages[1] == Pm_Message(NOTE_ON, 64, 127));
-
-  }
-
-  SECTION("velocity_xpose does not touch velocity 0") {
-    conn.output->clear();
-
-    conn.midi_in(Pm_Message(NOTE_ON, 64, 64));
-    conn.velocity_xpose = 12;
-    conn.midi_in(Pm_Message(NOTE_ON, 64, 0));
-    conn.midi_in(Pm_Message(NOTE_OFF, 64, 0));
-
-    REQUIRE(conn.output->num_io_messages == 3);
-    REQUIRE(conn.output->io_messages[0] == Pm_Message(NOTE_ON,  64, 64));
-    REQUIRE(conn.output->io_messages[1] == Pm_Message(NOTE_ON,  64, 0));
-    REQUIRE(conn.output->io_messages[2] == Pm_Message(NOTE_OFF, 64, 0));
   }
 
   SECTION("!zone") {
