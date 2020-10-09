@@ -59,25 +59,25 @@ void TriggerList::update() {
 
     switch (trigger->action) {
     case TA_NEXT_SONG:
-      str = "next song";
+      str = "Next Song";
       break;
     case TA_PREV_SONG:
-      str = "prev song";
+      str = "Prev Song";
       break;
     case TA_NEXT_PATCH:
-      str = "next patch";
+      str = "Next Patch";
       break;
     case TA_PREV_PATCH:
-      str = "prev patch";
+      str = "Prev Patch";
       break;
     case TA_PANIC:
-      str = "panic";
+      str = "All Notes Off";
       break;
     case TA_SUPER_PANIC:
-      str = "super panic";
+      str = "Super Panic";
       break;
     case TA_TOGGLE_CLOCK:
-      str = "toggle clock";
+      str = "Toggle Clock";
       break;
     case TA_MESSAGE:
       str = trigger->output_message->name;
