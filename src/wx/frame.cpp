@@ -877,9 +877,10 @@ void Frame::update_song_notes() {
 
   Song *song = cursor->song();
   updating_notes = true;
-  lc_notes->Clear();
-  if (song != nullptr)
-    lc_notes->AppendText(song->notes);
+  if (song == nullptr)
+    lc_notes->Clear();
+  else
+    lc_notes->SetValue(song->notes);
   updating_notes = false;
 }
 
