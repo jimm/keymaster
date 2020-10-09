@@ -32,13 +32,18 @@ void Connection::start() {
   if (running)
     return;
 
-  if (output_chan != CONNECTION_ALL_CHANNELS) {
+  // The program output channel is either the output channel if specified or
+  // else the output channel if specified. If they are both ALL then we
+  // don't know which channel to send the program change on, so we don't
+  // send one.
+  int chan = program_change_send_channel();
+  if (chan != CONNECTION_ALL_CHANNELS) {
     if (prog.bank_msb >= 0)
-      midi_out(Pm_Message(CONTROLLER + output_chan, CC_BANK_SELECT_MSB, prog.bank_msb));
+      midi_out(Pm_Message(CONTROLLER + chan, CC_BANK_SELECT_MSB, prog.bank_msb));
     if (prog.bank_lsb >= 0)
-      midi_out(Pm_Message(CONTROLLER + output_chan, CC_BANK_SELECT_LSB, prog.bank_lsb));
+      midi_out(Pm_Message(CONTROLLER + chan, CC_BANK_SELECT_LSB, prog.bank_lsb));
     if (prog.prog >= 0)
-      midi_out(Pm_Message(PROGRAM_CHANGE + output_chan, prog.prog, 0));
+      midi_out(Pm_Message(PROGRAM_CHANGE + chan, prog.prog, 0));
   }
 
   processing_sysex = false;
@@ -55,6 +60,15 @@ void Connection::stop() {
     return;
   input->remove_connection(this);
   running = false;
+}
+
+// Returns the channel that we should send the initial bank/program change
+// messages. If we can't determine that (both input and output channels are
+// CONNECTION_ALL_CHANNELS) then return CONNECTION_ALL_CHANNELS.
+int Connection::program_change_send_channel() {
+  if (output_chan != CONNECTION_ALL_CHANNELS)
+    return output_chan;
+  return input_chan;
 }
 
 // Call this when a Connection is being edited so that it can restart itself

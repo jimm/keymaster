@@ -48,6 +48,11 @@ public:
   bool is_running();
   void stop();
 
+  // Returns CONNECTION_ALL_CHANNELS if we can't determine what channel to
+  // send to (because both input and output don't declare channels). This
+  // means that no program change will be sent.
+  int program_change_send_channel();
+
   void begin_changes();
   void end_changes();
 

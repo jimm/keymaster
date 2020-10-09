@@ -14,7 +14,8 @@ wxBEGIN_EVENT_TABLE(ConnectionEditor, wxDialog)
   EVT_BUTTON(ID_CE_AddControllerMapping, ConnectionEditor::add_controller_mapping)
   EVT_BUTTON(ID_CE_DelControllerMapping, ConnectionEditor::del_controller_mapping)
   EVT_BUTTON(wxID_OK, ConnectionEditor::save)
-  EVT_COMBOBOX(ID_CE_OutputChannel, ConnectionEditor::output_channel_changed)
+  EVT_COMBOBOX(ID_CE_InputChannel, ConnectionEditor::channel_selection_changed)
+  EVT_COMBOBOX(ID_CE_OutputChannel, ConnectionEditor::channel_selection_changed)
   EVT_LIST_ITEM_ACTIVATED(ID_CE_ControllerMappings, ConnectionEditor::edit_controller_mapping)
   EVT_LIST_ITEM_SELECTED(ID_CE_ControllerMappings, ConnectionEditor::update_buttons)
   EVT_LIST_ITEM_DESELECTED(ID_CE_ControllerMappings, ConnectionEditor::update_buttons)
@@ -133,7 +134,7 @@ wxWindow *ConnectionEditor::make_program_panel(wxWindow *parent) {
   field_sizer->Add(tc_prog, center_flags);
 
   program_sizer = new wxBoxSizer(wxVERTICAL);
-  program_sizer->Add(new wxStaticText(p, wxID_ANY, "Program Change (output channel must be selected)"));
+  program_sizer->Add(new wxStaticText(p, wxID_ANY, "Program Change (in our out channel must be selected)"));
   program_sizer->Add(field_sizer);
 
   p->SetSizerAndFit(program_sizer);
@@ -343,12 +344,13 @@ void ConnectionEditor::del_controller_mapping(wxCommandEvent& event) {
   update();
 }
 
-void ConnectionEditor::output_channel_changed(wxCommandEvent& _) {
-  int n = cb_output_chan->GetCurrentSelection();
-  if (n == 0)                   // all channels
-    program_sizer->Hide((size_t)1);
-  else
+void ConnectionEditor::channel_selection_changed(wxCommandEvent& _) {
+  bool show_program_sizer =
+    cb_input_chan->GetCurrentSelection() != 0 || cb_output_chan->GetCurrentSelection() != 0;
+  if (show_program_sizer)
     program_sizer->Show((size_t)1);
+  else
+    program_sizer->Hide((size_t)1);
 }
 
 void ConnectionEditor::update() {

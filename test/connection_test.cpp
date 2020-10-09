@@ -3,11 +3,40 @@
 
 #define CATCH_CATEGORY "[connection]"
 
+TEST_CASE("start pc channel", CATCH_CATEGORY) {
+  Input in(UNDEFINED_ID, pmNoDevice, "in 1 port", "in1");
+  Output out(UNDEFINED_ID, pmNoDevice, "out 1 port", "out1");
+  Connection conn(UNDEFINED_ID, &in, 0, &out, 1);
+
+  SECTION("both ALL", CATCH_CATEGORY) {
+    conn.input_chan = CONNECTION_ALL_CHANNELS;
+    conn.output_chan = CONNECTION_ALL_CHANNELS;
+    REQUIRE(conn.program_change_send_channel() == CONNECTION_ALL_CHANNELS);
+  }
+
+  SECTION("input defined", CATCH_CATEGORY) {
+    conn.input_chan = 3;
+    conn.output_chan = CONNECTION_ALL_CHANNELS;
+    REQUIRE(conn.program_change_send_channel() == 3);
+  }
+
+  SECTION("output defined", CATCH_CATEGORY) {
+    conn.input_chan = CONNECTION_ALL_CHANNELS;
+    conn.output_chan = 5;
+    REQUIRE(conn.program_change_send_channel() == 5);
+  }
+
+  SECTION("both defined", CATCH_CATEGORY) {
+    conn.input_chan = 3;
+    conn.output_chan = 4;
+    REQUIRE(conn.program_change_send_channel() == 4);
+  }
+}
+
 TEST_CASE("start sends pc", CATCH_CATEGORY) {
   Input in(UNDEFINED_ID, pmNoDevice, "in 1 port", "in1");
   Output out(UNDEFINED_ID, pmNoDevice, "out 1 port", "out1");
   Connection conn(UNDEFINED_ID, &in, 0, &out, 1);
-  vector<PmMessage> empty;
 
   conn.prog.prog = 123;
   conn.start();
