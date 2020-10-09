@@ -67,6 +67,7 @@ private:
   wxTextCtrl *tc_bank_msb;
   wxTextCtrl *tc_bank_lsb;
   wxTextCtrl *tc_prog;
+  wxBoxSizer *program_sizer;
   wxTextCtrl *tc_zone_low;
   wxTextCtrl *tc_zone_high;
   wxTextCtrl *tc_xpose;

@@ -107,7 +107,6 @@ wxComboBox *ConnectionEditor::make_channel_dropdown(
 
 wxWindow *ConnectionEditor::make_program_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
-  wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
   wxSizerFlags center_flags =
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL);
@@ -130,10 +129,11 @@ wxWindow *ConnectionEditor::make_program_panel(wxWindow *parent) {
   tc_prog = new wxTextCtrl(p, ID_CE_Program, val);
   field_sizer->Add(tc_prog, center_flags);
 
-  outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Program Change"));
-  outer_sizer->Add(field_sizer);
+  program_sizer = new wxBoxSizer(wxVERTICAL);
+  program_sizer->Add(new wxStaticText(p, wxID_ANY, "Program Change (output channel must be selected)"));
+  program_sizer->Add(field_sizer);
 
-  p->SetSizerAndFit(outer_sizer);
+  p->SetSizerAndFit(program_sizer);
   return p;
 }
 
@@ -342,16 +342,10 @@ void ConnectionEditor::del_controller_mapping(wxCommandEvent& event) {
 
 void ConnectionEditor::output_channel_changed(wxCommandEvent& _) {
   int n = cb_output_chan->GetCurrentSelection();
-  if (n == 0) {                 // all channels
-    tc_bank_msb->Disable();
-    tc_bank_lsb->Disable();
-    tc_prog->Disable();
-  }
-  else {
-    tc_bank_msb->Enable();
-    tc_bank_lsb->Enable();
-    tc_prog->Enable();
-  }
+  if (n == 0)                   // all channels
+    program_sizer->Hide((size_t)1);
+  else
+    program_sizer->Show((size_t)1);
 }
 
 void ConnectionEditor::update() {
