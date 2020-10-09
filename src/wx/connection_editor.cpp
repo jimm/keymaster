@@ -7,6 +7,9 @@
 #include "../connection.h"
 #include "../formatter.h"
 
+#define CONTAINER_PANEL_ARGS \
+  wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL | wxBORDER_SUNKEN
+
 wxBEGIN_EVENT_TABLE(ConnectionEditor, wxDialog)
   EVT_BUTTON(ID_CE_AddControllerMapping, ConnectionEditor::add_controller_mapping)
   EVT_BUTTON(ID_CE_DelControllerMapping, ConnectionEditor::del_controller_mapping)
@@ -41,7 +44,7 @@ ConnectionEditor::ConnectionEditor(wxWindow *parent, Connection *c)
 wxWindow *ConnectionEditor::make_input_panel(wxWindow *parent) {
   return make_instrument_panel(
     parent, ID_CE_InputDropdown, ID_CE_InputChannel,
-    TITLE_STR("Input"), &cb_input, &cb_input_chan,
+    TITLE_STR("Input"), "All Channels", &cb_input, &cb_input_chan,
     reinterpret_cast<vector<Instrument *> &>(km->inputs),
     connection->input, connection->input_chan);
 }
@@ -49,14 +52,14 @@ wxWindow *ConnectionEditor::make_input_panel(wxWindow *parent) {
 wxWindow *ConnectionEditor::make_output_panel(wxWindow *parent) {
   return make_instrument_panel(
     parent, ID_CE_OutputDropdown, ID_CE_OutputChannel,
-    TITLE_STR("Output"), &cb_output, &cb_output_chan,
+    TITLE_STR("Output"), "Input Channel", &cb_output, &cb_output_chan,
     reinterpret_cast<vector<Instrument *> &>(km->outputs),
     connection->output, connection->output_chan);
 }
 
 wxWindow *ConnectionEditor::make_instrument_panel(
   wxWindow *parent, wxWindowID inst_id, wxWindowID chan_id,
-  const char * const title,
+  const char * const title, const char * const all_chans_name,
   wxComboBox **instrument_combo_ptr, wxComboBox **chan_combo_ptr,
   vector<Instrument *> &instruments, Instrument *curr_instrument,
   int curr_chan)
@@ -71,7 +74,7 @@ wxWindow *ConnectionEditor::make_instrument_panel(
     }
   }
 
-  wxPanel *p = new wxPanel(parent, wxID_ANY);
+  wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
   wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
 
@@ -79,7 +82,7 @@ wxWindow *ConnectionEditor::make_instrument_panel(
     p, inst_id, curr_output, wxDefaultPosition, wxDefaultSize, choices,
     wxCB_READONLY);
   field_sizer->Add(*instrument_combo_ptr);
-  *chan_combo_ptr = make_channel_dropdown(p, chan_id, curr_chan, "All Channels");
+  *chan_combo_ptr = make_channel_dropdown(p, chan_id, curr_chan, all_chans_name);
   field_sizer->Add(*chan_combo_ptr);
 
   outer_sizer->Add(new wxStaticText(p, wxID_ANY, title));
@@ -106,7 +109,7 @@ wxComboBox *ConnectionEditor::make_channel_dropdown(
 }
 
 wxWindow *ConnectionEditor::make_program_panel(wxWindow *parent) {
-  wxPanel *p = new wxPanel(parent, wxID_ANY);
+  wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
   wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
   wxSizerFlags center_flags =
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL);
@@ -138,7 +141,7 @@ wxWindow *ConnectionEditor::make_program_panel(wxWindow *parent) {
 }
 
 wxWindow *ConnectionEditor::make_zone_panel(wxWindow *parent) {
-  wxPanel *p = new wxPanel(parent, wxID_ANY);
+  wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
   wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
   wxSizerFlags center_flags =
@@ -165,7 +168,7 @@ wxWindow *ConnectionEditor::make_zone_panel(wxWindow *parent) {
 }
 
 wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
-  wxPanel *p = new wxPanel(parent, wxID_ANY);
+  wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
 
   wxBoxSizer *xpose_sizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer *xpose_field_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -200,7 +203,7 @@ wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
 }
 
 wxWindow *ConnectionEditor::make_filter_panel(wxWindow *parent) {
-  wxPanel *p = new wxPanel(parent, wxID_ANY);
+  wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
 
   cb_pass_note = new wxCheckBox(p, ID_CE_PassThroughNote, "Note On/Off");
   cb_pass_poly_pressure = new wxCheckBox(p, ID_CE_PassThroughPolyPressure, "Polyphonic Pressure");
