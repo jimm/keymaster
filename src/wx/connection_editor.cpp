@@ -66,13 +66,11 @@ wxWindow *ConnectionEditor::make_instrument_panel(
   int curr_chan)
 {
   wxArrayString choices;
-  wxString curr_output;
+  wxString curr_instrument_name;
   for (auto &instrument : instruments) {
-    if (instrument->enabled || instrument == curr_output) {
-      choices.Add(instrument->name);
-      if (instrument == curr_instrument)
-        curr_output = instrument->name;
-    }
+    choices.Add(instrument->name);
+    if (instrument == curr_instrument)
+      curr_instrument_name = instrument->name;
   }
 
   wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
@@ -80,7 +78,7 @@ wxWindow *ConnectionEditor::make_instrument_panel(
   wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
 
   *instrument_combo_ptr = new wxComboBox(
-    p, inst_id, curr_output, wxDefaultPosition, wxDefaultSize, choices,
+    p, inst_id, curr_instrument_name, wxDefaultPosition, wxDefaultSize, choices,
     wxCB_READONLY);
   field_sizer->Add(*instrument_combo_ptr);
   *chan_combo_ptr = make_channel_dropdown(p, chan_id, curr_chan, all_chans_name);
