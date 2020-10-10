@@ -5,8 +5,12 @@
 #include "../controller.h"
 #include "../formatter.h"
 
+#define CONTAINER_PANEL_ARGS \
+  wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL | wxBORDER_SUNKEN
+
 wxBEGIN_EVENT_TABLE(ControllerEditor, wxDialog)
   EVT_BUTTON(wxID_OK, ControllerEditor::save)
+  EVT_CHECKBOX(ID_CMAP_Filtered, ControllerEditor::filtered_changed)
 wxEND_EVENT_TABLE()
 
 ControllerEditor::ControllerEditor(wxWindow *parent, Connection *conn,
@@ -27,8 +31,7 @@ ControllerEditor::ControllerEditor(wxWindow *parent, Connection *conn,
 }
 
 wxWindow *ControllerEditor::make_numbers_panel(wxWindow *parent) {
-  wxPanel *p = new wxPanel(parent, wxID_ANY);
-  wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
+  wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
   wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
   wxSizerFlags center_flags =
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL);
@@ -45,6 +48,7 @@ wxWindow *ControllerEditor::make_numbers_panel(wxWindow *parent) {
                             controller->translated_cc_num, false);
   field_sizer->Add(cb_xlated_number, center_flags);
 
+  wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
   outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Controller Number"));
   outer_sizer->Add(field_sizer);
 
@@ -69,8 +73,7 @@ wxComboBox *ControllerEditor::make_cc_number_dropdown(
 }
 
 wxWindow *ControllerEditor::make_val_mapping_panel(wxWindow *parent) {
-  wxPanel *p = new wxPanel(parent, wxID_ANY);
-  wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
+  wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
   wxBoxSizer *input_sizer = new wxBoxSizer(wxHORIZONTAL);
   wxBoxSizer *output_sizer = new wxBoxSizer(wxHORIZONTAL);
   wxBoxSizer *pass_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -110,32 +113,48 @@ wxWindow *ControllerEditor::make_val_mapping_panel(wxWindow *parent) {
 
   cb_pass_through_0 = new wxCheckBox(
     p, ID_CMAP_PassThrough0, "Always Pass Through 0");
+  cb_pass_through_0->SetValue(controller->pass_through_0);
   mapping_sizer->Add(cb_pass_through_0, POS(2, 1), SPAN(1, 2));
   cb_pass_through_127 = new wxCheckBox(
     p, ID_CMAP_PassThrough127, "Always Pass Through 127");
+  cb_pass_through_127->SetValue(controller->pass_through_127);
   mapping_sizer->Add(cb_pass_through_127, POS(2, 3), SPAN(1, 2));
 
-  outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Value Mapping"));
-  outer_sizer->Add(mapping_sizer);
+  value_sizer = new wxBoxSizer(wxVERTICAL);
+  value_sizer->Add(new wxStaticText(p, wxID_ANY, "Value Mapping"));
+  value_sizer->Add(mapping_sizer);
 
-  p->SetSizerAndFit(outer_sizer);
+  p->SetSizerAndFit(value_sizer);
   return p;
 }
 
 wxWindow *ControllerEditor::make_filtered_panel(wxWindow *parent) {
-  wxPanel *p = new wxPanel(parent, wxID_ANY);
+  wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
   wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
 
   cb_filtered = new wxCheckBox(p, ID_CMAP_Filtered,
                                "Filter (Block) Controller");
+  cb_filtered->SetValue(controller->filtered);
   field_sizer->Add(cb_filtered);
 
   outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Filter"));
   outer_sizer->Add(field_sizer);
 
   p->SetSizerAndFit(outer_sizer);
+  filtered_changed();
   return p;
+}
+
+void ControllerEditor::filtered_changed(wxCommandEvent& _) {
+  filtered_changed();
+}
+
+void ControllerEditor::filtered_changed() {
+  if (cb_filtered->IsChecked())
+    value_sizer->Hide((size_t)1);
+  else
+    value_sizer->Show((size_t)1);
 }
 
 void ControllerEditor::save(wxCommandEvent& _) {
@@ -149,7 +168,7 @@ void ControllerEditor::save(wxCommandEvent& _) {
                         int_from_chars(tc_min_out->GetValue()),
                         int_from_chars(tc_max_out->GetValue()));
   if (controller->cc_num != orig_cc_num) {
-    connection->cc_maps[orig_cc_num] = nullptr;
+    connection->remove_cc_num(orig_cc_num);
     connection->set_controller(controller);
   }
 

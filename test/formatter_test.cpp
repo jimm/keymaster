@@ -40,6 +40,19 @@ TEST_CASE("name to num given num", CATCH_CATEGORY) {
   REQUIRE(note_name_to_num("42") == 42);
 }
 
+TEST_CASE("int_from_chars", CATCH_CATEGORY) {
+  REQUIRE(int_from_chars("") == 0);
+  REQUIRE(int_from_chars("0") == 0);
+  REQUIRE(int_from_chars("-12") == -12);
+  REQUIRE(int_from_chars("-9912") == -9912);
+  REQUIRE(int_from_chars("36") == 36);
+  REQUIRE(int_from_chars("0x7f") == 127);
+  REQUIRE(int_from_chars("0xff") == 255);
+  REQUIRE(int_from_chars("0x00") == 0);
+  REQUIRE(int_from_chars("0x01") == 1);
+  REQUIRE(int_from_chars("0x123a") == 0x123a);
+}
+
 TEST_CASE("message from bytes", CATCH_CATEGORY) {
   char buf[BUFSIZ];
 

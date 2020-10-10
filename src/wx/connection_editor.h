@@ -129,8 +129,6 @@ private:
   void del_controller_mapping(wxCommandEvent& event);
   void save(wxCommandEvent& _);
 
-  long selected_cc_map_index();
-
   wxDECLARE_EVENT_TABLE();
 };
 

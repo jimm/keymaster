@@ -189,8 +189,10 @@ void Connection::set_controller(Controller *controller) {
 }
 
 void Connection::remove_cc_num(int cc_num) {
-  delete cc_maps[cc_num];
-  cc_maps[cc_num] = nullptr;
+  if (cc_maps[cc_num] != nullptr) {
+    delete cc_maps[cc_num];
+    cc_maps[cc_num] = nullptr;
+  }
 }
 
 // Returns `true` if any one of the following are true:

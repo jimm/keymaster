@@ -12,6 +12,8 @@ public:
 
   void update();
 
+  int selected_cc_num();
+
 private:
   Connection *connection;
 

@@ -44,6 +44,7 @@ private:
   wxTextCtrl *tc_max_out;
   wxCheckBox *cb_pass_through_0;
   wxCheckBox *cb_pass_through_127;
+  wxBoxSizer *value_sizer;
   wxCheckBox *cb_filtered;
 
   wxWindow *make_numbers_panel(wxWindow *parent);
@@ -52,6 +53,8 @@ private:
   wxComboBox *make_cc_number_dropdown(wxWindow *parent, wxWindowID id,
                                       int curr_val, bool filter_out_existing);
 
+  void filtered_changed(wxCommandEvent& _);
+  void filtered_changed();
   void save(wxCommandEvent& _);
 
   wxDECLARE_EVENT_TABLE();

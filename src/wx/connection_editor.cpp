@@ -291,17 +291,16 @@ int ConnectionEditor::int_or_undefined_from_field(wxTextCtrl *field) {
 }
 
 void ConnectionEditor::edit_controller_mapping(wxListEvent& event) {
-  int controller_num = selected_cc_map_index();
-  if (controller_num != wxNOT_FOUND)
+  int controller_num = lc_cc_mappings->selected_cc_num();
+  if (controller_num != UNDEFINED)
     edit_controller_mapping(connection->cc_maps[controller_num]);
 }
 
 bool ConnectionEditor::edit_controller_mapping(Controller *controller) {
-  if (controller != nullptr)
-    if (ControllerEditor(this, connection, controller).ShowModal() == wxID_OK) {
-      update();
-      return true;
-    }
+  if (controller != nullptr && ControllerEditor(this, connection, controller).ShowModal() == wxID_OK) {
+    update();
+    return true;
+  }
   return false;
 }
 
@@ -312,37 +311,23 @@ void ConnectionEditor::update_buttons() {
       has_free_cc_map_slot = true;
 
   b_add_ccmap->Enable(has_free_cc_map_slot);
-  b_del_ccmap->Enable(selected_cc_map_index() != wxNOT_FOUND);
+  b_del_ccmap->Enable(lc_cc_mappings->selected_cc_num() != UNDEFINED);
 }
 
 void ConnectionEditor::add_controller_mapping(wxCommandEvent& event) {
-  int cc_num = -1;
-  for (int i = 0; i < 128; ++i) {
-    if (connection->cc_maps[i] == nullptr) {
-      cc_num = i;
-      break;
-    }
-  }
-  if (cc_num == -1)
-    return;
-
-  Controller *cc = new Controller(UNDEFINED_ID, cc_num);
-  if (edit_controller_mapping(cc)) {
-    connection->cc_maps[cc_num] = cc;
-    update();
-  }
-  else
+  Controller *cc = new Controller(UNDEFINED_ID, 0);
+  // ControllerEditor gives ownership of cc to the conn if edit is saved
+  if (!edit_controller_mapping(cc))
     delete cc;
-
+  update();
 }
 
 void ConnectionEditor::del_controller_mapping(wxCommandEvent& event) {
-  int controller_num = selected_cc_map_index();
-  if (controller_num == wxNOT_FOUND)
-    return;
-
-  connection->remove_cc_num(controller_num);
-  update();
+  int controller_num = lc_cc_mappings->selected_cc_num();
+  if (controller_num != UNDEFINED) {
+    connection->remove_cc_num(controller_num);
+    update();
+  }
 }
 
 void ConnectionEditor::channel_selection_changed(wxCommandEvent& _) {
@@ -420,9 +405,4 @@ void ConnectionEditor::save(wxCommandEvent& _) {
 
   connection->end_changes();
   EndModal(wxID_OK);
-}
-
-long ConnectionEditor::selected_cc_map_index() {
-  return lc_cc_mappings->GetNextItem(wxNOT_FOUND, wxLIST_NEXT_ALL,
-                                     wxLIST_STATE_SELECTED);
 }
