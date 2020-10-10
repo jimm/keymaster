@@ -119,6 +119,7 @@ private:
   bool edit_controller_mapping(Controller *controller);
 
   void channel_selection_changed(wxCommandEvent& _);
+  void channel_selection_changed();
 
   void update_buttons(wxListEvent& event) { update_buttons(); }
   void update_buttons();

@@ -138,6 +138,7 @@ wxWindow *ConnectionEditor::make_program_panel(wxWindow *parent) {
   program_sizer->Add(field_sizer);
 
   p->SetSizerAndFit(program_sizer);
+  channel_selection_changed();  // initial show/hide
   return p;
 }
 
@@ -345,6 +346,10 @@ void ConnectionEditor::del_controller_mapping(wxCommandEvent& event) {
 }
 
 void ConnectionEditor::channel_selection_changed(wxCommandEvent& _) {
+  channel_selection_changed();
+}
+
+void ConnectionEditor::channel_selection_changed() {
   bool show_program_sizer =
     cb_input_chan->GetCurrentSelection() != 0 || cb_output_chan->GetCurrentSelection() != 0;
   if (show_program_sizer)
