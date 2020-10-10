@@ -45,7 +45,7 @@ wxWindow *SetListEditor::make_name_panel(wxWindow *parent) {
   wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
 
   sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Name")));
-  name_text = new wxTextCtrl(p, ID_SLE_Name, "", wxDefaultPosition, NAME_CTRL_SIZE);
+  name_text = new wxTextCtrl(p, ID_SLE_Name, set_list->name, wxDefaultPosition, NAME_CTRL_SIZE);
   sizer->Add(name_text);
 
   p->SetSizerAndFit(sizer);
@@ -77,7 +77,7 @@ wxWindow *SetListEditor::make_buttons(wxWindow *parent) {
 }
 
 wxWindow *SetListEditor::make_set_list_panel(wxWindow *parent) {
-  wxWindow *retval = make_panel(parent, ID_SLE_SetList, set_list->name.c_str(),
+  wxWindow *retval = make_panel(parent, ID_SLE_SetList, "Set List Songs",
                                 songs_copy, &set_list_wxlist);
   return retval;
 }
