@@ -134,7 +134,7 @@ wxWindow *ConnectionEditor::make_program_panel(wxWindow *parent) {
   field_sizer->Add(tc_prog, center_flags);
 
   program_sizer = new wxBoxSizer(wxVERTICAL);
-  program_sizer->Add(new wxStaticText(p, wxID_ANY, "Program Change (in our out channel must be selected)"));
+  program_sizer->Add(new wxStaticText(p, wxID_ANY, "Program Change (in or out channel must be selected)"));
   program_sizer->Add(field_sizer);
 
   p->SetSizerAndFit(program_sizer);
