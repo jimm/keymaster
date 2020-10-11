@@ -13,7 +13,9 @@ enum {
   ID_SLE_AllSongs,
   ID_SLE_SetList,
   ID_SLE_AddButton,
-  ID_SLE_RemoveButton
+  ID_SLE_RemoveButton,
+  ID_SLE_MoveUp,
+  ID_SLE_MoveDown
 };
 
 class Song;
@@ -34,6 +36,8 @@ private:
   wxListBox *set_list_wxlist;
   wxButton *add_button;
   wxButton *remove_button;
+  wxButton *up_button;
+  wxButton *down_button;
 
   wxWindow *make_name_panel(wxWindow *parent);
   wxWindow *make_all_songs_panel(wxWindow *parent);
@@ -49,6 +53,8 @@ private:
   void set_list_selection(wxCommandEvent& event);
   void add_song(wxCommandEvent& event);
   void remove_song(wxCommandEvent& event);
+  void move_song_up(wxCommandEvent& event);
+  void move_song_down(wxCommandEvent& event);
 
   void update(wxListBox *list_box, std::vector<Song *> &song_list);
   void save(wxCommandEvent& _);

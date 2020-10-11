@@ -14,6 +14,8 @@ wxBEGIN_EVENT_TABLE(SetListEditor, wxDialog)
 
   EVT_BUTTON(ID_SLE_AddButton, SetListEditor::add_song)
   EVT_BUTTON(ID_SLE_RemoveButton, SetListEditor::remove_song)
+  EVT_BUTTON(ID_SLE_MoveUp, SetListEditor::move_song_up)
+  EVT_BUTTON(ID_SLE_MoveDown, SetListEditor::move_song_down)
 
   EVT_BUTTON(wxID_OK, SetListEditor::save)
 wxEND_EVENT_TABLE()
@@ -65,12 +67,19 @@ wxWindow *SetListEditor::make_buttons(wxWindow *parent) {
 
   add_button = new wxButton(p, ID_SLE_AddButton, "->");
   remove_button = new wxButton(p, ID_SLE_RemoveButton, "X");
+  up_button = new wxButton(p, ID_SLE_MoveUp, "^");
+  down_button = new wxButton(p, ID_SLE_MoveDown, "v");
 
   add_button->Disable();
   remove_button->Disable();
+  up_button->Disable();
+  down_button->Disable();
 
   button_sizer->Add(add_button);
   button_sizer->Add(remove_button);
+  button_sizer->AddSpacer(10);
+  button_sizer->Add(up_button);
+  button_sizer->Add(down_button);
 
   p->SetSizerAndFit(button_sizer);
   return p;
@@ -110,7 +119,12 @@ void SetListEditor::all_songs_selection(wxCommandEvent& event) {
 }
 
 void SetListEditor::set_list_selection(wxCommandEvent& event) {
-  remove_button->Enable(set_list_wxlist->GetSelection() != wxNOT_FOUND);
+  int selection_index = set_list_wxlist->GetSelection();
+  bool is_song_selected = selection_index != wxNOT_FOUND;
+
+  remove_button->Enable(is_song_selected);
+  up_button->Enable(is_song_selected && selection_index != 0);
+  down_button->Enable(is_song_selected != songs_copy.size() - 1);
 }
 
 void SetListEditor::add_song(wxCommandEvent& event) {
@@ -143,7 +157,37 @@ void SetListEditor::remove_song(wxCommandEvent& event) {
   update(set_list_wxlist, songs_copy);
 }
 
+void SetListEditor::move_song_up(wxCommandEvent& event) {
+  int selected_index = set_list_wxlist->GetSelection();
+  if (selected_index == wxNOT_FOUND)
+    return;
+
+  Song *tmp = songs_copy[selected_index];
+  songs_copy[selected_index] = songs_copy[selected_index - 1];
+  songs_copy[selected_index - 1] = tmp;
+  set_list_wxlist->SetSelection(selected_index - 1);
+
+  update(set_list_wxlist, songs_copy);
+}
+
+// Down button is disabled if a down move is illegal, so we don't have to
+// do any bounds checking.
+void SetListEditor::move_song_down(wxCommandEvent& event) {
+  int selected_index = set_list_wxlist->GetSelection();
+  if (selected_index == wxNOT_FOUND)
+    return;
+
+  Song *tmp = songs_copy[selected_index];
+  songs_copy[selected_index] = songs_copy[selected_index + 1];
+  songs_copy[selected_index + 1] = tmp;
+  set_list_wxlist->SetSelection(selected_index + 1);
+
+  update(set_list_wxlist, songs_copy);
+}
+
 void SetListEditor::update(wxListBox *list_box, std::vector<Song *>&song_list) {
+  int selected_index = list_box->GetSelection();
+
   list_box->Clear();
   if (song_list.empty())
     return;
@@ -153,6 +197,11 @@ void SetListEditor::update(wxListBox *list_box, std::vector<Song *>&song_list) {
     names.Add(song->name.c_str());
   if (!names.empty())
       list_box->InsertItems(names, 0);
+
+  if (selected_index != wxNOT_FOUND) {
+    list_box->SetSelection(selected_index);
+    list_box->EnsureVisible(selected_index);
+  }
 }
 
 void SetListEditor::save(wxCommandEvent& _) {
