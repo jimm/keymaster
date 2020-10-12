@@ -193,8 +193,11 @@ wxWindow * Frame::make_clock_panel(wxWindow *parent) {
 
 wxWindow * Frame::make_notes_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
+
   lc_notes = new wxTextCtrl(p, ID_SongNotes, "", wxDefaultPosition,
                             wxSize(NOTES_WIDTH, TALL_LIST_HEIGHT), wxTE_MULTILINE);
+  lc_notes->SetFont(wxFontInfo(18));
+  // lc_notes->SetDefaultStyle(wxTextAttr(wxFONTSIZE_LARGE));
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
   sizer->Add(new wxStaticText(p, wxID_ANY, "Notes"), wxSizerFlags().Align(wxALIGN_LEFT));
