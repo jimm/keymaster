@@ -41,10 +41,9 @@ void Cursor::init() {
 }
 
 SetList *Cursor::set_list() {
-  if (set_list_index != UNDEFINED)
-    return km->set_lists[set_list_index];
-  else
-    return nullptr;
+  if (set_list_index == UNDEFINED)
+    return km->all_songs;
+  return km->set_lists[set_list_index];
 }
 
 Song *Cursor::song() {

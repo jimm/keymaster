@@ -3,6 +3,9 @@
 
 #include <sqlite3.h>
 
+// Storage/accessors for database ids. These ids are only used during
+// loading and saving of data by a Storage object. Do NOT rely on their
+// values to persist across saves.
 class DBObj {
 public:
   DBObj(sqlite3_int64 i) : _id(i) {}

@@ -2,6 +2,7 @@
 #include "catch.hpp"
 #include "test_helper.h"
 #include "../src/storage.h"
+#include "../src/editor.h"
 
 #define CATCH_CATEGORY "[storage]"
 // These are the indices of songs in the all-songs list. Different than
@@ -295,19 +296,84 @@ TEST_CASE("save", CATCH_CATEGORY) {
   delete km;
 }
 
-TEST_CASE("save sets UNDEFINE_ID ids", CATCH_CATEGORY) {
-  KeyMaster *km = new KeyMaster();
-  km->testing = true;
-  km->initialize();
+TEST_CASE("save sets UNDEFINED_ID ids and does not mess up patches", CATCH_CATEGORY) {
+  KeyMaster *km = load_test_data();
+  Editor e(km);
 
-  Song *s = new Song(UNDEFINED_ID, "unnamed");
-  km->all_songs->songs.push_back(s);
-  REQUIRE(s->id() == UNDEFINED_ID);
+  // Remember a few things before we save so we can compare them after
+  // saving and reloading. There are a bunch of sanity checkes here
 
-  Storage storage(TEST_DB_PATH);
-  storage.save(km, true);
+  Song *another_song = km->all_songs->songs[0];
+  Patch *another_song_first_patch = another_song->patches[0];
+  REQUIRE(another_song->name == "Another Song");
+
+  Song *song_without_explicit_patch = km->all_songs->songs[1];
+  REQUIRE(song_without_explicit_patch->name == "Song Without Explicit Patch");
+
+  Song *to_each = km->all_songs->songs[2];
+  Patch *to_each_first_patch = to_each->patches[0];
+  REQUIRE(to_each->name == "To Each His Own");
+
+  // Make new song with name in between two others
+  Song *new_song = e.create_song();
+  Patch *new_patch = new_song->patches[0];
+  new_song->name = "B Side";
+  e.add_song(new_song);
+
+  // sanity checks
+  REQUIRE(new_song->id() == UNDEFINED_ID);
+  REQUIRE(new_patch->id() == UNDEFINED_ID);
+  REQUIRE(km->all_songs->songs.size() == 4);
+  REQUIRE(km->all_songs->songs[1] == new_song);
+
+  // save and ensure that undefined IDs are now defined (though we don't
+  // care what they are and they really don't need to be defined any more)
+
+  Storage saver(TEST_DB_PATH "_save_test");
+  saver.save(km, true);
+  REQUIRE(new_song->id() != UNDEFINED_ID);
+  REQUIRE(new_patch->id() != UNDEFINED_ID);
+
+  // reload and check songs and patches to make sure nothing was scrambled
+
+  delete km;
+  km = nullptr;
+  Storage storage(TEST_DB_PATH "_save_test");
+  km = storage.load(true);
   REQUIRE(storage.has_error() == false);
-  REQUIRE(s->id() != UNDEFINED_ID);
-  REQUIRE(s->id() >= 1LL);
+
+  vector<Song *> &all = km->all_songs->songs;
+  REQUIRE(all.size() == 4);
+  REQUIRE(all[0]->name == "Another Song");
+  REQUIRE(all[1]->name == "B Side");
+  REQUIRE(all[2]->name == "Song Without Explicit Patch");
+  REQUIRE(all[3]->name == "To Each His Own");
+
+  Song *s = all[0];
+  REQUIRE(s->name == "Another Song");
+  REQUIRE(s->patches.size() == 2);
+  REQUIRE(s->patches[0]->name == "Two Inputs Merging");
+  REQUIRE(s->patches[0]->connections.size() == 2);
+  REQUIRE(s->patches[1]->name == "Split Into Two Outputs");
+  REQUIRE(s->patches[1]->connections.size() == 2);
+
+  s = all[1];
+  REQUIRE(s->name == "B Side");
+  REQUIRE(s->patches.size() == 1);
+  REQUIRE(s->patches[0]->name == "Unnamed Patch");
+  REQUIRE(s->patches[0]->connections.size() == 0);
+
+  s = all[2];
+  REQUIRE(s->name == "Song Without Explicit Patch");
+  REQUIRE(s->patches.size() == 1);
+
+  s = all[3];
+  REQUIRE(s->name == "To Each His Own");
+  REQUIRE(s->patches.size() == 2);
+  REQUIRE(s->patches[0]->name == "Vanilla Through, Filter Two's Sustain");
+  REQUIRE(s->patches[0]->connections.size() == 2);
+  REQUIRE(s->patches[1]->name == "One Up One Octave and CC Vol -> Pan, Two Down One Octave");
+  REQUIRE(s->patches[1]->connections.size() == 2);
+
   delete km;
 }

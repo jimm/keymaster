@@ -62,6 +62,9 @@ KeyMaster *Storage::load(bool testing) {
   return km;
 }
 
+// Ignores all in-memory database object ids, generating new ones instead.
+// Objects are written in "dependency order" so that all newly assigned ids
+// are available for later writing.
 void Storage::save(KeyMaster *keymaster, bool testing) {
   if (db == nullptr)
     return;
@@ -86,6 +89,7 @@ string Storage::error() {
   return error_str;
 }
 
+// Initializes the database by dropping/recreating all tables.
 void Storage::initialize() {
   char *error_buf;
 
@@ -500,7 +504,7 @@ void Storage::save_instruments() {
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   for (auto& input : km->inputs) {
-    bind_obj_id_or_null(stmt, 1, input);
+    sqlite3_bind_null(stmt, 1);
     sqlite3_bind_int(stmt, 2, 0);
     sqlite3_bind_text(stmt, 3, input->name.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 4, input->device_name.c_str(), -1, SQLITE_STATIC);
@@ -509,7 +513,7 @@ void Storage::save_instruments() {
     sqlite3_reset(stmt);
   }
   for (auto& output : km->outputs) {
-    bind_obj_id_or_null(stmt, 1, output);
+    sqlite3_bind_null(stmt, 1);
     sqlite3_bind_int(stmt, 2, 1);
     sqlite3_bind_text(stmt, 3, output->name.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 4, output->device_name.c_str(), -1, SQLITE_STATIC);
@@ -527,7 +531,7 @@ void Storage::save_messages() {
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   for (auto& msg : km->messages) {
-    bind_obj_id_or_null(stmt, 1, msg);
+    sqlite3_bind_null(stmt, 1);
     sqlite3_bind_text(stmt, 2, msg->name.c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 3, msg->to_string().c_str(), -1, SQLITE_STATIC);
     sqlite3_step(stmt);
@@ -549,7 +553,7 @@ void Storage::save_triggers() {
   for (auto& trigger : km->triggers) {
     Input *input = trigger->input();
 
-    bind_obj_id_or_null(stmt, 1, trigger);
+    sqlite3_bind_null(stmt, 1);
     bind_int_or_null(stmt, 2, trigger->trigger_key_code);
     bind_obj_id_or_null(stmt, 3, input);
     if (trigger->trigger_message == Pm_Message(0, 0, 0))
@@ -591,7 +595,7 @@ void Storage::save_songs() {
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   for (auto& song : km->all_songs->songs) {
-    bind_obj_id_or_null(stmt, 1, song);
+    sqlite3_bind_null(stmt, 1);
     sqlite3_bind_text(stmt, 2, song->name.c_str(), -1, SQLITE_STATIC);
     if (song->notes.empty())
       sqlite3_bind_null(stmt, 3);
@@ -617,7 +621,7 @@ void Storage::save_patches(Song *song) {
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   int position = 0;
   for (auto& patch : song->patches) {
-    bind_obj_id_or_null(stmt, 1, patch);
+    sqlite3_bind_null(stmt, 1);
     sqlite3_bind_int64(stmt, 2, song->id());
     sqlite3_bind_int(stmt, 3, position++);
     sqlite3_bind_text(stmt, 4, patch->name.c_str(), -1, SQLITE_STATIC);
@@ -646,8 +650,7 @@ void Storage::save_connections(Patch *patch) {
   int position = 0;
   for (auto& conn : patch->connections) {
     int col = 1;
-
-    bind_obj_id_or_null(stmt, col++, conn);
+    sqlite3_bind_null(stmt, col++);
     sqlite3_bind_int64(stmt, col++, patch->id());
     sqlite3_bind_int(stmt, col++, position++);
     sqlite3_bind_int64(stmt, col++, conn->input->id());
@@ -699,8 +702,8 @@ void Storage::save_controller_mappings(Connection *conn) {
     if (cc == nullptr)
       continue;
 
-    bind_obj_id_or_null(stmt, 1, cc);
-    int j = 2;
+    int j = 1;
+    sqlite3_bind_null(stmt, j++);
     sqlite3_bind_int64(stmt, j++, conn->id());
     sqlite3_bind_int(stmt, j++, cc->cc_num);
     sqlite3_bind_int(stmt, j++, cc->translated_cc_num);
@@ -729,7 +732,7 @@ void Storage::save_set_lists() {
        ++iter)
   {
     SetList *set_list = *iter;
-    bind_obj_id_or_null(stmt, 1, set_list);
+    sqlite3_bind_null(stmt, 1);
     sqlite3_bind_text(stmt, 2, set_list->name.c_str(), -1, SQLITE_STATIC);
     sqlite3_step(stmt);
     extract_id(set_list);
@@ -832,20 +835,21 @@ const char *Storage::text_or_null(sqlite3_stmt *stmt, int col_num, const char *n
 }
 
 void Storage::bind_obj_id_or_null(sqlite3_stmt *stmt, int col_num, DBObj *obj_ptr) {
-  (obj_ptr == nullptr || obj_ptr->id() == UNDEFINED_ID)
-    ? sqlite3_bind_null(stmt, col_num)
-    : sqlite3_bind_int64(stmt, col_num, obj_ptr->id());
+  if (obj_ptr == nullptr || obj_ptr->id() == UNDEFINED_ID)
+    sqlite3_bind_null(stmt, col_num);
+  else
+    sqlite3_bind_int64(stmt, col_num, obj_ptr->id());
 }
 
 void Storage::bind_int_or_null(sqlite3_stmt *stmt, int col_num, int val, int nullval) {
-  val == nullval
-    ? sqlite3_bind_null(stmt, col_num)
-    : sqlite3_bind_int(stmt, col_num, val);
+  if (val == nullval)
+    sqlite3_bind_null(stmt, col_num);
+  else
+    sqlite3_bind_int(stmt, col_num, val);
 }
 
 void Storage::extract_id(DBObj *db_obj) {
-  if ((db_obj)->id() == UNDEFINED_ID)
-    (db_obj)->set_id(sqlite3_last_insert_rowid(db));
+  db_obj->set_id(sqlite3_last_insert_rowid(db));
 }
 
 // FIXME use standard Message output format 007f35b0

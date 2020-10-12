@@ -44,7 +44,6 @@ private:
   void save_instruments();
   void save_messages();
   void save_triggers();
-  void save_trigger(sqlite3_stmt *, Input *, Trigger *);
   void save_songs();
   void save_patches(Song *);
   void save_connections(Patch *);
