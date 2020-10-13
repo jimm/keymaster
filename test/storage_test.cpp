@@ -71,7 +71,7 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load songs") {
-    vector<Song *> &all = km->all_songs->songs;
+    vector<Song *> &all = km->all_songs()->songs;
     REQUIRE(all.size() == 3);
 
     Song *s = all[0];
@@ -85,15 +85,15 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load notes") {
-    Song *s = km->all_songs->songs[SONG_WITHOUT_INDEX];
+    Song *s = km->all_songs()->songs[SONG_WITHOUT_INDEX];
     REQUIRE(s->notes.size() == 0);
 
-    s = km->all_songs->songs[ANOTHER_INDEX];
+    s = km->all_songs()->songs[ANOTHER_INDEX];
     REQUIRE(s->notes == "this song has note text\nthat spans multiple lines");
   }
 
   SECTION("load patches") {
-    Song *s = km->all_songs->songs[TO_EACH_INDEX];
+    Song *s = km->all_songs()->songs[TO_EACH_INDEX];
     REQUIRE(s->patches.size() == 2);
 
     Patch *p = s->patches[0];
@@ -101,7 +101,7 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load start and stop messages") {
-    Song *s = km->all_songs->songs[ANOTHER_INDEX];
+    Song *s = km->all_songs()->songs[ANOTHER_INDEX];
     Patch *p = s->patches.back();
 
     REQUIRE(p->start_message->id() == 3);
@@ -109,7 +109,7 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load connections") {
-    Song *s = km->all_songs->songs[TO_EACH_INDEX]; // To Each His Own
+    Song *s = km->all_songs()->songs[TO_EACH_INDEX]; // To Each His Own
     Patch *p = s->patches[0];          // Two Inputs Merging
     REQUIRE(p->connections.size() == 2);
     Connection *conn = p->connections[0];
@@ -118,7 +118,7 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
     REQUIRE(conn->output == km->outputs[0]);
     REQUIRE(conn->output_chan == CONNECTION_ALL_CHANNELS);
 
-    s = km->all_songs->songs[ANOTHER_INDEX];  // Another Song
+    s = km->all_songs()->songs[ANOTHER_INDEX];  // Another Song
     p = s->patches.back();        // Split Into Two OUtupts
     REQUIRE(p->connections.size() == 2);
     conn = p->connections[0];
@@ -131,7 +131,7 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load bank msb lsb") {
-    Song *s = km->all_songs->songs[TO_EACH_INDEX]; // To Each His Own
+    Song *s = km->all_songs()->songs[TO_EACH_INDEX]; // To Each His Own
     Patch *p = s->patches[0];          // Vanilla Through
     Connection *conn = p->connections.back();
     REQUIRE(conn->prog.bank_msb == 3);
@@ -139,7 +139,7 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load bank lsb only") {
-    Song *s = km->all_songs->songs[TO_EACH_INDEX]; // To Each His Own
+    Song *s = km->all_songs()->songs[TO_EACH_INDEX]; // To Each His Own
     Patch *p = s->patches[1];          // One Up One Oct...
     Connection *conn = p->connections.back();
     REQUIRE(conn->prog.bank_msb == -1);
@@ -147,14 +147,14 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load prog chg") {
-    Song *s = km->all_songs->songs[TO_EACH_INDEX];
+    Song *s = km->all_songs()->songs[TO_EACH_INDEX];
     Patch *p = s->patches[0];
     Connection *conn = p->connections.back();
     REQUIRE(conn->prog.prog == 12);
   }
 
   SECTION("load xpose and velocity_curve") {
-    Song *s = km->all_songs->songs[TO_EACH_INDEX];
+    Song *s = km->all_songs()->songs[TO_EACH_INDEX];
     Patch *p = s->patches[0];
     Connection *conn = p->connections[0];
     REQUIRE(conn->xpose == 0);
@@ -169,13 +169,13 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load zone") {
-    Song *s = km->all_songs->songs[TO_EACH_INDEX];
+    Song *s = km->all_songs()->songs[TO_EACH_INDEX];
     Patch *p = s->patches[0];
     Connection *conn = p->connections[0];
     REQUIRE(conn->zone.low == 0);
     REQUIRE(conn->zone.high == 127);
 
-    s = km->all_songs->songs[ANOTHER_INDEX];  // Another Song
+    s = km->all_songs()->songs[ANOTHER_INDEX];  // Another Song
     p = s->patches[1];
     conn = p->connections[0];
     REQUIRE(conn->zone.low == 0);
@@ -188,7 +188,7 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load controller mappings") {
-    Song *s = km->all_songs->songs[TO_EACH_INDEX];
+    Song *s = km->all_songs()->songs[TO_EACH_INDEX];
     Patch *p = s->patches[0];
     Connection *conn = p->connections.back();
     REQUIRE(conn->id() == 2);     // sanity check
@@ -211,7 +211,7 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load song list") {
-    vector<Song *> &all = km->all_songs->songs;
+    vector<Song *> &all = km->all_songs()->songs;
 
     REQUIRE(km->set_lists.size() == 3);
 
@@ -229,7 +229,7 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load auto patch") {
-    Song *s = km->all_songs->songs[SONG_WITHOUT_INDEX];
+    Song *s = km->all_songs()->songs[SONG_WITHOUT_INDEX];
     REQUIRE(s->patches.size() == 1);
     Patch *p = s->patches[0];
     REQUIRE(p->name == s->name);
@@ -250,7 +250,7 @@ TEST_CASE("initialize", CATCH_CATEGORY) {
   REQUIRE(km->inputs.size() == 0);
   REQUIRE(km->outputs.size() == 0);
   REQUIRE(km->messages.size() == 0);
-  REQUIRE(km->all_songs->songs.size() == 0);
+  REQUIRE(km->all_songs()->songs.size() == 0);
   delete km;
 }
 
@@ -273,9 +273,9 @@ TEST_CASE("save", CATCH_CATEGORY) {
   REQUIRE(km->triggers.size() == 7);
   REQUIRE(km->inputs[0]->triggers.size() == 5);
 
-  REQUIRE(km->all_songs->songs.size() == 3);
+  REQUIRE(km->all_songs()->songs.size() == 3);
 
-  Song *song = km->all_songs->songs[ANOTHER_INDEX];
+  Song *song = km->all_songs()->songs[ANOTHER_INDEX];
   REQUIRE(song->name == "Another Song");
   REQUIRE(song->patches.size() == 2);
 
@@ -283,14 +283,15 @@ TEST_CASE("save", CATCH_CATEGORY) {
   REQUIRE(patch->name == "Two Inputs Merging");
   REQUIRE(patch->connections.size() == 2);
 
-  patch = km->all_songs->songs[TO_EACH_INDEX]->patches.back();
+  patch = km->all_songs()->songs[TO_EACH_INDEX]->patches.back();
   Connection *conn = patch->connections.front();
   REQUIRE(conn->velocity_curve->shape == Linear);
   conn = patch->connections.back();
   REQUIRE(conn->velocity_curve->shape == Exponential);
 
+  for (auto sl : km->set_lists)
   REQUIRE(km->set_lists.size() == 3);
-  REQUIRE(km->set_lists[0] == km->all_songs);
+  REQUIRE(km->set_lists[0] == km->all_songs());
   REQUIRE(km->set_lists[1]->name == "Set List One");
   REQUIRE(km->set_lists[2]->name == "Set List Two");
   delete km;
@@ -303,14 +304,14 @@ TEST_CASE("save sets UNDEFINED_ID ids and does not mess up patches", CATCH_CATEG
   // Remember a few things before we save so we can compare them after
   // saving and reloading. There are a bunch of sanity checkes here
 
-  Song *another_song = km->all_songs->songs[0];
+  Song *another_song = km->all_songs()->songs[0];
   Patch *another_song_first_patch = another_song->patches[0];
   REQUIRE(another_song->name == "Another Song");
 
-  Song *song_without_explicit_patch = km->all_songs->songs[1];
+  Song *song_without_explicit_patch = km->all_songs()->songs[1];
   REQUIRE(song_without_explicit_patch->name == "Song Without Explicit Patch");
 
-  Song *to_each = km->all_songs->songs[2];
+  Song *to_each = km->all_songs()->songs[2];
   Patch *to_each_first_patch = to_each->patches[0];
   REQUIRE(to_each->name == "To Each His Own");
 
@@ -323,8 +324,8 @@ TEST_CASE("save sets UNDEFINED_ID ids and does not mess up patches", CATCH_CATEG
   // sanity checks
   REQUIRE(new_song->id() == UNDEFINED_ID);
   REQUIRE(new_patch->id() == UNDEFINED_ID);
-  REQUIRE(km->all_songs->songs.size() == 4);
-  REQUIRE(km->all_songs->songs[1] == new_song);
+  REQUIRE(km->all_songs()->songs.size() == 4);
+  REQUIRE(km->all_songs()->songs[1] == new_song);
 
   // save and ensure that undefined IDs are now defined (though we don't
   // care what they are and they really don't need to be defined any more)
@@ -342,7 +343,7 @@ TEST_CASE("save sets UNDEFINED_ID ids and does not mess up patches", CATCH_CATEG
   km = storage.load(true);
   REQUIRE(storage.has_error() == false);
 
-  vector<Song *> &all = km->all_songs->songs;
+  vector<Song *> &all = km->all_songs()->songs;
   REQUIRE(all.size() == 4);
   REQUIRE(all[0]->name == "Another Song");
   REQUIRE(all[1]->name == "B Side");

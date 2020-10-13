@@ -502,7 +502,7 @@ bool Frame::edit_set_list(SetList *set_list) {
     return false;
 
   KeyMaster *km = KeyMaster_instance();
-  if (set_list == km->all_songs) {
+  if (set_list == km->all_songs()) {
     wxMessageBox("Can't edit the main list of all songs",
                 "Set List Editor", wxOK | wxICON_INFORMATION);
     return false;
@@ -628,7 +628,7 @@ void Frame::destroy_set_list(wxCommandEvent& event) {
   Editor e;
   KeyMaster *km = KeyMaster_instance();
   SetList *set_list = km->cursor->set_list();
-  if (set_list != nullptr && set_list != km->all_songs)
+  if (set_list != nullptr && set_list != km->all_songs())
     e.destroy_set_list(set_list);
   update();
 }

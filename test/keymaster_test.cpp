@@ -72,34 +72,34 @@ TEST_CASE("send start and stop messages", CATCH_CATEGORY) {
 
 TEST_CASE("all songs sorted", CATCH_CATEGORY) {
   KeyMaster *km = load_test_data();
-  REQUIRE(km->all_songs->songs[0]->name == "Another Song");
-  REQUIRE(km->all_songs->songs[1]->name == "Song Without Explicit Patch");
-  REQUIRE(km->all_songs->songs[2]->name == "To Each His Own");
+  REQUIRE(km->all_songs()->songs[0]->name == "Another Song");
+  REQUIRE(km->all_songs()->songs[1]->name == "Song Without Explicit Patch");
+  REQUIRE(km->all_songs()->songs[2]->name == "To Each His Own");
   delete km;
 }
 
 TEST_CASE("inserted song sorts properly", CATCH_CATEGORY) {
   KeyMaster *km = load_test_data();
   Song *s = new Song(UNDEFINED_ID, "Bees, Bees!");
-  km->all_songs->songs.push_back(s);
+  km->all_songs()->songs.push_back(s);
   km->sort_all_songs();
 
-  REQUIRE(km->all_songs->songs[0]->name == "Another Song");
-  REQUIRE(km->all_songs->songs[1]->name == "Bees, Bees!");
-  REQUIRE(km->all_songs->songs[2]->name == "Song Without Explicit Patch");
-  REQUIRE(km->all_songs->songs[3]->name == "To Each His Own");
+  REQUIRE(km->all_songs()->songs[0]->name == "Another Song");
+  REQUIRE(km->all_songs()->songs[1]->name == "Bees, Bees!");
+  REQUIRE(km->all_songs()->songs[2]->name == "Song Without Explicit Patch");
+  REQUIRE(km->all_songs()->songs[3]->name == "To Each His Own");
   delete km;
 }
 
 TEST_CASE("inserted song sorts properly, case-sensitively", CATCH_CATEGORY) {
   KeyMaster *km = load_test_data();
   Song *s = new Song(UNDEFINED_ID, "a jar full of bees");
-  km->all_songs->songs.push_back(s);
+  km->all_songs()->songs.push_back(s);
   km->sort_all_songs();
 
-  REQUIRE(km->all_songs->songs[0]->name == "Another Song");
-  REQUIRE(km->all_songs->songs[1]->name == "Song Without Explicit Patch");
-  REQUIRE(km->all_songs->songs[2]->name == "To Each His Own");
-  REQUIRE(km->all_songs->songs[3]->name == "a jar full of bees");
+  REQUIRE(km->all_songs()->songs[0]->name == "Another Song");
+  REQUIRE(km->all_songs()->songs[1]->name == "Song Without Explicit Patch");
+  REQUIRE(km->all_songs()->songs[2]->name == "To Each His Own");
+  REQUIRE(km->all_songs()->songs[3]->name == "a jar full of bees");
   delete km;
 }

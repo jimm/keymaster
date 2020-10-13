@@ -1,4 +1,5 @@
 #include "observable.h"
+#include "vector_utils.h"
 
 void Observable::add_observer(Observer *o) {
   for (auto observer : observers)
@@ -8,12 +9,7 @@ void Observable::add_observer(Observer *o) {
 }
 
 void Observable::remove_observer(Observer *o) {
-  for (vector<Observer *>::iterator i = observers.begin(); i != observers.end(); ++i) {
-    if (*i == o) {
-      observers.erase(i);
-      return;
-    }
-  }
+  erase(observers, o);
 }
 
 void Observable::changed(void *arg) {

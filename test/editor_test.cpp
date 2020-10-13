@@ -37,7 +37,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     e.add_song(created_song);
     // It'll be last because name is "Unnamed Song" and that's last
     // alphabetically
-    REQUIRE(created_song == km->all_songs->songs.back());
+    REQUIRE(created_song == km->all_songs()->songs.back());
   }
 
   SECTION("add song inserts into empty song list", CATCH_CATEGORY) {
@@ -93,16 +93,16 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
   }
 
   SECTION("destroy song", CATCH_CATEGORY) {
-    int num_songs = km->all_songs->songs.size();
-    e.destroy_song(km->all_songs->songs.back());
-    REQUIRE(km->all_songs->songs.size() == num_songs - 1);
+    int num_songs = km->all_songs()->songs.size();
+    e.destroy_song(km->all_songs()->songs.back());
+    REQUIRE(km->all_songs()->songs.size() == num_songs - 1);
     REQUIRE(km->set_lists[1]->songs.size() == 1);
     REQUIRE(km->set_lists[2]->songs.size() == 1);
   }
 
   SECTION("create and destroy song", CATCH_CATEGORY) {
     e.create_song();
-    e.destroy_song(km->all_songs->songs.back());
+    e.destroy_song(km->all_songs()->songs.back());
   }
 
   SECTION("destroy first patch in song with mult. patches", CATCH_CATEGORY) {
@@ -110,7 +110,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     int num_patches = c->song()->patches.size();
 
     // sanity check
-    REQUIRE(c->song() == km->all_songs->songs[0]);
+    REQUIRE(c->song() == km->all_songs()->songs[0]);
     REQUIRE(c->patch() == c->song()->patches[0]);
 
     Editor e(km);
@@ -118,7 +118,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
 
     // old_patch has been deallocated, but we can still check that the current
     // cursor patch is not the same value.
-    REQUIRE(c->song() == km->all_songs->songs[0]);
+    REQUIRE(c->song() == km->all_songs()->songs[0]);
     REQUIRE(c->song()->patches.size() == num_patches - 1);
 
     // current patch is the first patch in the song, but not the same as
@@ -133,7 +133,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     Patch *old_patch = c->patch();
 
     // sanity check
-    REQUIRE(c->song() == km->all_songs->songs[0]);
+    REQUIRE(c->song() == km->all_songs()->songs[0]);
     REQUIRE(c->patch() == c->song()->patches.back());
     REQUIRE(c->song()->patches.size() == num_patches);
 
@@ -142,7 +142,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
 
     // old_patch has been deallocated, but we can still check that the current
     // cursor patch is not the same value.
-    REQUIRE(c->song() == km->all_songs->songs[0]);
+    REQUIRE(c->song() == km->all_songs()->songs[0]);
     REQUIRE(c->song()->patches.size() == num_patches - 1);
 
     // current patch is the first patch in the song, but not the same as

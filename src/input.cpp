@@ -7,6 +7,7 @@
 #include "trigger.h"
 #include "consts.h"
 #include "keymaster.h"
+#include "vector_utils.h"
 
 // 10 milliseconds, in nanoseconds
 #define SLEEP_NANOSECS 10000000L
@@ -81,12 +82,7 @@ void Input::add_connection(Connection *conn) {
 }
 
 void Input::remove_connection(Connection *conn) {
-  for (vector<Connection *>::iterator i = connections.begin(); i != connections.end(); ++i) {
-    if (*i == conn) {
-      connections.erase(i);
-      return;
-    }
-  }
+  erase(connections, conn);
 }
 
 void Input::add_trigger(Trigger *trigger) {
@@ -94,13 +90,7 @@ void Input::add_trigger(Trigger *trigger) {
 }
 
 void Input::remove_trigger(Trigger *trigger) {
-  for (vector<Trigger *>::iterator iter = triggers.begin();
-       iter != triggers.end();
-       ++iter)
-    if (trigger == *iter) {
-      triggers.erase(iter);
-      break;
-    }
+  erase(triggers, trigger);
 }
 
 // Lazily starts the `input_thread` if needed. Sets `running` to `true` and

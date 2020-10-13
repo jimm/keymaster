@@ -18,8 +18,7 @@ public:
   vector<Input *> inputs;
   vector<Output *> outputs;
   vector<Trigger *> triggers;
-  SetList *all_songs;
-  vector<SetList *> set_lists;
+  vector<SetList *> set_lists;  // all set lists, including all_songs
   Cursor *cursor;
   Clock clock;
   bool running;
@@ -29,6 +28,8 @@ public:
 
   KeyMaster();
   ~KeyMaster();
+
+  inline SetList * all_songs() { return set_lists[0]; }
 
   // ================ running ================
   void start();

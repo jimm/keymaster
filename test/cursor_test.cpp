@@ -157,11 +157,11 @@ TEST_CASE("cursor", CATCH_CATEGORY) {
 // ================ defaults
 
   SECTION("default set list is all songs") {
-    REQUIRE(c->set_list() == km->all_songs);
+    REQUIRE(c->set_list() == km->all_songs());
   }
 
   SECTION("song") {
-    REQUIRE(c->song() == km->all_songs->songs[0]);
+    REQUIRE(c->song() == km->all_songs()->songs[0]);
   }
 
   SECTION("patch") {

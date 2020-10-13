@@ -2,6 +2,7 @@
 #include <set>
 #include "patch.h"
 #include "output.h"
+#include "vector_utils.h"
 
 Patch::Patch(sqlite3_int64 id, const char *patch_name)
   : DBObj(id), Named(patch_name), running(false),
@@ -46,14 +47,9 @@ void Patch::add_connection(Connection *conn) {
 
 // Caller must destroy the connection.
 void Patch::remove_connection(Connection *conn) {
-  for (vector<Connection *>::iterator i = connections.begin(); i != connections.end(); ++i) {
-    if (*i == conn) {
-      if (is_running())
-        conn->stop();
-      connections.erase(i);
-      break;
-    }
-  }
+  if (is_running())
+    conn->stop();
+  erase(connections, conn);
 }
 
 void Patch::send_message_to_outputs(Message *message) {

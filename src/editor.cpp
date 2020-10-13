@@ -2,8 +2,7 @@
 #include "editor.h"
 #include "keymaster.h"
 #include "cursor.h"
-
-#define ITER(type) vector<type *>::iterator
+#include "vector_utils.h"
 
 Editor::Editor(KeyMaster *key_master)
   : km(key_master ? key_master : KeyMaster_instance())
@@ -49,13 +48,13 @@ void Editor::add_trigger(Trigger *trigger) {
 }
 
 void Editor::add_song(Song *song) {
-  km->all_songs->songs.push_back(song);
+  km->all_songs()->songs.push_back(song);
   km->sort_all_songs();
 
   SetList *curr_set_list = km->cursor->set_list();
   if (curr_set_list == nullptr)
-    curr_set_list = km->all_songs;
-  if (curr_set_list == km->all_songs) {
+    curr_set_list = km->all_songs();
+  if (curr_set_list == km->all_songs()) {
     km->goto_song(song);
     return;
   }
@@ -64,14 +63,8 @@ void Editor::add_song(Song *song) {
   Song *curr_song = km->cursor->song();
   if (curr_song == nullptr)
     slist.push_back(song);
-  else {
-    for (ITER(Song) iter = slist.begin(); iter != slist.end(); ++iter) {
-      if (*iter == curr_song) {
-        slist.insert(++iter, song);
-        break;
-      }
-    }
-  }
+  else
+    insert_after(slist, curr_song, song);
 
   km->goto_song(song);
 }
@@ -96,25 +89,14 @@ void Editor::add_set_list(SetList *set_list) {
 }
 
 void Editor::destroy_message(Message *message) {
-  for (ITER(Message) i = km->messages.begin(); i != km->messages.end(); ++i) {
-    if (*i == message) {
-      km->messages.erase(i);
-      delete message;
-      return;
-    }
-  }
+  erase(km->messages, message);
+  delete message;
 }
 
 void Editor::destroy_trigger(Trigger *trigger) {
   trigger->remove_from_input();
-
-  for (ITER(Trigger) i = km->triggers.begin(); i != km->triggers.end(); ++i) {
-    if (*i == trigger) {
-      km->triggers.erase(i);
-      delete trigger;
-      return;
-    }
-  }
+  erase(km->triggers, trigger);
+  delete trigger;
 }
 
 // Returns true if `message` is not used anywhere.
@@ -122,7 +104,7 @@ bool Editor::ok_to_destroy_message(Message *message) {
   if (message == nullptr)
     return false;
 
-  for (auto &song : km->all_songs->songs)
+  for (auto &song : km->all_songs()->songs)
     for (auto &patch : song->patches)
       if (patch->start_message == message || patch->stop_message == message)
         return false;
@@ -155,27 +137,18 @@ bool Editor::ok_to_destroy_connection(Patch *patch, Connection *connection) {
 
 bool Editor::ok_to_destroy_set_list(SetList *set_list) {
   return set_list != nullptr
-    && set_list != km->all_songs;
+    && set_list != km->all_songs();
 }
 
 void Editor::destroy_song(Song *song) {
   if (km->cursor->patch())
     km->cursor->patch()->stop();
+
   move_away_from_song(song);
-
   for (auto &set_list : km->set_lists)
-    remove_song_from_set_list(song, set_list);
-
-  for (ITER(Song) i = km->all_songs->songs.begin();
-       i != km->all_songs->songs.end();
-       ++i)
-  {
-    if (*i == song) {
-      km->all_songs->songs.erase(i);
-      delete song;
-      return;                   // only appears once in all_songs list
-    }
-  }
+    erase(set_list->songs, song);
+  erase(km->all_songs()->songs, song);
+  delete song;
 
   if (km->cursor->patch())
     km->cursor->patch()->start();
@@ -188,15 +161,10 @@ void Editor::destroy_patch(Song *song, Patch *patch) {
 
   if (km->cursor->patch())
     km->cursor->patch()->stop();
-  move_away_from_patch(song, patch);
 
-  for (ITER(Patch) i = song->patches.begin(); i != song->patches.end(); ++i) {
-    if (*i == patch) {
-      song->patches.erase(i);
-      delete patch;
-      break;
-    }
-  }
+  move_away_from_patch(song, patch);
+  erase(song->patches, patch);
+  delete patch;
 
   if (km->cursor->patch())
     km->cursor->patch()->start();
@@ -211,27 +179,8 @@ void Editor::destroy_set_list(SetList *set_list) {
   if (set_list == km->cursor->set_list())
     km->cursor->goto_set_list("All Songs");
 
-  for (ITER(SetList) i = km->set_lists.begin(); i != km->set_lists.end(); ++i) {
-    if (*i == set_list) {
-      km->set_lists.erase(i);
-      delete set_list;
-      return;
-    }
-  }
-}
-
-void Editor::remove_song_from_set_list(Song *song, SetList *set_list) {
-  for (ITER(SetList) i = km->set_lists.begin(); i != km->set_lists.end(); ++i) {
-    SetList *slist = *i;
-    if (set_list == slist) {
-      for (ITER(Song) j = slist->songs.begin(); j != slist->songs.end(); ++j) {
-        if (*j == song) {
-          slist->songs.erase(j);
-          break;
-        }
-      }
-    }
-  }
+  erase(km->set_lists, set_list);
+  delete set_list;
 }
 
 // If `song` is not the current song, does nothing. Else tries to move to

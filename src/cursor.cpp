@@ -42,7 +42,7 @@ void Cursor::init() {
 
 SetList *Cursor::set_list() {
   if (set_list_index == UNDEFINED)
-    return km->all_songs;
+    return km->all_songs();
   return km->set_lists[set_list_index];
 }
 
@@ -209,7 +209,7 @@ void Cursor::goto_song(string name_regex) {
   }
 
   i = 0;
-  for (auto &song : km->all_songs->songs) {
+  for (auto &song : km->all_songs()->songs) {
     if (regexec(&re, song->name.c_str(), 1, &match, 0) == 0) {
       set_list_index = 0;
       song_index = i;

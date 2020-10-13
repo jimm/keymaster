@@ -18,8 +18,7 @@ KeyMaster *KeyMaster_instance() {
 KeyMaster::KeyMaster() : clock(inputs) {
   running = false;
   testing = false;
-  all_songs = new SetList(UNDEFINED_ID, (char *)"All Songs");
-  set_lists.push_back(all_songs);
+  set_lists.push_back(new SetList(UNDEFINED_ID, (char *)"All Songs"));
   cursor = new Cursor(this);
   km_instance = this;
 }
@@ -34,7 +33,7 @@ KeyMaster::~KeyMaster() {
     delete out;
   for (auto& t : triggers)
     delete t;
-  for (auto& song : all_songs->songs)
+  for (auto& song : all_songs()->songs)
     delete song;
   for (auto& set_list : set_lists)
     delete set_list;
@@ -105,7 +104,7 @@ void KeyMaster::create_songs() {
     for (auto& output : outputs) {
       sprintf(name, "%s -> %s", input->name.c_str(), output->name.c_str());
       Song *song = new Song(UNDEFINED_ID, name);
-      all_songs->songs.push_back(song);
+      all_songs()->songs.push_back(song);
 
       Patch *patch = new Patch(UNDEFINED_ID, name);
       song->patches.push_back(patch);
@@ -121,7 +120,7 @@ void KeyMaster::create_songs() {
       // one more song: this input to all outputs at once
       sprintf(name, "%s -> all outputs", input->name.c_str());
       Song *song = new Song(UNDEFINED_ID, name);
-      all_songs->songs.push_back(song);
+      all_songs()->songs.push_back(song);
 
       Patch *patch = new Patch(UNDEFINED_ID, name);
       song->patches.push_back(patch);
@@ -249,5 +248,5 @@ bool songNameComparator(Song *s1, Song *s2) {
 }
 
 void KeyMaster::sort_all_songs() {
-  sort(all_songs->songs.begin(), all_songs->songs.end(), songNameComparator);
+  sort(all_songs()->songs.begin(), all_songs()->songs.end(), songNameComparator);
 }

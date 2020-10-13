@@ -36,8 +36,6 @@ public:
   void destroy_connection(Patch *patch, Connection *connection);
   void destroy_set_list(SetList *set_list);
 
-  void remove_song_from_set_list(Song *song, SetList *set_list);
-
   void move_away_from_song(Song *);
   void move_away_from_patch(Song *, Patch *);
 

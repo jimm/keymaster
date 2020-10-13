@@ -2,6 +2,7 @@
 #include "macros.h"
 #include "../keymaster.h"
 #include "../set_list.h"
+#include "../vector_utils.h"
 
 wxBEGIN_EVENT_TABLE(SetListEditor, wxDialog)
   EVT_TEXT(ID_SLE_Name, SetListEditor::set_name)
@@ -56,7 +57,7 @@ wxWindow *SetListEditor::make_name_panel(wxWindow *parent) {
 
 wxWindow *SetListEditor::make_all_songs_panel(wxWindow *parent) {
   wxWindow *retval = make_panel(parent, ID_SLE_AllSongs, "All Songs",
-                                km->all_songs->songs,
+                                km->all_songs()->songs,
                                 &all_songs_wxlist);
   return retval;
 }
@@ -131,17 +132,15 @@ void SetListEditor::add_song(wxCommandEvent& event) {
   int all_songs_index = all_songs_wxlist->GetSelection();
   if (all_songs_index == wxNOT_FOUND)
     return;
-  Song *song = km->all_songs->songs[all_songs_index];
+  Song *song = km->all_songs()->songs[all_songs_index];
 
   int set_list_index = set_list_wxlist->GetSelection();
   if (set_list_index == wxNOT_FOUND
       || set_list_index == songs_copy.size() - 1)
     songs_copy.push_back(song);
-  else {
-    vector<Song *>::iterator iter = songs_copy.begin();
-    iter += set_list_index + 1;
-    songs_copy.insert(iter, song);
-  }
+  else
+    insert_after(songs_copy, songs_copy[set_list_index], song);
+  set_list_wxlist->SetSelection(set_list_index+1);
   update(set_list_wxlist, songs_copy);
 }
 
@@ -150,10 +149,7 @@ void SetListEditor::remove_song(wxCommandEvent& event) {
   if (set_list_index == wxNOT_FOUND)
     return;
 
-  vector<Song *>::iterator iter = songs_copy.begin();
-  iter += set_list_index;
-  songs_copy.erase(iter);
-
+  erase(songs_copy, songs_copy[set_list_index]);
   update(set_list_wxlist, songs_copy);
 }
 

@@ -261,7 +261,7 @@ void Storage::load_songs() {
     if (notes != nullptr) s->notes = notes;
     s->bpm = bpm;
     s->clock_on_at_start = clock_on_at_start != 0;
-    km->all_songs->songs.push_back(s);
+    km->all_songs()->songs.push_back(s);
     load_patches(s);
   }
   sqlite3_finalize(stmt);
@@ -319,7 +319,7 @@ void Storage::load_patches(Song *s) {
 }
 
 void Storage::create_default_patches() {
-  for (auto& song : km->all_songs->songs)
+  for (auto& song : km->all_songs()->songs)
     if (song->patches.empty())
       create_default_patch(song);
 }
@@ -594,7 +594,7 @@ void Storage::save_songs() {
     "insert into songs (id, name, notes, bpm, clock_on_at_start) values (?, ?, ?, ?, ?)";
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
-  for (auto& song : km->all_songs->songs) {
+  for (auto& song : km->all_songs()->songs) {
     sqlite3_bind_null(stmt, 1);
     sqlite3_bind_text(stmt, 2, song->name.c_str(), -1, SQLITE_STATIC);
     if (song->notes.empty())
@@ -727,11 +727,9 @@ void Storage::save_set_lists() {
     "insert into set_lists (id, name) values (?, ?)";
 
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
-  for (vector<SetList *>::iterator iter = ++(km->set_lists.begin());
-       iter != km->set_lists.end();
-       ++iter)
-  {
-    SetList *set_list = *iter;
+  for (auto &set_list : km->set_lists) {
+    if (set_list == km->all_songs())
+      continue;
     sqlite3_bind_null(stmt, 1);
     sqlite3_bind_text(stmt, 2, set_list->name.c_str(), -1, SQLITE_STATIC);
     sqlite3_step(stmt);
@@ -797,7 +795,7 @@ Message *Storage::find_message_by_id(
 Song *Storage::find_song_by_id(
   const char * const searcher_name, sqlite3_int64 searcher_id, sqlite3_int64 id
 ) {
-  for (auto &song : km->all_songs->songs)
+  for (auto &song : km->all_songs()->songs)
     if (song->id() == id)
         return song;
   set_find_error_message(searcher_name, searcher_id, "song", id);
