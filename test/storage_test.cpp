@@ -299,7 +299,7 @@ TEST_CASE("save", CATCH_CATEGORY) {
 
 TEST_CASE("save sets UNDEFINED_ID ids and does not mess up patches", CATCH_CATEGORY) {
   KeyMaster *km = load_test_data();
-  Editor e(km);
+  Editor e;
 
   // Remember a few things before we save so we can compare them after
   // saving and reloading. There are a bunch of sanity checkes here

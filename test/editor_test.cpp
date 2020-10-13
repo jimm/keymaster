@@ -9,7 +9,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
   KeyMaster *km = load_test_data();
   Cursor *c = km->cursor;
   c->init();
-  Editor e(km);
+  Editor e;
 
   SECTION("add message") {
     Message *m = e.create_message();
@@ -113,7 +113,6 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     REQUIRE(c->song() == km->all_songs()->songs[0]);
     REQUIRE(c->patch() == c->song()->patches[0]);
 
-    Editor e(km);
     e.destroy_patch(c->song(), c->patch());
 
     // old_patch has been deallocated, but we can still check that the current
@@ -137,7 +136,6 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     REQUIRE(c->patch() == c->song()->patches.back());
     REQUIRE(c->song()->patches.size() == num_patches);
 
-    Editor e(km);
     e.destroy_patch(c->song(), c->patch());
 
     // old_patch has been deallocated, but we can still check that the current
@@ -156,7 +154,6 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     Connection *old_conn = p->connections.back();
     int num_conns = p->connections.size();
 
-    Editor e(km);
     e.destroy_connection(p, old_conn);
     REQUIRE(p->connections.size() == num_conns - 1);
     for (auto &conn : p->connections)
@@ -168,7 +165,6 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     SetList *old_set_list = km->set_lists.back();
     int num_set_lists = km->set_lists.size();
 
-    Editor e(km);
     e.destroy_set_list(old_set_list);
 
     REQUIRE(km->set_lists.size() == num_set_lists - 1);
@@ -181,7 +177,6 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     Song *song = c->song();
     REQUIRE(song->patches.size() == 2); // sanity check
 
-    Editor e;
     Patch *created1 = e.create_patch();
     Patch *created2 = e.create_patch();
     e.add_patch(created1, song);

@@ -117,7 +117,6 @@ void Frame::make_frame_panels() {
   sizer->Add(make_messages_panel(this), POS(4, 1), SPAN(1, 1), wxEXPAND);
   sizer->Add(make_triggers_panel(this), POS(4, 2), SPAN(1, 1), wxEXPAND);
 
-
   wxBoxSizer * const outer_border_sizer = new wxBoxSizer(wxVERTICAL);
   outer_border_sizer->Add(sizer, wxSizerFlags().Expand().Border());
   SetSizerAndFit(outer_border_sizer);
@@ -471,12 +470,10 @@ void Frame::edit_message(wxCommandEvent& event) {
 }
 
 bool Frame::edit_message(Message *message) {
-  if (message != nullptr)
-    if (MessageEditor(this, message).ShowModal() == wxID_OK) {
-      update();
-      return true;
-    }
-  return false;
+  if (message == nullptr)
+    return false;
+
+  return dialog_closed(MessageEditor(this, message).ShowModal());
 }
 
 void Frame::edit_trigger(wxListEvent& event) {
@@ -484,12 +481,10 @@ void Frame::edit_trigger(wxListEvent& event) {
 }
 
 bool Frame::edit_trigger(Trigger *trigger) {
-  if (trigger != nullptr)
-    if (TriggerEditor(this, trigger).ShowModal() == wxID_OK) {
-      update();
-      return true;
-    }
-  return false;
+  if (trigger == nullptr)
+    return false;
+
+  return dialog_closed(TriggerEditor(this, trigger).ShowModal());
 }
 
 void Frame::edit_set_list(wxCommandEvent& event) {
@@ -507,11 +502,7 @@ bool Frame::edit_set_list(SetList *set_list) {
                 "Set List Editor", wxOK | wxICON_INFORMATION);
     return false;
   }
-  if (SetListEditor(this, set_list).ShowModal() == wxID_OK) {
-    update();
-    return true;
-  }
-  return false;
+  return dialog_closed(SetListEditor(this, set_list).ShowModal());
 }
 
 void Frame::edit_song(wxCommandEvent& event) {
@@ -523,14 +514,13 @@ bool Frame::edit_song(Song *song) {
   if (song == nullptr)
     return false;
 
-  if (SongEditor(this, song).ShowModal() == wxID_OK) {
+  int dialog_status = SongEditor(this, song).ShowModal();
+  if (dialog_status == wxID_OK) {
     KeyMaster *km = KeyMaster_instance();
     km->sort_all_songs();
     km->update_clock();
-    update();
-    return true;
   }
-  return false;
+  return dialog_closed(dialog_status);
 }
 
 void Frame::edit_patch(wxCommandEvent& event) {
@@ -539,12 +529,10 @@ void Frame::edit_patch(wxCommandEvent& event) {
 }
 
 bool Frame::edit_patch(Patch *patch) {
-  if (patch != nullptr)
-    if (PatchEditor(this, patch).ShowModal() == wxID_OK) {
-      update();
-      return true;
-    }
-  return false;
+  if (patch == nullptr)
+    return false;
+
+  return dialog_closed(PatchEditor(this, patch).ShowModal());
 }
 
 void Frame::edit_connection(wxListEvent& event) {
@@ -555,11 +543,7 @@ bool Frame::edit_connection(Connection *conn) {
   if (conn == nullptr)
     return false;
 
-  if (ConnectionEditor(this, conn).ShowModal() == wxID_OK) {
-    update();
-    return true;
-  }
-  return false;
+  return dialog_closed(ConnectionEditor(this, conn).ShowModal());
 }
 
 void Frame::set_song_notes(wxCommandEvent& event) {
@@ -844,6 +828,14 @@ void Frame::save() {
   storage.save(KeyMaster_instance());
 }
 
+bool Frame::dialog_closed(int dialog_status) {
+  bool ok = dialog_status == wxID_OK;
+  SetFocus();
+  if (ok)
+    update();
+  return ok;
+}
+
 void Frame::update(Observable *o, void *arg) {
   // Right now we only observe the clock
   ClockChange clock_update = (ClockChange)(long)arg;
@@ -888,9 +880,9 @@ void Frame::update_song_notes() {
 }
 
 void Frame::update_menu_items() {
+  Editor e;
   KeyMaster *km = KeyMaster_instance();
   Cursor *cursor = km->cursor;
-  Editor e(km);
 
   // file menu
   menu_bar->FindItem(wxID_SAVEAS, nullptr)->Enable(!file_path.empty());

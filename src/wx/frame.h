@@ -173,6 +173,7 @@ private:
   wxWindow * make_notes_panel(wxWindow *);
   wxWindow * make_patch_conns_panel(wxWindow *);
 
+  bool dialog_closed(int dialog_return_code);
   void update_lists();
   void update_song_notes();
 
