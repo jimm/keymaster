@@ -12,6 +12,14 @@ const char * const COLUMN_HEADERS[] = {
 const int COLUMN_WIDTHS[] = {
   3*CW, 1*CW, 3*CW, 1*CW, 2*CW, int(1.5*CW), int(1.5*CW), 3*CW, 6*CW
 };
+const int COLUMN_ALIGNMENTS[] = {
+  // input, chan, output, chan
+  wxLIST_FORMAT_LEFT, wxLIST_FORMAT_RIGHT, wxLIST_FORMAT_LEFT, wxLIST_FORMAT_RIGHT,
+  // zone, xpose
+  wxLIST_FORMAT_LEFT, wxLIST_FORMAT_RIGHT,
+  // vel curve, prog, cc filt/map
+  wxLIST_FORMAT_RIGHT, wxLIST_FORMAT_RIGHT, wxLIST_FORMAT_LEFT,
+};
 
 PatchConnections::PatchConnections(wxWindow *parent, wxWindowID id)
   : FrameListCtrl(parent, id, wxDefaultPosition, wxSize(600, 150),
@@ -87,7 +95,7 @@ void PatchConnections::update() {
 
 void PatchConnections::set_headers() {
   for (int i = 0; i < sizeof(COLUMN_HEADERS) / sizeof(const char * const); ++i) {
-    InsertColumn(i, COLUMN_HEADERS[i]);
+    InsertColumn(i, COLUMN_HEADERS[i], COLUMN_ALIGNMENTS[i]);
     SetColumnWidth(i, COLUMN_WIDTHS[i]);
   }
 }
