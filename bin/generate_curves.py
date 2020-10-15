@@ -7,6 +7,10 @@ import os.path
 import sys
 
 
+def halfway_between(a, b):
+    return int((a + b) / 2)
+
+
 def linear(x):
     return x
 
@@ -18,16 +22,28 @@ def exponential(x):
     return val
 
 
+# Halfway between linear and exponential.
+def half_exponential(x):
+    return halfway_between(linear(x), exponential(x))
+
+
 def inverse_exponential(x):
     val = 127 - x
     val = int(127 - (val * val) / 127)
     return val
 
 
+# Halfway between linear and inverse exponential.
+def half_inverse_exponential(x):
+    return halfway_between(linear(x), inverse_exponential(x))
+
+
 curves = [
     (linear, "linear"),
     (exponential, "exponential"),
+    (half_exponential, "half_exponential"),
     (inverse_exponential, "inverse_exponential"),
+    (half_inverse_exponential, "half_inverse_exponential"),
 ]
 
 

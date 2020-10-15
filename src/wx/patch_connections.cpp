@@ -65,8 +65,14 @@ void PatchConnections::update() {
     case Exponential:
       SetItem(i, col++, "exp");
       break;
+    case HalfExponential:
+      SetItem(i, col++, "exp/2");
+      break;
     case InverseExponential:
-      SetItem(i, col++, "invexp");
+      SetItem(i, col++, "-exp");
+      break;
+    case HalfInverseExponential:
+      SetItem(i, col++, "-exp/2");
       break;
     }
 

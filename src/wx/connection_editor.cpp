@@ -21,6 +21,14 @@ wxBEGIN_EVENT_TABLE(ConnectionEditor, wxDialog)
   EVT_LIST_ITEM_DESELECTED(ID_CE_ControllerMappings, ConnectionEditor::update_buttons)
 wxEND_EVENT_TABLE()
 
+static CurveShape curve_display_order[] = {
+  Linear,
+  Exponential,
+  HalfExponential,
+  InverseExponential,
+  HalfInverseExponential
+};
+
 ConnectionEditor::ConnectionEditor(wxWindow *parent, Connection *c)
   : wxDialog(parent, wxID_ANY, "Connection Editor", wxDefaultPosition, wxSize(480, 500)),
     km(KeyMaster_instance()), connection(c)
@@ -185,8 +193,8 @@ wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
 
   // velocity curve dropdown
   wxArrayString choices;
-  for (int i = 0; i < NUM_CURVE_SHAPES; ++i)
-    choices.Add(curves[i].name);
+  for (auto curve_shape : curve_display_order)
+    choices.Add(curve_with_shape(curve_shape)->name);
   cb_vel_curve = new wxComboBox(p, ID_CE_VelocityCurve, connection->velocity_curve->name,
                                 wxDefaultPosition, wxDefaultSize, choices, wxCB_READONLY);
   vel_curve_field_sizer->Add(cb_vel_curve);
@@ -382,7 +390,7 @@ void ConnectionEditor::save(wxCommandEvent& _) {
   connection->zone.high = note_name_to_num(tc_zone_high->GetValue());
   connection->xpose = int_from_chars(tc_xpose->GetValue());
   n = cb_vel_curve->GetCurrentSelection();
-  connection->velocity_curve = curve_with_shape(static_cast<CurveShape>(n));
+  connection->velocity_curve = curve_with_shape(curve_display_order[n]);
 
   MessageFilter &mf = connection->message_filter;
   mf.note = cb_pass_note->IsChecked();
