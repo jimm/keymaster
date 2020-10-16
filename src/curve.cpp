@@ -2,7 +2,7 @@
 #include "generated_curves.h"
 
 // Need to keep these in same order curves are defined in generated_curves.h
-Curve curves[NUM_CURVE_SHAPES] = {
+Curve curves[NUM_CURVES] = {
   {Linear, "Linear", linear_curve},
   {Exponential, "Exponential", exponential_curve},
   {InverseExponential, "Inverse Exponential", inverse_exponential_curve},
