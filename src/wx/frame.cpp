@@ -377,7 +377,7 @@ void Frame::jump_to_patch(wxCommandEvent &event) {
 void Frame::send_message(wxCommandEvent& event) {
   KeyMaster *km = KeyMaster_instance();
   int message_num = lc_messages->GetSelection();
-  Message *message = km->messages[message_num];
+  Message *message = km->messages()[message_num];
   message->send_to_all_outputs();
 }
 
@@ -397,7 +397,7 @@ void Frame::create_message(wxCommandEvent& event) {
 void Frame::create_trigger(wxCommandEvent& event) {
   Editor e;
   KeyMaster *km = KeyMaster_instance();
-  Trigger *trigger = e.create_trigger(km->inputs.front());
+  Trigger *trigger = e.create_trigger(km->inputs().front());
   if (edit_trigger(trigger)) {
     e.add_trigger(trigger);
     update();
@@ -431,19 +431,19 @@ void Frame::create_patch(wxCommandEvent& event) {
 void Frame::create_connection(wxCommandEvent& event) {
   Editor e;
   KeyMaster *km = KeyMaster_instance();
-  if (km->inputs.empty() || km->outputs.empty()) {
+  if (km->inputs().empty() || km->outputs().empty()) {
     wxMessageBox("There must be at least one input and one\noutput to create a connection",
                 "New Connection", wxOK | wxICON_INFORMATION);
     return;
   }
-  Patch *patch = km->cursor->patch();
+  Patch *patch = km->cursor()->patch();
   if (patch == nullptr) {
     wxMessageBox("Please select a patch", "New Connection",
                  wxOK | wxICON_INFORMATION);
     return;
   }
 
-  Connection *conn = e.create_connection(km->inputs.front(), km->outputs.front());
+  Connection *conn = e.create_connection(km->inputs().front(), km->outputs().front());
   if (edit_connection(conn)) {
     e.add_connection(conn, patch);
     update();
@@ -466,7 +466,7 @@ void Frame::create_set_list(wxCommandEvent& event) {
 void Frame::edit_message(wxCommandEvent& event) {
   int message_num = lc_messages->GetSelection();
   if (message_num != wxNOT_FOUND)
-    edit_message(KeyMaster_instance()->messages[message_num]);
+    edit_message(KeyMaster_instance()->messages()[message_num]);
 }
 
 bool Frame::edit_message(Message *message) {
@@ -489,7 +489,7 @@ bool Frame::edit_trigger(Trigger *trigger) {
 
 void Frame::edit_set_list(wxCommandEvent& event) {
   KeyMaster *km = KeyMaster_instance();
-  edit_set_list(km->cursor->set_list());
+  edit_set_list(km->cursor()->set_list());
 }
 
 bool Frame::edit_set_list(SetList *set_list) {
@@ -507,7 +507,7 @@ bool Frame::edit_set_list(SetList *set_list) {
 
 void Frame::edit_song(wxCommandEvent& event) {
   KeyMaster *km = KeyMaster_instance();
-  edit_song(km->cursor->song());
+  edit_song(km->cursor()->song());
 }
 
 bool Frame::edit_song(Song *song) {
@@ -525,7 +525,7 @@ bool Frame::edit_song(Song *song) {
 
 void Frame::edit_patch(wxCommandEvent& event) {
   KeyMaster *km = KeyMaster_instance();
-  edit_patch(km->cursor->patch());
+  edit_patch(km->cursor()->patch());
 }
 
 bool Frame::edit_patch(Patch *patch) {
@@ -549,21 +549,21 @@ bool Frame::edit_connection(Connection *conn) {
 void Frame::set_song_notes(wxCommandEvent& event) {
   if (updating_notes)
     return;
-  Song *song = KeyMaster_instance()->cursor->song();
+  Song *song = KeyMaster_instance()->cursor()->song();
   if (song != nullptr)
-    song->notes = lc_notes->GetValue();
+    song->set_notes(lc_notes->GetValue());
 }
 
 void Frame::destroy_message(wxCommandEvent& event) {
   KeyMaster *km = KeyMaster_instance();
-  if (km->messages.empty())
+  if (km->messages().empty())
     return;
 
   Editor e;
   int message_num = lc_messages->GetSelection();
   if (message_num == wxNOT_FOUND)
     return;
-  Message *message = km->messages[message_num];
+  Message *message = km->messages()[message_num];
   e.destroy_message(message);
   update();
 }
@@ -576,7 +576,7 @@ void Frame::destroy_trigger(wxCommandEvent& event) {
 void Frame::destroy_song(wxCommandEvent& event) {
   Editor e;
   KeyMaster *km = KeyMaster_instance();
-  Song *song = km->cursor->song();
+  Song *song = km->cursor()->song();
   if (song != nullptr)
     e.destroy_song(song);
   update();
@@ -584,18 +584,18 @@ void Frame::destroy_song(wxCommandEvent& event) {
 
 void Frame::destroy_patch(wxCommandEvent& event) {
   KeyMaster *km = KeyMaster_instance();
-  Patch *patch = km->cursor->patch();
+  Patch *patch = km->cursor()->patch();
   if (patch == nullptr)
     return;
 
   Editor e;
-  e.destroy_patch(km->cursor->song(), patch);
+  e.destroy_patch(km->cursor()->song(), patch);
   update();
 }
 
 void Frame::destroy_connection(wxCommandEvent& event) {
   KeyMaster *km = KeyMaster_instance();
-  Patch *patch = km->cursor->patch();
+  Patch *patch = km->cursor()->patch();
   if (patch == nullptr)
     return;
 
@@ -611,7 +611,7 @@ void Frame::destroy_connection(wxCommandEvent& event) {
 void Frame::destroy_set_list(wxCommandEvent& event) {
   Editor e;
   KeyMaster *km = KeyMaster_instance();
-  SetList *set_list = km->cursor->set_list();
+  SetList *set_list = km->cursor()->set_list();
   if (set_list != nullptr && set_list != km->all_songs())
     e.destroy_set_list(set_list);
   update();
@@ -688,7 +688,7 @@ void Frame::super_panic(wxCommandEvent &_event) {
 bool Frame::handle_trigger_key(int key_code) {
   bool triggered = false;
 
-  for (auto &trigger : KeyMaster_instance()->triggers)
+  for (auto &trigger : KeyMaster_instance()->triggers())
     if (trigger->signal_key(key_code))
       triggered = true;
 
@@ -762,7 +762,7 @@ void Frame::initialize() {
   KeyMaster *km = new KeyMaster();
   km->initialize();
   km->start();
-  km->clock.add_observer(this);
+  km->clock().add_observer(this);
   update();
 }
 
@@ -777,8 +777,8 @@ void Frame::load(wxString path) {
 
   KeyMaster *old_km = KeyMaster_instance();
   if (old_km != nullptr)
-    old_km->clock.remove_observer(this);
-  bool testing = old_km != nullptr && old_km->testing;
+    old_km->clock().remove_observer(this);
+  bool testing = old_km != nullptr && old_km->is_testing();
 
   Storage storage(path);
   KeyMaster *km = storage.load(testing);
@@ -795,28 +795,28 @@ void Frame::load(wxString path) {
     delete old_km;
   }
   km->start();                  // initializes cursor
-  km->clock.add_observer(this);
+  km->clock().add_observer(this);
   update();                     // must come after start
 }
 
 void Frame::create_new_keymaster() {
   KeyMaster *old_km = KeyMaster_instance();
-  bool testing = old_km != nullptr && old_km->testing;
+  bool testing = old_km != nullptr && old_km->is_testing();
 
   KeyMaster *km = new KeyMaster();
-  km->testing = testing;
+  km->set_testing(testing);
   km->initialize();
 
   if (old_km != nullptr) {
     old_km->stop();
-    old_km->clock.remove_observer(this);
+    old_km->clock().remove_observer(this);
     delete old_km;
   }
 
   show_user_message("Created new project", 15);
   file_path = "";
   km->start();                  // initializes cursor
-  km->clock.add_observer(this);
+  km->clock().add_observer(this);
   update();                     // must come after start
 }
 
@@ -868,28 +868,28 @@ void Frame::update_lists() {
 
 void Frame::update_song_notes() {
   KeyMaster *km = KeyMaster_instance();
-  Cursor *cursor = km->cursor;
+  Cursor *cursor = km->cursor();
 
   Song *song = cursor->song();
   updating_notes = true;
   if (song == nullptr)
     lc_notes->Clear();
   else
-    lc_notes->SetValue(song->notes);
+    lc_notes->SetValue(song->notes());
   updating_notes = false;
 }
 
 void Frame::update_menu_items() {
   Editor e;
   KeyMaster *km = KeyMaster_instance();
-  Cursor *cursor = km->cursor;
+  Cursor *cursor = km->cursor();
 
   // file menu
   menu_bar->FindItem(wxID_SAVEAS, nullptr)->Enable(!file_path.empty());
 
   // edit menu
   menu_bar->FindItem(ID_DestroyMessage, nullptr)
-    ->Enable(!km->messages.empty() && lc_messages->GetSelection() != wxNOT_FOUND);
+    ->Enable(!km->messages().empty() && lc_messages->GetSelection() != wxNOT_FOUND);
 
   menu_bar->FindItem(ID_DestroyTrigger, nullptr)
     ->Enable(lc_triggers->selected() != nullptr);
@@ -898,7 +898,7 @@ void Frame::update_menu_items() {
     ->Enable(cursor->song() != nullptr);
 
   bool enable = cursor->patch() != nullptr &&
-    cursor->song()->patches.size() > 1;
+    cursor->song()->patches().size() > 1;
   menu_bar->FindItem(ID_DestroyPatch, nullptr)->Enable(enable);
 
   menu_bar->FindItem(ID_DestroyConnection, nullptr)
@@ -915,8 +915,8 @@ void Frame::update_menu_items() {
   menu_bar->FindItem(ID_GoPrevPatch, nullptr)->Enable(cursor->has_prev_patch());
 
   SetList *set_list = cursor->set_list();
-  bool has_songs = set_list != nullptr && !set_list->songs.empty();
+  bool has_songs = set_list != nullptr && !set_list->songs().empty();
   menu_bar->FindItem(ID_FindSong, nullptr)->Enable(has_songs);
 
-  menu_bar->FindItem(ID_FindSetList, nullptr)->Enable(km->set_lists.size() > 1);
+  menu_bar->FindItem(ID_FindSetList, nullptr)->Enable(km->set_lists().size() > 1);
 }

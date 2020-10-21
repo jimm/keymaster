@@ -49,16 +49,16 @@ int note_name_to_num(const char *str) {
   return octave + from_c + accidental;
 }
 
-void format_program(program prog, char *buf) {
-  int has_msb = prog.bank_msb != UNDEFINED;
-  int has_lsb = prog.bank_lsb != UNDEFINED;
+void format_program(int bank_msb, int bank_lsb, int prog, char *buf) {
+  int has_msb = bank_msb != UNDEFINED;
+  int has_lsb = bank_lsb != UNDEFINED;
   int has_bank = has_msb || has_lsb;
 
   sprintf(buf, " %c", has_bank ? '[' : ' ');
   buf += 2;
 
   if (has_msb)
-    sprintf(buf, "%3d", prog.bank_msb);
+    sprintf(buf, "%3d", bank_msb);
   else
     strcat(buf, "   ");
   buf += 3;
@@ -67,7 +67,7 @@ void format_program(program prog, char *buf) {
   buf += 2;
 
   if (has_lsb)
-    sprintf(buf, "%3d", prog.bank_lsb);
+    sprintf(buf, "%3d", bank_lsb);
   else
     strcat(buf, "   ");
   buf += 3;
@@ -75,8 +75,8 @@ void format_program(program prog, char *buf) {
   sprintf(buf, "%c ", has_bank ? ']' : ' ');
   buf += 2;
 
-  if (prog.prog != UNDEFINED)
-    sprintf(buf, " %3d", prog.prog);
+  if (prog != UNDEFINED)
+    sprintf(buf, " %3d", prog);
   else
     strcat(buf, "    ");
 }
@@ -87,22 +87,22 @@ void format_controllers(Connection *conn, char *buf) {
   strcat(buf, " ");
   buf += 1;
   for (int i = 0; i < 128; ++i) {
-    Controller *cc = conn->cc_maps[i];
+    Controller *cc = conn->cc_map(i);
     if (cc == nullptr)
       continue;
 
     if (first) first = false; else { strcat(buf, ", "); buf += 2; }
-    sprintf(buf, "%d", cc->cc_num);
+    sprintf(buf, "%d", cc->cc_num());
     buf += strlen(buf);
 
-    if (cc->filtered) {
+    if (cc->filtered()) {
       sprintf(buf, "x");
       buf += 1;
       continue;
     }
 
-    if (cc->cc_num != cc->translated_cc_num) {
-      sprintf(buf, "->%d", cc->translated_cc_num);
+    if (cc->cc_num() != cc->translated_cc_num()) {
+      sprintf(buf, "->%d", cc->translated_cc_num());
       buf += strlen(buf);
     }
 
@@ -111,7 +111,7 @@ void format_controllers(Connection *conn, char *buf) {
     {
       sprintf(buf, " ");
       buf += 1;
-      if (cc->pass_through_0) {
+      if (cc->pass_through_0()) {
         sprintf(buf, "0");
         buf += 1;
       }
@@ -119,7 +119,7 @@ void format_controllers(Connection *conn, char *buf) {
               cc->min_in(), cc->max_in(),
               cc->min_out(), cc->max_out());
       buf += strlen(buf);
-      if (cc->pass_through_127) {
+      if (cc->pass_through_127()) {
         sprintf(buf, "127");
         buf += 3;
       }

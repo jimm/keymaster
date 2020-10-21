@@ -38,7 +38,7 @@ wxWindow *MessageEditor::make_name_panel(wxWindow *parent) {
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL);
 
   sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Name")), center_flags);
-  name_text = new wxTextCtrl(p, ID_ME_Name, message->name, wxDefaultPosition, NAME_CTRL_SIZE);
+  name_text = new wxTextCtrl(p, ID_ME_Name, message->name(), wxDefaultPosition, NAME_CTRL_SIZE);
   sizer->Add(name_text, center_flags);
 
   p->SetSizerAndFit(sizer);
@@ -50,7 +50,7 @@ wxString MessageEditor::message_to_text() {
 }
 
 void MessageEditor::save(wxCommandEvent& _) {
-  message->name = name_text->GetLineText(0);
+  message->name() = name_text->GetLineText(0);
   wxString text = message_text->GetValue();
   message->from_editable_string(text.ToStdString());
   EndModal(wxID_OK);

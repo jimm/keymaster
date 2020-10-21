@@ -29,11 +29,11 @@ InstrumentDialog::InstrumentDialog(wxWindow *parent, KeyMaster *keymaster)
   }
 
   int i = 0;
-  for (auto* inst : km->inputs)
+  for (auto* inst : km->inputs())
     add_instrument(inputs, inst, i++);
   inputs->SortItems(inst_list_sort, 0);
   i = 0;
-  for (auto* inst : km->outputs)
+  for (auto* inst : km->outputs())
     add_instrument(outputs, inst, i++);
   outputs->SortItems(inst_list_sort, 0);
 
@@ -58,8 +58,8 @@ void InstrumentDialog::run() {
 }
 
 void InstrumentDialog::add_instrument(wxListCtrl *list_box, Instrument *inst, int i) {
-  list_box->InsertItem(i, inst->name.c_str());
+  list_box->InsertItem(i, inst->name().c_str());
   list_box->SetItem(i, 1, inst->device_name.c_str());
   list_box->SetItem(i, 2, inst->enabled ? "enabled" : "<disabled>");
-  list_box->SetItemData(i, (long)inst->name.c_str()); // for sorting
+  list_box->SetItemData(i, (long)inst->name().c_str()); // for sorting
 }

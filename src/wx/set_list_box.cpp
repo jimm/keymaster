@@ -10,14 +10,14 @@ SetListBox::SetListBox(wxWindow *parent, wxWindowID id, wxSize size)
 
 void SetListBox::update() {
   KeyMaster *km = KeyMaster_instance();
-  Cursor *cursor = km->cursor;
+  Cursor *cursor = km->cursor();
   SetList *curr_set_list = cursor->set_list();
 
   Clear();
   if (curr_set_list != nullptr) {
     wxArrayString names;
-    for (auto& song : curr_set_list->songs)
-      names.Add(song->name.c_str());
+    for (auto& song : curr_set_list->songs())
+      names.Add(song->name().c_str());
     if (!names.IsEmpty())
       InsertItems(names, 0);
   }
@@ -27,7 +27,7 @@ void SetListBox::update() {
     return;
 
   int i = 0;
-  for (auto& song : set_list->songs) {
+  for (auto& song : set_list->songs()) {
     if (song == cursor->song()) {
       SetSelection(i);
       break;

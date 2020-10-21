@@ -35,7 +35,7 @@ void *input_thread(void *_) {
         inputs_mutex.unlock();
         return nullptr;
       }
-      if (in->running && Pm_Poll(in->stream) == TRUE) {
+      if (in->is_running() && Pm_Poll(in->stream) == TRUE) {
         int n = Pm_Read(in->stream, buf, MIDI_BUFSIZ);
         if (n > 0) {
           processed_something = true;
@@ -59,7 +59,7 @@ void *read_thread(void *in_voidptr) {
   Input *in = (Input *)in_voidptr;
   struct timespec rqtp = {0, SLEEP_NANOSECS};
 
-  while (in->running) {
+  while (in->is_running()) {
     PmMessage msg = in->message_from_read_queue();
     if (msg != 0)
       in->read(msg);
@@ -73,24 +73,24 @@ void *read_thread(void *in_voidptr) {
 
 
 Input::Input(sqlite3_int64 id, PmDeviceID device_id, const char *device_name, const char *name)
-  : Instrument(id, device_id, device_name, name), running(false), read_pthread(nullptr)
+  : Instrument(id, device_id, device_name, name), _running(false), read_pthread(nullptr)
 {
 }
 
 void Input::add_connection(Connection *conn) {
-  connections.push_back(conn);
+  _connections.push_back(conn);
 }
 
 void Input::remove_connection(Connection *conn) {
-  erase(connections, conn);
+  erase(_connections, conn);
 }
 
 void Input::add_trigger(Trigger *trigger) {
-  triggers.push_back(trigger);
+  _triggers.push_back(trigger);
 }
 
 void Input::remove_trigger(Trigger *trigger) {
-  erase(triggers, trigger);
+  erase(_triggers, trigger);
 }
 
 // Lazily starts the `input_thread` if needed. Sets `running` to `true` and
@@ -109,7 +109,7 @@ void Input::start() {
     if (status != 0) {
       char buf[BUFSIZ];
       sprintf(buf, "error creating global input stream thread %s: %d\n",
-              name.c_str(), status);
+              name().c_str(), status);
       error_message(buf);
       exit(1);
     }
@@ -119,12 +119,12 @@ void Input::start() {
   // hasn't started yet.
   inputs.insert(this);
 
-  running = true;
+  _running = true;
   status = pthread_create(&read_pthread, 0, read_thread, this);
   if (status != 0) {
     char buf[BUFSIZ];
     sprintf(buf, "error creating input read thread %s: %d\n",
-            name.c_str(), status);
+            name().c_str(), status);
     error_message(buf);
     exit(1);
   }
@@ -133,7 +133,7 @@ void Input::start() {
 // Sets `running` to `false`, which will cause the `read_thread` for this
 // Input to exit. Also removes the Input from `inputs`.
 void Input::stop() {
-  running = false;
+  _running = false;
   read_pthread = 0;
   inputs_mutex.lock();
   for (set<Input *>::iterator i = inputs.begin(); i != inputs.end(); ++i) {
@@ -156,7 +156,7 @@ bool Input::start_midi() {
   PmError err = Pm_OpenInput(&stream, device_id, 0, MIDI_BUFSIZ, 0, 0);
   if (err != 0) {
     char buf[BUFSIZ];
-    sprintf(buf, "error opening input stream %s: %s\n", name.c_str(),
+    sprintf(buf, "error opening input stream %s: %s\n", name().c_str(),
             Pm_GetErrorText(err));
     error_message(buf);
     return false;
@@ -166,7 +166,7 @@ bool Input::start_midi() {
   if (err != 0) {
     char buf[BUFSIZ];
     sprintf(buf, "error setting PortMidi filter for input %s: %s\n",
-            name.c_str(), Pm_GetErrorText(err));
+            name().c_str(), Pm_GetErrorText(err));
     error_message(buf);
   }
 
@@ -194,7 +194,7 @@ void Input::read(PmMessage msg) {
   else if (status == STOP)
     KeyMaster_instance()->start_clock();
 
-  for (auto& trigger : triggers)
+  for (auto& trigger : _triggers)
     trigger->signal_message(msg);
 
   // When testing, remember the messages we've seen. This could be made
@@ -222,44 +222,44 @@ PmMessage Input::message_from_read_queue() {
   return msg;
 }
 
-// Return the connections to use for `msg`. Normally it's the same as our
-// list of connections. However for every note and sustain on we store those
-// connections so we can use them later for the corresponding note and
+// Return the _connections to use for `msg`. Normally it's the same as our
+// list of _connections. However for every note and sustain on we store those
+// _connections so we can use them later for the corresponding note and
 // sustain offs.
 vector<Connection *> &Input::connections_for_message(PmMessage msg) {
   unsigned char status = Pm_MessageStatus(msg);
 
   // Handle realtime bytes as quickly as possible
   if (status >= CLOCK)
-    return connections;
+    return _connections;
 
   unsigned char high_nibble = status & 0xf0;
   unsigned char chan = status & 0x0f;
   unsigned char data1 = Pm_MessageData1(msg);
 
   // Note off and sustain off messages must be sent to their original
-  // connections, so for note on and sustain on messages we store the list
-  // of current connections and for off messages we return that list.
+  // _connections, so for note on and sustain on messages we store the list
+  // of current _connections and for off messages we return that list.
   if (high_nibble == NOTE_OFF || (high_nibble == NOTE_ON && Pm_MessageData2(msg) == 0)) {
     if (notes_off_conns[chan][data1].empty())
-      return connections;
+      return _connections;
     return notes_off_conns[chan][data1];
   }
 
   if (high_nibble == NOTE_ON) {
-    notes_off_conns[chan][data1] = connections;
+    notes_off_conns[chan][data1] = _connections;
     return notes_off_conns[chan][data1];
   }
 
   if (high_nibble == CONTROLLER && data1 == CC_SUSTAIN) {
     if (Pm_MessageData2(msg) == 0) {
       if (sustain_off_conns[chan].empty())
-        return connections;
+        return _connections;
       return sustain_off_conns[chan];
     }
-    sustain_off_conns[chan] = connections;
+    sustain_off_conns[chan] = _connections;
     return sustain_off_conns[chan];
   }
 
-  return connections;
+  return _connections;
 }

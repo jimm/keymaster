@@ -12,7 +12,6 @@ class Output;
 
 class Message : public DBObj, public Named {
 public:
-  vector<PmEvent> events;       // public for testing only
 
   Message(sqlite3_int64 id, const char *name);
 
@@ -27,8 +26,11 @@ public:
   void send_to_all_outputs();
   void send_to(Output &);
 
+  // Public ONLY for testing; nobody else needs to see the raw events.
+  inline vector<PmEvent> &events() { return _events; }
+
 private:
-  void clear_events();
+  vector<PmEvent> _events;       // public for testing only
 };
 
 #endif /* MESSAGE_H */

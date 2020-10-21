@@ -8,39 +8,56 @@
 #include "output.h"
 #include "message.h"
 #include "clock.h"
+#include "observer.h"
 
 using namespace std;
 
 class Cursor;
 
-class KeyMaster {
+class KeyMaster : Observer {
 public:
-  vector<Input *> inputs;
-  vector<Output *> outputs;
-  vector<Trigger *> triggers;
-  vector<SetList *> set_lists;  // all set lists, including all_songs
-  Cursor *cursor;
-  Clock clock;
-  bool running;
-  bool testing;
-  vector<Message *> messages;
-  string loaded_from_file;
-
   KeyMaster();
   ~KeyMaster();
 
-  inline SetList * all_songs() { return set_lists[0]; }
+  // ================ accessors ================
+  inline vector<Input *> &inputs() { return _inputs; }
+  inline vector<Output *> &outputs() { return _outputs; }
+  inline SetList *all_songs() { return _set_lists[0]; }
+  inline vector<SetList *> &set_lists() { return _set_lists; }
+  inline vector<Trigger *> &triggers() { return _triggers; }
+  inline vector<Message *> &messages() { return _messages; }
+  inline Cursor *cursor() { return _cursor; }
+  inline Clock &clock() { return _clock; }
+  inline bool is_testing() { return _testing; }
+  inline bool is_modified() { return _modified; }
+
+  void add_input(Input *input);
+  void add_output(Output *output);
+
+  void add_message(Message *message);
+  void remove_message(Message *message);
+
+  void add_trigger(Trigger *trigger);
+  void remove_trigger(Trigger *trigger);
+
+  void add_set_list(SetList *set_list);
+  void remove_set_list(SetList *set_list);
+
+  void set_testing(bool val) { _testing = val; }
+
+  // Only called by storage when re-setting modified after data loaded or saved
+  void set_modified(bool val) { _modified = val; }
 
   // ================ running ================
   void start();
   void stop();
 
   // ================ clock ================
-  void start_clock() { clock.start(); }
-  void stop_clock() { clock.stop(); }
-  void toggle_clock() { if (is_clock_running()) clock.stop(); else clock.start(); }
-  void set_clock_bpm(int bpm) { clock.set_bpm(bpm); }
-  bool is_clock_running() { return clock.is_running(); }
+  void start_clock() { _clock.start(); }
+  void stop_clock() { _clock.stop(); }
+  void toggle_clock() { if (is_clock_running()) _clock.stop(); else _clock.start(); }
+  void set_clock_bpm(int bpm) { _clock.set_bpm(bpm); }
+  bool is_clock_running() { return _clock.is_running(); }
   // Get BPM and start/stop from current song and update state of the clock
   void update_clock();
 
@@ -72,10 +89,22 @@ public:
   void sort_all_songs();
 
 private:
+  vector<Input *> _inputs;
+  vector<Output *> _outputs;
+  vector<Trigger *> _triggers;
+  vector<SetList *> _set_lists; // all set lists, including all_songs
+  Cursor *_cursor;
+  Clock _clock;
+  bool _running;
+  bool _testing;
+  bool _modified;
+  vector<Message *> _messages;
+
   // ================ initialization ================
   void create_songs();
 
-  // ================ clock ================
+  // ================ observer ================
+  void update(Observable *_o, void *_arg) { _modified = true; }
 };
 
 KeyMaster *KeyMaster_instance();

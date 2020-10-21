@@ -29,10 +29,10 @@ void Cursor::init() {
   set_list_index = 0;
 
   SetList *sl = set_list();
-  if (sl != nullptr && sl->songs.size() > 0) {
+  if (sl != nullptr && sl->songs().size() > 0) {
     song_index = 0;
     Song *s = song();
-    patch_index = (s != 0 && s->patches.size() > 0) ? 0 : UNDEFINED;
+    patch_index = (s != 0 && s->patches().size() > 0) ? 0 : UNDEFINED;
   }
   else {
     song_index = UNDEFINED;
@@ -43,28 +43,28 @@ void Cursor::init() {
 SetList *Cursor::set_list() {
   if (set_list_index == UNDEFINED)
     return km->all_songs();
-  return km->set_lists[set_list_index];
+  return km->set_lists()[set_list_index];
 }
 
 Song *Cursor::song() {
   SetList *sl = set_list();
-  if (sl == nullptr || song_index == UNDEFINED || sl->songs.size() == 0)
+  if (sl == nullptr || song_index == UNDEFINED || sl->songs().size() == 0)
     return nullptr;
-  return sl->songs[song_index];
+  return sl->songs()[song_index];
 }
 
 Patch *Cursor::patch() {
   Song *s = song();
   if (s == nullptr || patch_index == UNDEFINED)
     return nullptr;
-  return s->patches[patch_index];
+  return s->patches()[patch_index];
 }
 
 void Cursor::next_song() {
   if (set_list_index == UNDEFINED)
     return;
   SetList *sl = set_list();
-  if (song_index == sl->songs.size()-1)
+  if (song_index == sl->songs().size()-1)
     return;
 
   ++song_index;
@@ -84,7 +84,7 @@ void Cursor::next_patch() {
   if (s == nullptr)
     return;
 
-  if (patch_index == s->patches.size()-1)
+  if (patch_index == s->patches().size()-1)
     next_song();
   else
     ++patch_index;
@@ -101,7 +101,7 @@ void Cursor::prev_patch() {
 }
 
 bool Cursor::has_next_song() {
-  return set_list_index != UNDEFINED && song_index != set_list()->songs.size() - 1;
+  return set_list_index != UNDEFINED && song_index != set_list()->songs().size() - 1;
 }
 
 bool Cursor::has_prev_song() {
@@ -110,7 +110,7 @@ bool Cursor::has_prev_song() {
 
 bool Cursor::has_next_patch() {
   Song *s = song();
-  return s != nullptr && (patch_index != s->patches.size() - 1 || has_next_song());
+  return s != nullptr && (patch_index != s->patches().size() - 1 || has_next_song());
 }
 
 bool Cursor::has_prev_patch() {
@@ -120,7 +120,7 @@ bool Cursor::has_prev_patch() {
 
 bool Cursor::has_next_patch_in_song() {
   Song *s = song();
-  return s != nullptr && patch_index != s->patches.size() - 1;
+  return s != nullptr && patch_index != s->patches().size() - 1;
 }
 
 bool Cursor::has_prev_patch_in_song() {
@@ -129,7 +129,7 @@ bool Cursor::has_prev_patch_in_song() {
 }
 
 void Cursor::jump_to_set_list_index(int i) {
-  if (i < 0 || i >= km->set_lists.size())
+  if (i < 0 || i >= km->set_lists().size())
     return;
 
   set_list_index = i;
@@ -138,7 +138,7 @@ void Cursor::jump_to_set_list_index(int i) {
 
 void Cursor::jump_to_song_index(int i) {
   SetList *slist = set_list();
-  if (slist == nullptr || i < 0 || i >= slist->songs.size())
+  if (slist == nullptr || i < 0 || i >= slist->songs().size())
     return;
 
   song_index = i;
@@ -147,7 +147,7 @@ void Cursor::jump_to_song_index(int i) {
 
 void Cursor::jump_to_patch_index(int i) {
   Song *s = song();
-  if (s == nullptr || i < 0 || i >= s->patches.size())
+  if (s == nullptr || i < 0 || i >= s->patches().size())
     return;
 
   patch_index = i;
@@ -158,7 +158,7 @@ void Cursor::jump_to_patch_index(int i) {
 void Cursor::goto_song(Song *song) {
   SetList *sl = set_list();
   int i = 0;
-  for (auto &sl_song : sl->songs) {
+  for (auto &sl_song : sl->songs()) {
     if (sl_song == song) {
       song_index = i;
       patch_index = 0;
@@ -176,7 +176,7 @@ void Cursor::goto_patch(Patch *patch) {
     return;
 
   int i = 0;
-  for (auto &s_patch : curr_song->patches) {
+  for (auto &s_patch : curr_song->patches()) {
     if (s_patch == patch) {
       patch_index = i;
       return;
@@ -198,8 +198,8 @@ void Cursor::goto_song(string name_regex) {
 
   if (sl != nullptr) {
     i = 0;
-    for (auto &song : sl->songs) {
-      if (regexec(&re, song->name.c_str(), 1, &match, 0) == 0) {
+    for (auto &song : sl->songs()) {
+      if (regexec(&re, song->name().c_str(), 1, &match, 0) == 0) {
         song_index = i;
         patch_index = 0;
         return;
@@ -209,8 +209,8 @@ void Cursor::goto_song(string name_regex) {
   }
 
   i = 0;
-  for (auto &song : km->all_songs()->songs) {
-    if (regexec(&re, song->name.c_str(), 1, &match, 0) == 0) {
+  for (auto &song : km->all_songs()->songs()) {
+    if (regexec(&re, song->name().c_str(), 1, &match, 0) == 0) {
       set_list_index = 0;
       song_index = i;
       patch_index = 0;
@@ -228,8 +228,8 @@ void Cursor::goto_set_list(string name_regex) {
     return;
 
   int i = 0;
-  for (auto &set_list : km->set_lists) {
-    if (regexec(&re, set_list->name.c_str(), 1, &match, 0) == 0) {
+  for (auto &set_list : km->set_lists()) {
+    if (regexec(&re, set_list->name().c_str(), 1, &match, 0) == 0) {
       set_list_index = i;
       song_index = 0;
       patch_index = 0;

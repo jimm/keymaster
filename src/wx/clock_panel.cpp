@@ -44,7 +44,7 @@ ClockPanel::ClockPanel(wxWindow *parent)
 
   KeyMaster *km = KeyMaster_instance();
   if (km != nullptr)
-    km->clock.add_observer(this);
+    km->clock().add_observer(this);
 
   update();
   timer.Start(TIMER_MILLISECS);
@@ -54,14 +54,14 @@ ClockPanel::~ClockPanel() {
   KeyMaster *km = KeyMaster_instance();
   if (km == nullptr)
     return;
-  km->clock.remove_observer(this);
+  km->clock().remove_observer(this);
 }
 
 void ClockPanel::update(Observable *o, void *arg) {
   ClockChange clock_update = (ClockChange)(long)arg;
   switch (clock_update) {
   case ClockChangeBpm:
-    lc_clock_bpm->SetValue(wxString::Format("%f", KeyMaster_instance()->clock.bpm()));
+    lc_clock_bpm->SetValue(wxString::Format("%f", KeyMaster_instance()->clock().bpm()));
     break;
   case ClockChangeStart:
     onoff_button->SetLabelText("on");
@@ -103,7 +103,7 @@ void ClockPanel::update() {
   KeyMaster *km = KeyMaster_instance();
   if (km == nullptr)
     return;
-  Clock &clock = km->clock;
+  Clock &clock = km->clock();
 
   float bpm = clock.bpm();
   if (bpm != display_bpm) {

@@ -7,7 +7,7 @@
 void note_num_to_name(int num, char *buf);
 int note_name_to_num(const char *str); // str may point to an integer string like "64" as well
 
-void format_program(program prog, char *buf);
+void format_program(int bank_msb, int bank_lsb, int prog, char *buf);
 void format_controllers(Connection *conn, char *buf);
 
 // Translate floating-point value (to a precision of 0.001) to a string,

@@ -18,7 +18,7 @@ const map<int, const PmDeviceInfo *> &devices() {
 PmDeviceID find_device(const char *device_name, int device_type) {
   KeyMaster *km = KeyMaster_instance();
 
-  if (km->testing)
+  if (km->is_testing())
     return pmNoDevice;
 
   for (auto &iter : pm_devices) {

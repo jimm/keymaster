@@ -24,17 +24,17 @@ void ControllerMappings::update() {
     return;
 
   for (int i = 0, row = 0; i < 128; ++i) {
-    Controller *controller = connection->cc_maps[i];
+    Controller *controller = connection->cc_map(i);
     if (controller == nullptr)
       continue;
 
-    InsertItem(row, wxString::Format("%d", controller->cc_num));
+    InsertItem(row, wxString::Format("%d", controller->cc_num()));
     int col = 1;
-    SetItem(row, col++, wxString::Format("%d", controller->translated_cc_num));
-    SetItem(row, col++, controller->filtered ? "yes" : "no");
-    if (!controller->filtered) {
-      SetItem(row, col++, controller->pass_through_0 ? "yes" : "no");
-      SetItem(row, col++, controller->pass_through_127 ? "yes" : "no");
+    SetItem(row, col++, wxString::Format("%d", controller->translated_cc_num()));
+    SetItem(row, col++, controller->filtered() ? "yes" : "no");
+    if (!controller->filtered()) {
+      SetItem(row, col++, controller->pass_through_0() ? "yes" : "no");
+      SetItem(row, col++, controller->pass_through_127() ? "yes" : "no");
       SetItem(row, col++, wxString::Format("%d", controller->min_in()));
       SetItem(row, col++, wxString::Format("%d", controller->max_in()));
       SetItem(row, col++, wxString::Format("%d", controller->min_out()));
@@ -52,7 +52,7 @@ int ControllerMappings::selected_cc_num() {
     return UNDEFINED;
 
   for (int i = 0, row = 0; i < 128; ++i) {
-    if (connection->cc_maps[i] == nullptr)
+    if (connection->cc_map(i) == nullptr)
       continue;
 
     if (row == int(selected_index))

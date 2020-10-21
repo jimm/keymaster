@@ -12,8 +12,8 @@ void MessageList::update() {
 
   Clear();
   wxArrayString names;
-  for (auto& message : km->messages)
-    names.Add(message->name.c_str());
+  for (auto& message : km->messages())
+    names.Add(message->name().c_str());
   if (!names.empty())
     InsertItems(names, 0);
 }

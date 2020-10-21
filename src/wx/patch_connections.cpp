@@ -29,17 +29,17 @@ PatchConnections::PatchConnections(wxWindow *parent, wxWindowID id)
 }
 
 Connection *PatchConnections::selected() {
-  Patch *patch = KeyMaster_instance()->cursor->patch();
-  if (patch == nullptr || patch->connections.empty())
+  Patch *patch = KeyMaster_instance()->cursor()->patch();
+  if (patch == nullptr || patch->connections().empty())
     return nullptr;
 
   long index = GetNextItem(wxNOT_FOUND, wxLIST_NEXT_ALL, wxLIST_STATE_SELECTED);
-  return index == wxNOT_FOUND ? nullptr : patch->connections[index];
+  return index == wxNOT_FOUND ? nullptr : patch->connections()[index];
 }
 
 void PatchConnections::update() {
   KeyMaster *km = KeyMaster_instance();
-  Cursor *cursor = km->cursor;
+  Cursor *cursor = km->cursor();
   Patch *patch = cursor->patch();
 
   ClearAll();
@@ -48,25 +48,25 @@ void PatchConnections::update() {
     return;
 
   int i = 0;
-  for (auto* conn : patch->connections) {
+  for (auto* conn : patch->connections()) {
     char buf[BUFSIZ];
 
-    InsertItem(i, conn->input->name.c_str());
+    InsertItem(i, conn->input()->name().c_str());
     int col = 1;
-    SetItem(i, col++, conn->input_chan == -1 ? "all" : wxString::Format("%d", conn->input_chan + 1));
-    SetItem(i, col++, conn->output->name.c_str());
-    SetItem(i, col++, conn->output_chan == -1 ? "all" : wxString::Format("%d", conn->output_chan + 1));
+    SetItem(i, col++, conn->input_chan() == -1 ? "all" : wxString::Format("%d", conn->input_chan() + 1));
+    SetItem(i, col++, conn->output()->name().c_str());
+    SetItem(i, col++, conn->output_chan() == -1 ? "all" : wxString::Format("%d", conn->output_chan() + 1));
 
     char buf2[8];
-    note_num_to_name(conn->zone.low, buf);
-    note_num_to_name(conn->zone.high, buf2);
-    if (conn->zone.low != -1 || conn->zone.high != -1)
+    note_num_to_name(conn->zone_low(), buf);
+    note_num_to_name(conn->zone_high(), buf2);
+    if (conn->zone_low() != -1 || conn->zone_high() != -1)
       SetItem(i, col++, wxString::Format("%s - %s", buf, buf2));
 
-    if (conn->xpose != -1)
-      SetItem(i, col++, wxString::Format("%c%2d", conn->xpose < 0 ? '-' : ' ', abs(conn->xpose)));
+    if (conn->xpose() != -1)
+      SetItem(i, col++, wxString::Format("%c%2d", conn->xpose() < 0 ? '-' : ' ', abs(conn->xpose())));
 
-    switch (conn->velocity_curve->shape) {
+    switch (conn->velocity_curve()->shape) {
     case Linear:
       SetItem(i, col++, "");
       break;
@@ -84,7 +84,8 @@ void PatchConnections::update() {
       break;
     }
 
-    format_program(conn->prog, buf);
+    format_program(conn->program_bank_msb(), conn->program_bank_lsb(),
+                   conn->program_prog(), buf);
     SetItem(i, col++, buf);
 
     format_controllers(conn, buf);

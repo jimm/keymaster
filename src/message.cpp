@@ -19,17 +19,21 @@ Message::Message(sqlite3_int64 id, const char *name)
 // four represents the bytes in little-endian order (high byte first).
 // Replaces the current messages.
 void Message::from_chars(const char *buf) {
-  events.clear();
-  if (buf == nullptr)
+  _events.clear();
+  if (buf == nullptr) {
+    changed();
     return;
+  }
 
   while (*buf) {
     PmEvent event = {0, 0};
     string str(buf, 8);
     event.message = stoi(str, 0, 16);
     buf += 8;
-    events.push_back(event);
+    _events.push_back(event);
   }
+
+  changed();
 }
 
 // Reads `buf` which must consist of bytes encoded as two-digit hex strings.
@@ -38,7 +42,7 @@ void Message::from_editable_string(const string &str) {
   istringstream istream(str);
   string word;
 
-  events.clear();
+  _events.clear();
   istream >> word;
   while (istream) {
     PmEvent event = {0, 0};
@@ -54,16 +58,16 @@ void Message::from_editable_string(const string &str) {
       istream >> word; data1 = hex_to_byte(word.c_str());
       istream >> word; data2 = hex_to_byte(word.c_str());
       event.message = Pm_Message(status, data1, data2);
-      events.push_back(event);
+      _events.push_back(event);
       break;
     case PROGRAM_CHANGE: case CHANNEL_PRESSURE: case SONG_SELECT:
       istream >> word; data1 = hex_to_byte(word.c_str());
       event.message = Pm_Message(status, data1, 0);
-      events.push_back(event);
+      _events.push_back(event);
       break;
     case TUNE_REQUEST:
       event.message = Pm_Message(status, 0, 0);
-      events.push_back(event);
+      _events.push_back(event);
       break;
     case SYSEX:
       in_sysex = true;
@@ -80,7 +84,7 @@ void Message::from_editable_string(const string &str) {
           in_sysex = false;
           if (data1 == EOX) goto SYSEX_EOX;
           event.message = Pm_Message(status, 0, 0);
-          events.push_back(event);
+          _events.push_back(event);
           status = data1;
           goto RESWITCH;
         }
@@ -90,7 +94,7 @@ void Message::from_editable_string(const string &str) {
           in_sysex = false;
           if (data1 == EOX) goto SYSEX_EOX;
           event.message = Pm_Message(status, data1, 0);
-          events.push_back(event);
+          _events.push_back(event);
           status = data2;
           goto RESWITCH;
         }
@@ -100,14 +104,14 @@ void Message::from_editable_string(const string &str) {
           in_sysex = false;
           if (data1 == EOX) goto SYSEX_EOX;
           event.message = Pm_Message(status, data1, data2);
-          events.push_back(event);
+          _events.push_back(event);
           status = data3;
           goto RESWITCH;
         }
 
       SYSEX_EOX:
         event.message = Pm_Message(status, data1, data2) + (data3 << 24);
-        events.push_back(event);
+        _events.push_back(event);
 
         if (in_sysex) {
           istream >> word; status = hex_to_byte(word.c_str());
@@ -120,6 +124,7 @@ void Message::from_editable_string(const string &str) {
     }
     istream >> word;
   }
+  changed();
 }
 
 // Returns a string consisting of non-delimited two-digit hex bytes. Every
@@ -132,7 +137,7 @@ string Message::to_string() {
   char buf[9];
 
   buf[8] = 0;
-  for (auto &event : events) {
+  for (auto &event : _events) {
     sprintf(buf, "%08x", event.message);
     str += buf;
   }
@@ -147,7 +152,7 @@ string Message::to_editable_string() {
   string str;
   bool in_sysex = false;
 
-  for (auto &event : events) {
+  for (auto &event : _events) {
     PmMessage msg = event.message;
     int status = Pm_MessageStatus(msg);
     int switch_status = (status < 0xf0 && status >= 0x80) ? (status & 0xf0) : status;
@@ -222,10 +227,10 @@ string Message::to_editable_string() {
 }
 
 void Message::send_to_all_outputs() {
-  for (auto &out : KeyMaster_instance()->outputs)
+  for (auto &out : KeyMaster_instance()->outputs())
     send_to(*out);
 }
 
 void Message::send_to(Output &out) {
-  out.write(events.data(), events.size());
+  out.write(_events.data(), _events.size());
 }

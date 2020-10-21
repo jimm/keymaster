@@ -26,7 +26,7 @@ Trigger *TriggerList::selected() {
   if (index == wxNOT_FOUND)
     return nullptr;
 
-  return KeyMaster_instance()->triggers[index];
+  return KeyMaster_instance()->triggers()[index];
 }
 
 void TriggerList::update() {
@@ -37,27 +37,27 @@ void TriggerList::update() {
 
   int row = 0;
   vector<Trigger *> *sorted_triggers =
-    sorted_copy(KeyMaster_instance()->triggers);
+    sorted_copy(KeyMaster_instance()->triggers());
 
   for (auto * trigger : *sorted_triggers) {
-    int key = trigger->trigger_key_code;
+    int key = trigger->trigger_key_code();
 
     InsertItem(row, key == UNDEFINED ? ""
-               : wxString::Format("F%d", trigger->trigger_key_code - WXK_F1 + 1));
+               : wxString::Format("F%d", trigger->trigger_key_code() - WXK_F1 + 1));
 
     Input *input = trigger->input();
-    SetItem(row, 1, input ? input->name.c_str() : "");
+    SetItem(row, 1, input ? input->name().c_str() : "");
 
     wxString str;
     if (input != nullptr)
       str = wxString::Format(
         "0x%02x 0x%02x 0x%02x",
-        Pm_MessageStatus(trigger->trigger_message),
-        Pm_MessageData1(trigger->trigger_message),
-        Pm_MessageData2(trigger->trigger_message));
+        Pm_MessageStatus(trigger->trigger_message()),
+        Pm_MessageData1(trigger->trigger_message()),
+        Pm_MessageData2(trigger->trigger_message()));
     SetItem(row, 2, str);
 
-    switch (trigger->action) {
+    switch (trigger->action()) {
     case TA_NEXT_SONG:
       str = "Next Song";
       break;
@@ -80,7 +80,7 @@ void TriggerList::update() {
       str = "Toggle Clock";
       break;
     case TA_MESSAGE:
-      str = trigger->output_message->name;
+      str = trigger->output_message()->name();
       break;
     }
     SetItem(row, 3, str);
@@ -100,18 +100,18 @@ void TriggerList::set_headers() {
 // ================ helpers ================
 
 bool songNameComparator(Trigger *t1, Trigger *t2) {
-  if (t1->trigger_key_code != UNDEFINED) {
-    if (t2->trigger_key_code == UNDEFINED)
+  if (t1->trigger_key_code() != UNDEFINED) {
+    if (t2->trigger_key_code() == UNDEFINED)
       return true;
-    return t1->trigger_key_code < t2->trigger_key_code;
+    return t1->trigger_key_code() < t2->trigger_key_code();
   }
 
-  if (t2->trigger_key_code != UNDEFINED)
+  if (t2->trigger_key_code() != UNDEFINED)
     return false;
 
   if (t1->input() != nullptr) {
     if (t2->input() != nullptr)
-      return t1->input()->name < t2->input()->name;
+      return t1->input()->name() < t2->input()->name();
     return true;
   }
 

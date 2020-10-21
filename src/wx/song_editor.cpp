@@ -30,7 +30,7 @@ wxWindow *SongEditor::make_name_panel(wxWindow *parent) {
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL).Expand().Border(wxTOP|wxLEFT|wxRIGHT);
 
   sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Name")), panel_flags);
-  name_text = new wxTextCtrl(p, ID_SE_Name, song->name, wxDefaultPosition, NAME_CTRL_SIZE);
+  name_text = new wxTextCtrl(p, ID_SE_Name, song->name(), wxDefaultPosition, NAME_CTRL_SIZE);
   sizer->Add(name_text, panel_flags);
 
   p->SetSizerAndFit(sizer);
@@ -45,13 +45,13 @@ wxWindow *SongEditor::make_clock_panel(wxWindow *parent) {
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL).Expand().Border(wxTOP|wxLEFT|wxRIGHT);
 
   char buf[16];
-  format_float(song->bpm, buf);
+  format_float(song->bpm(), buf);
   text_bpm = new wxTextCtrl(p, ID_SE_BPM, buf, wxDefaultPosition, wxSize(BPM_WIDTH, BPM_HEIGHT));
   field_sizer->Add(text_bpm, panel_flags);
   field_sizer->Add(new wxStaticText(p, wxID_ANY, "BPM"), panel_flags);
 
   cb_clock_start = new wxCheckBox(p, ID_SE_StartClock, "Start Clock");
-  cb_clock_start->SetValue(song->clock_on_at_start);
+  cb_clock_start->SetValue(song->clock_on_at_start());
   field_sizer->Add(cb_clock_start, panel_flags);
 
   outer_sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Clock")));
@@ -62,11 +62,11 @@ wxWindow *SongEditor::make_clock_panel(wxWindow *parent) {
 }
 
 void SongEditor::save(wxCommandEvent& _) {
-  song->name = name_text->GetLineText(0);
+  song->set_name(name_text->GetLineText(0));
   float bpm = atof(text_bpm->GetValue());
   if (bpm != 0)
-    song->bpm = bpm;
-  song->clock_on_at_start = cb_clock_start->IsChecked();
+    song->set_bpm(bpm);
+  song->set_clock_on_at_start(cb_clock_start->IsChecked());
 
   EndModal(wxID_OK);
 }

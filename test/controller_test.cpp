@@ -11,12 +11,12 @@ TEST_CASE("controller processing", CATCH_CATEGORY) {
   }
 
   SECTION("filter") {
-    cc.filtered = true;
+    cc.set_filtered(true);
     REQUIRE(cc.process(Pm_Message(CONTROLLER, 7, 127), 0) == CONTROLLER_BLOCK);
   }
 
   SECTION("map") {
-    cc.translated_cc_num = 10;
+    cc.set_translated_cc_num(10);
     REQUIRE(cc.process(Pm_Message(CONTROLLER, 7, 127), 0) == Pm_Message(CONTROLLER, 10, 127));
   }
 

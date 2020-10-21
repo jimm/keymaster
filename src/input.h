@@ -15,13 +15,13 @@ using namespace std;
 
 class Input : public Instrument {
 public:
-  vector<Connection *> connections;
-  vector<Trigger *> triggers;
-  bool running;
-
   Input(sqlite3_int64 id, PmDeviceID device_id, const char *device_name, const char *name = nullptr);
 
   virtual bool is_input() { return true; }
+
+  inline bool is_running() { return _running; }
+  inline vector<Connection *> &connections() { return _connections; }
+  inline vector<Trigger *> &triggers() { return _triggers; }
 
   void add_connection(Connection *);
   void remove_connection(Connection *);
@@ -41,6 +41,10 @@ protected:
   virtual bool start_midi();
 
 private:
+  vector<Connection *> _connections;
+  vector<Trigger *> _triggers;
+  bool _running;
+
   vector<Connection *> notes_off_conns[MIDI_CHANNELS][NOTES_PER_CHANNEL];
   vector<Connection *> sustain_off_conns[MIDI_CHANNELS];
   queue<PmMessage> message_queue;

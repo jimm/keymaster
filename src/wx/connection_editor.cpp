@@ -54,16 +54,16 @@ wxWindow *ConnectionEditor::make_input_panel(wxWindow *parent) {
   return make_instrument_panel(
     parent, ID_CE_InputDropdown, ID_CE_InputChannel,
     TITLE_STR("Input"), "All Channels", &cb_input, &cb_input_chan,
-    reinterpret_cast<vector<Instrument *> &>(km->inputs),
-    connection->input, connection->input_chan);
+    reinterpret_cast<vector<Instrument *> &>(km->inputs()),
+    connection->input(), connection->input_chan());
 }
 
 wxWindow *ConnectionEditor::make_output_panel(wxWindow *parent) {
   return make_instrument_panel(
     parent, ID_CE_OutputDropdown, ID_CE_OutputChannel,
     TITLE_STR("Output"), "Input Channel", &cb_output, &cb_output_chan,
-    reinterpret_cast<vector<Instrument *> &>(km->outputs),
-    connection->output, connection->output_chan);
+    reinterpret_cast<vector<Instrument *> &>(km->outputs()),
+    connection->output(), connection->output_chan());
 }
 
 wxWindow *ConnectionEditor::make_instrument_panel(
@@ -76,9 +76,9 @@ wxWindow *ConnectionEditor::make_instrument_panel(
   wxArrayString choices;
   wxString curr_instrument_name;
   for (auto &instrument : instruments) {
-    choices.Add(instrument->name);
+    choices.Add(instrument->name());
     if (instrument == curr_instrument)
-      curr_instrument_name = instrument->name;
+      curr_instrument_name = instrument->name();
   }
 
   wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
@@ -121,20 +121,20 @@ wxWindow *ConnectionEditor::make_program_panel(wxWindow *parent) {
   wxSizerFlags center_flags =
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL);
 
-  wxString val = connection->prog.bank_msb >= 0
-    ? wxString::Format("%d", connection->prog.bank_msb) : "";
+  wxString val = connection->program_bank_msb() >= 0
+    ? wxString::Format("%d", connection->program_bank_msb()) : "";
   field_sizer->Add(new wxStaticText(p, wxID_ANY, "Bank MSB"), center_flags);
   tc_bank_msb = new wxTextCtrl(p, ID_CE_BankMSB, val);
   field_sizer->Add(tc_bank_msb, center_flags);
 
-  val = connection->prog.bank_lsb >= 0
-    ? wxString::Format("%d", connection->prog.bank_lsb) : "";
+  val = connection->program_bank_lsb() >= 0
+    ? wxString::Format("%d", connection->program_bank_lsb()) : "";
   field_sizer->Add(new wxStaticText(p, wxID_ANY, "Bank LSB"), center_flags);
   tc_bank_lsb = new wxTextCtrl(p, ID_CE_BankLSB, val);
   field_sizer->Add(tc_bank_lsb, center_flags);
 
-  val = connection->prog.prog >= 0
-    ? wxString::Format("%d", connection->prog.prog) : "";
+  val = connection->program_prog() >= 0
+    ? wxString::Format("%d", connection->program_prog()) : "";
   field_sizer->Add(new wxStaticText(p, wxID_ANY, "PChg"), center_flags);
   tc_prog = new wxTextCtrl(p, ID_CE_Program, val);
   field_sizer->Add(tc_prog, center_flags);
@@ -156,13 +156,13 @@ wxWindow *ConnectionEditor::make_zone_panel(wxWindow *parent) {
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL);
 
   char buf[BUFSIZ];
-  note_num_to_name(connection->zone.low, buf);
+  note_num_to_name(connection->zone_low(), buf);
   wxString val(buf);
   field_sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Low")), center_flags);
   tc_zone_low = new wxTextCtrl(p, ID_CE_ZoneLow, val);
   field_sizer->Add(tc_zone_low, center_flags);
 
-  note_num_to_name(connection->zone.high, buf);
+  note_num_to_name(connection->zone_high(), buf);
   val = buf;
   field_sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("High")), center_flags);
   tc_zone_high = new wxTextCtrl(p, ID_CE_ZoneHigh, val);
@@ -181,7 +181,7 @@ wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
   wxBoxSizer *xpose_sizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer *xpose_field_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-  wxString xpose_val = wxString::Format("%d", connection->xpose);
+  wxString xpose_val = wxString::Format("%d", connection->xpose());
   tc_xpose = new wxTextCtrl(p, ID_CE_Transpose, xpose_val);
   xpose_field_sizer->Add(tc_xpose);
 
@@ -195,7 +195,7 @@ wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
   wxArrayString choices;
   for (auto curve_shape : curve_display_order)
     choices.Add(curve_with_shape(curve_shape)->name);
-  cb_vel_curve = new wxComboBox(p, ID_CE_VelocityCurve, connection->velocity_curve->name,
+  cb_vel_curve = new wxComboBox(p, ID_CE_VelocityCurve, connection->velocity_curve()->name,
                                 wxDefaultPosition, wxDefaultSize, choices, wxCB_READONLY);
   vel_curve_field_sizer->Add(cb_vel_curve);
 
@@ -299,7 +299,7 @@ int ConnectionEditor::int_or_undefined_from_field(wxTextCtrl *field) {
 void ConnectionEditor::edit_controller_mapping(wxListEvent& event) {
   int controller_num = lc_cc_mappings->selected_cc_num();
   if (controller_num != UNDEFINED)
-    edit_controller_mapping(connection->cc_maps[controller_num]);
+    edit_controller_mapping(connection->cc_map(controller_num));
 }
 
 bool ConnectionEditor::edit_controller_mapping(Controller *controller) {
@@ -313,7 +313,7 @@ bool ConnectionEditor::edit_controller_mapping(Controller *controller) {
 void ConnectionEditor::update_buttons() {
   bool has_free_cc_map_slot = false;
   for (int i = 0; i < 128 && !has_free_cc_map_slot; ++i)
-    if (connection->cc_maps[i] == nullptr)
+    if (connection->cc_map(i) == nullptr)
       has_free_cc_map_slot = true;
 
   b_add_ccmap->Enable(has_free_cc_map_slot);
@@ -356,56 +356,56 @@ void ConnectionEditor::update() {
 }
 
 void ConnectionEditor::update_filter_check_boxes() {
-  MessageFilter &mf = connection->message_filter;
-  cb_pass_note->SetValue(mf.note);
-  cb_pass_poly_pressure->SetValue(mf.poly_pressure);
-  cb_pass_chan_pressure->SetValue(mf.chan_pressure);
-  cb_pass_program_change->SetValue(mf.program_change);
-  cb_pass_pitch_bend->SetValue(mf.pitch_bend);
-  cb_pass_controller->SetValue(mf.controller);
-  cb_pass_song_pointer->SetValue(mf.song_pointer);
-  cb_pass_song_select->SetValue(mf.song_select);
-  cb_pass_tune_request->SetValue(mf.tune_request);
-  cb_pass_sysex->SetValue(mf.sysex);
-  cb_pass_clock->SetValue(mf.clock);
-  cb_pass_start_continue_stop->SetValue(mf.start_continue_stop);
-  cb_pass_system_reset->SetValue(mf.system_reset);
+  MessageFilter &mf = connection->message_filter();
+  cb_pass_note->SetValue(mf.note());
+  cb_pass_poly_pressure->SetValue(mf.poly_pressure());
+  cb_pass_chan_pressure->SetValue(mf.chan_pressure());
+  cb_pass_program_change->SetValue(mf.program_change());
+  cb_pass_pitch_bend->SetValue(mf.pitch_bend());
+  cb_pass_controller->SetValue(mf.controller());
+  cb_pass_song_pointer->SetValue(mf.song_pointer());
+  cb_pass_song_select->SetValue(mf.song_select());
+  cb_pass_tune_request->SetValue(mf.tune_request());
+  cb_pass_sysex->SetValue(mf.sysex());
+  cb_pass_clock->SetValue(mf.clock());
+  cb_pass_start_continue_stop->SetValue(mf.start_continue_stop());
+  cb_pass_system_reset->SetValue(mf.system_reset());
 }
 
 void ConnectionEditor::save(wxCommandEvent& _) {
   connection->begin_changes();
 
-  connection->input = km->inputs[cb_input->GetCurrentSelection()];
+  connection->set_input(km->inputs()[cb_input->GetCurrentSelection()]);
   int n = cb_input_chan->GetCurrentSelection();
-  connection->input_chan = (n == 0 ? CONNECTION_ALL_CHANNELS : n - 1);
+  connection->set_input_chan(n == 0 ? CONNECTION_ALL_CHANNELS : n - 1);
 
-  connection->output = km->outputs[cb_output->GetCurrentSelection()];
+  connection->set_output(km->outputs()[cb_output->GetCurrentSelection()]);
   n = cb_output_chan->GetCurrentSelection();
-  connection->output_chan = (n == 0 ? CONNECTION_ALL_CHANNELS : n - 1);
+  connection->set_output_chan(n == 0 ? CONNECTION_ALL_CHANNELS : n - 1);
 
-  connection->prog.bank_msb = int_or_undefined_from_field(tc_bank_msb);
-  connection->prog.bank_lsb = int_or_undefined_from_field(tc_bank_lsb);
-  connection->prog.prog = int_or_undefined_from_field(tc_prog);
-  connection->zone.low = note_name_to_num(tc_zone_low->GetValue());
-  connection->zone.high = note_name_to_num(tc_zone_high->GetValue());
-  connection->xpose = int_from_chars(tc_xpose->GetValue());
+  connection->set_program_bank_msb(int_or_undefined_from_field(tc_bank_msb));
+  connection->set_program_bank_lsb(int_or_undefined_from_field(tc_bank_lsb));
+  connection->set_program_prog(int_or_undefined_from_field(tc_prog));
+  connection->set_zone_low(note_name_to_num(tc_zone_low->GetValue()));
+  connection->set_zone_high(note_name_to_num(tc_zone_high->GetValue()));
+  connection->set_xpose(int_from_chars(tc_xpose->GetValue()));
   n = cb_vel_curve->GetCurrentSelection();
-  connection->velocity_curve = curve_with_shape(curve_display_order[n]);
+  connection->set_velocity_curve(curve_with_shape(curve_display_order[n]));
 
-  MessageFilter &mf = connection->message_filter;
-  mf.note = cb_pass_note->IsChecked();
-  mf.poly_pressure = cb_pass_poly_pressure->IsChecked();
-  mf.chan_pressure = cb_pass_chan_pressure->IsChecked();
-  mf.program_change = cb_pass_program_change->IsChecked();
-  mf.pitch_bend = cb_pass_pitch_bend->IsChecked();
-  mf.controller = cb_pass_controller->IsChecked();
-  mf.song_pointer = cb_pass_song_pointer->IsChecked();
-  mf.song_select = cb_pass_song_select->IsChecked();
-  mf.tune_request = cb_pass_tune_request->IsChecked();
-  mf.sysex = cb_pass_sysex->IsChecked();
-  mf.clock = cb_pass_clock->IsChecked();
-  mf.start_continue_stop = cb_pass_start_continue_stop->IsChecked();
-  mf.system_reset = cb_pass_system_reset->IsChecked();
+  MessageFilter &mf = connection->message_filter();
+  mf.set_note(cb_pass_note->IsChecked());
+  mf.set_poly_pressure(cb_pass_poly_pressure->IsChecked());
+  mf.set_chan_pressure(cb_pass_chan_pressure->IsChecked());
+  mf.set_program_change(cb_pass_program_change->IsChecked());
+  mf.set_pitch_bend(cb_pass_pitch_bend->IsChecked());
+  mf.set_controller(cb_pass_controller->IsChecked());
+  mf.set_song_pointer(cb_pass_song_pointer->IsChecked());
+  mf.set_song_select(cb_pass_song_select->IsChecked());
+  mf.set_tune_request(cb_pass_tune_request->IsChecked());
+  mf.set_sysex(cb_pass_sysex->IsChecked());
+  mf.set_clock(cb_pass_clock->IsChecked());
+  mf.set_start_continue_stop(cb_pass_start_continue_stop->IsChecked());
+  mf.set_system_reset(cb_pass_system_reset->IsChecked());
 
   // Don't need to update cc_maps because that's done on the fly
 

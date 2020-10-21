@@ -27,7 +27,7 @@ wxWindow *PatchEditor::make_name_panel(wxWindow *parent) {
     wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL);
 
   sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Name")), center_flags);
-  name_text = new wxTextCtrl(p, ID_PE_Name, patch->name, wxDefaultPosition, NAME_CTRL_SIZE);
+  name_text = new wxTextCtrl(p, ID_PE_Name, patch->name(), wxDefaultPosition, NAME_CTRL_SIZE);
   sizer->Add(name_text, center_flags);
 
   p->SetSizerAndFit(sizer);
@@ -36,13 +36,13 @@ wxWindow *PatchEditor::make_name_panel(wxWindow *parent) {
 
 wxWindow *PatchEditor::make_start_panel(wxWindow *parent) {
   return make_message_panel(
-    parent, ID_PE_StartMessageDropdown, TITLE_STR("Start"), patch->start_message,
+    parent, ID_PE_StartMessageDropdown, TITLE_STR("Start"), patch->start_message(),
     &cb_start_message);
 }
 
 wxWindow *PatchEditor::make_stop_panel(wxWindow *parent) {
   return make_message_panel(
-    parent, ID_PE_StopMessageDropdown, TITLE_STR("Stop"), patch->stop_message,
+    parent, ID_PE_StopMessageDropdown, TITLE_STR("Stop"), patch->stop_message(),
     &cb_stop_message);
 }
 
@@ -53,10 +53,10 @@ wxWindow *PatchEditor::make_message_panel(
   wxArrayString choices;
   choices.Add("(No Message)");
   wxString curr_choice;
-  for (auto &message : KeyMaster_instance()->messages) {
-    choices.Add(message->name);
+  for (auto &message : KeyMaster_instance()->messages()) {
+    choices.Add(message->name());
     if (message == curr_message)
-      curr_choice = message->name;
+      curr_choice = message->name();
   }
 
   wxPanel *p = new wxPanel(parent, wxID_ANY);
@@ -79,19 +79,19 @@ void PatchEditor::save(wxCommandEvent& _) {
   KeyMaster *km = KeyMaster_instance();
 
   // extract data from text edit widget
-  patch->name = name_text->GetLineText(0);
+  patch->set_name(name_text->GetLineText(0));
 
   int index = cb_start_message->GetCurrentSelection();
   if (index == wxNOT_FOUND || index == 0)
-    patch->start_message = nullptr;
+    patch->set_start_message(nullptr);
   else
-    patch->start_message = km->messages[index-1];
+    patch->set_start_message(km->messages()[index-1]);
 
   index = cb_stop_message->GetCurrentSelection();
   if (index == wxNOT_FOUND || index == 0)
-    patch->stop_message = nullptr;
+    patch->set_stop_message(nullptr);
   else
-    patch->stop_message = km->messages[index-1];
+    patch->set_stop_message(km->messages()[index-1]);
 
   EndModal(wxID_OK);
 }

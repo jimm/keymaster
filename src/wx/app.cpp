@@ -77,6 +77,7 @@ int App::FilterEvent(wxEvent &event) {
 
 int App::OnExit() {
   KeyMaster *km = KeyMaster_instance();
+  // TODO if modified, ask about exiting first
   if (km) km->stop();
   close_portmidi();
   return wxApp::OnExit();

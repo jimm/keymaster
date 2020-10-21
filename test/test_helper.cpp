@@ -52,7 +52,7 @@ KeyMaster *load_test_data() {
             storage.error().c_str());
     exit(1);
   }
-  km->testing = true;
+  km->set_testing(true);
   return km;
 }
 

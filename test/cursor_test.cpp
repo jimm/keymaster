@@ -6,7 +6,7 @@
 
 TEST_CASE("init empty", CATCH_CATEGORY) {
   KeyMaster *km = new KeyMaster();
-  Cursor *c = km->cursor;
+  Cursor *c = km->cursor();
   c->init();
   REQUIRE(c->set_list_index == 0);
   REQUIRE(c->song_index == -1);
@@ -16,9 +16,9 @@ TEST_CASE("init empty", CATCH_CATEGORY) {
 
 TEST_CASE("cursor", CATCH_CATEGORY) {
   KeyMaster *km = load_test_data();
-  km->testing = true;
-  Cursor *c = km->cursor;
-  km->cursor->init();
+  km->set_testing(true);
+  Cursor *c = km->cursor();
+  c->init();
 
 // ================ initialization
 
@@ -101,7 +101,7 @@ TEST_CASE("cursor", CATCH_CATEGORY) {
   }
 
   SECTION("has next song false") {
-    c->song_index = c->set_list()->songs.size() - 1;
+    c->song_index = c->set_list()->songs().size() - 1;
     REQUIRE(!c->has_next_song());
   }
 
@@ -119,8 +119,8 @@ TEST_CASE("cursor", CATCH_CATEGORY) {
   }
 
   SECTION("has next patch false") {
-    c->song_index = c->set_list()->songs.size() - 1;
-    c->patch_index = c->song()->patches.size() - 1;
+    c->song_index = c->set_list()->songs().size() - 1;
+    c->patch_index = c->song()->patches().size() - 1;
     REQUIRE(!c->has_next_patch());
   }
 
@@ -138,8 +138,8 @@ TEST_CASE("cursor", CATCH_CATEGORY) {
   }
 
   SECTION("has next patch in song false") {
-    c->song_index = c->set_list()->songs.size() - 1;
-    c->patch_index = c->song()->patches.size() - 1;
+    c->song_index = c->set_list()->songs().size() - 1;
+    c->patch_index = c->song()->patches().size() - 1;
     REQUIRE(!c->has_next_patch_in_song());
   }
 
@@ -161,12 +161,12 @@ TEST_CASE("cursor", CATCH_CATEGORY) {
   }
 
   SECTION("song") {
-    REQUIRE(c->song() == km->all_songs()->songs[0]);
+    REQUIRE(c->song() == km->all_songs()->songs()[0]);
   }
 
   SECTION("patch") {
     Song *s = c->song();
-    REQUIRE(c->patch() == s->patches[0]);
+    REQUIRE(c->patch() == s->patches()[0]);
   }
 
 // ================ goto
@@ -176,7 +176,7 @@ TEST_CASE("cursor", CATCH_CATEGORY) {
       c->goto_song("nother");
       Song *s = c->song();
       REQUIRE(s != nullptr);
-      REQUIRE(s->name == "Another Song");
+      REQUIRE(s->name() == "Another Song");
 
     }
 
@@ -194,7 +194,7 @@ TEST_CASE("cursor", CATCH_CATEGORY) {
       c->goto_set_list("two");
       SetList *sl = c->set_list();
       REQUIRE(sl != nullptr);
-      REQUIRE(sl->name == "Set List Two");
+      REQUIRE(sl->name() == "Set List Two");
 
     }
 
@@ -223,7 +223,7 @@ TEST_CASE("cursor", CATCH_CATEGORY) {
       Song *song = c->song();
 
       SECTION("in song") {
-        Patch *patch = song->patches.back();
+        Patch *patch = song->patches().back();
         REQUIRE(c->patch() != patch);
         c->goto_patch(patch);
         REQUIRE(c->song() == song);

@@ -29,9 +29,9 @@ TriggerEditor::TriggerEditor(wxWindow *parent, Trigger *t)
   if (trigger->input() != nullptr)
     message_str = wxString::Format(
       "0x%02x 0x%02x 0x%02x",
-      Pm_MessageStatus(trigger->trigger_message),
-      Pm_MessageData1(trigger->trigger_message),
-      Pm_MessageData2(trigger->trigger_message));
+      Pm_MessageStatus(trigger->trigger_message()),
+      Pm_MessageData1(trigger->trigger_message()),
+      Pm_MessageData2(trigger->trigger_message()));
 
   tc_trigger_message = new wxTextCtrl(this, ID_TE_MessageText, message_str);
   sizer->Add(tc_trigger_message, field_flags);
@@ -47,7 +47,7 @@ TriggerEditor::TriggerEditor(wxWindow *parent, Trigger *t)
 
 wxWindow *TriggerEditor::make_key_dropdown(wxWindow *parent) {
   wxArrayString choices;
-  int key = trigger->trigger_key_code;
+  int key = trigger->trigger_key_code();
 
   choices.Add("(No Trigger Key)");
   for (int i = 1; i <= 24; ++i)
@@ -66,14 +66,14 @@ wxWindow *TriggerEditor::make_input_dropdown(wxWindow *parent) {
   Input *orig_input = trigger->input();
 
   choices.Add("(No Trigger Instrument)");
-  for (auto &input : km->inputs) {
+  for (auto &input : km->inputs()) {
     if (input->enabled || input == trigger->input())
-      choices.Add(input->name);
+      choices.Add(input->name());
   }
 
   return lc_input = new wxComboBox(
     parent, ID_TE_InputDropdown,
-    orig_input ? orig_input->name : "(No Trigger Instrument)",
+    orig_input ? orig_input->name() : "(No Trigger Instrument)",
     wxDefaultPosition, wxDefaultSize, choices, wxCB_READONLY);
 }
 
@@ -87,10 +87,10 @@ wxWindow *TriggerEditor::make_action_dropdown(wxWindow *parent) {
   choices.Add("Prev Patch");
   choices.Add("Panic");
   choices.Add("Super Panic");
-  for (auto &message : km->messages)
-    choices.Add(message->name);
+  for (auto &message : km->messages())
+    choices.Add(message->name());
 
-  switch (trigger->action) {
+  switch (trigger->action()) {
   case TA_NEXT_SONG:
     initial_value = "Next Song";
     break;
@@ -113,7 +113,7 @@ wxWindow *TriggerEditor::make_action_dropdown(wxWindow *parent) {
     initial_value = "Toggle Clock";
     break;
   case TA_MESSAGE:
-    initial_value = trigger->output_message->name;
+    initial_value = trigger->output_message()->name();
     break;
   }
 
@@ -132,31 +132,31 @@ void TriggerEditor::save(wxCommandEvent& _) {
   if (index == wxNOT_FOUND || index == 0)
     trigger->remove_from_input();
   else {
-    Input *input = km->inputs[index - 1];
+    Input *input = km->inputs()[index - 1];
     PmMessage msg = message_from_bytes(tc_trigger_message->GetValue().c_str());
     trigger->set_trigger_message(input, msg);
   }
 
   wxString val = lc_action->GetValue();
   if (val == "Next Song")
-    trigger->action = TA_NEXT_SONG;
+    trigger->set_action(TA_NEXT_SONG);
   else if (val == "Prev Song")
-    trigger->action = TA_PREV_SONG;
+    trigger->set_action(TA_PREV_SONG);
   else if (val == "Next Patch")
-    trigger->action = TA_NEXT_PATCH;
+    trigger->set_action(TA_NEXT_PATCH);
   else if (val == "Prev Patch")
-    trigger->action = TA_PREV_PATCH;
+    trigger->set_action(TA_PREV_PATCH);
   else if (val == "Panic")
-    trigger->action = TA_PANIC;
+    trigger->set_action(TA_PANIC);
   else if (val == "Super Panic")
-    trigger->action = TA_SUPER_PANIC;
+    trigger->set_action(TA_SUPER_PANIC);
   else if (val == "Toggle Clock")
-    trigger->action = TA_TOGGLE_CLOCK;
+    trigger->set_action(TA_TOGGLE_CLOCK);
   else {
-    trigger->action = TA_MESSAGE;
-    for (auto &msg : km->messages) {
-      if (msg->name == val) {
-        trigger->output_message = msg;
+    trigger->set_action(TA_MESSAGE);
+    for (auto &msg : km->messages()) {
+      if (msg->name() == val) {
+        trigger->set_output_message(msg);
         break;
       }
     }

@@ -4,11 +4,10 @@
 #include <portmidi.h>
 #include "db_obj.h"
 #include "named.h"
-#include "observable.h"
 
 #define MIDI_BUFSIZ 128
 
-class Instrument : public DBObj, public Named, public Observable {
+class Instrument : public DBObj, public Named {
 public:
   PmDeviceID device_id;
   string device_name;

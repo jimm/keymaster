@@ -5,33 +5,55 @@
 
 Trigger::Trigger(sqlite3_int64 id, TriggerAction ta, Message *out_msg)
   : DBObj(id),
-    trigger_key_code(UNDEFINED), trigger_message(Pm_Message(0, 0, 0)),
-    action(ta), output_message(out_msg), trigger_input(nullptr)
+    _trigger_key_code(UNDEFINED), _trigger_message(Pm_Message(0, 0, 0)),
+    _action(ta), _output_message(out_msg), _trigger_input(nullptr)
 {
 }
 
 Trigger::~Trigger() {
+  remove_from_input();
 }
 
 void Trigger::set_trigger_key_code(int key_code) {
-  trigger_key_code = key_code;
+  if (_trigger_key_code != key_code) {
+    _trigger_key_code = key_code;
+    changed();
+  }
 }
 
 // `message` might be all zeroes, which will never match an incoming MIDI
 // message.
 void Trigger::set_trigger_message(Input *input, PmMessage message) {
+  if (_trigger_input == input && _trigger_message == message)
+    return;
+
   remove_from_input();
-  trigger_message = message;
+  _trigger_message = message;
   input->add_trigger(this);
-  trigger_input = input;
+  _trigger_input = input;
+  changed();
+}
+
+void Trigger::set_action(TriggerAction action) {
+  if (_action != action) {
+    _action = action;
+    changed();
+  }
+}
+
+void Trigger::set_output_message(Message *msg) {
+  if (_output_message != msg) {
+    _output_message = msg;
+    changed();
+  }
 }
 
 Input *Trigger::input() {
-  return trigger_input;
+  return _trigger_input;
 }
 
 bool Trigger::signal_message(PmMessage msg) {
-  if (msg == trigger_message) {
+  if (msg == _trigger_message) {
       perform_action();
       return true;
   }
@@ -39,7 +61,7 @@ bool Trigger::signal_message(PmMessage msg) {
 }
 
 bool Trigger::signal_key(int key_code) {
-  if (key_code == trigger_key_code) {
+  if (key_code == _trigger_key_code) {
       perform_action();
       return true;
   }
@@ -49,7 +71,7 @@ bool Trigger::signal_key(int key_code) {
 void Trigger::perform_action() {
   KeyMaster *km = KeyMaster_instance();
 
-  switch (action) {
+  switch (_action) {
   case TA_NEXT_SONG:
     km->next_song();
     break;
@@ -72,13 +94,13 @@ void Trigger::perform_action() {
     km->toggle_clock();
     break;
   case TA_MESSAGE:
-    output_message->send_to_all_outputs();
+    _output_message->send_to_all_outputs();
     break;
   }
 }
 
 void Trigger::remove_from_input() {
-  if (trigger_input != nullptr)
-    trigger_input->remove_trigger(this);
-  trigger_input = nullptr;
+  if (_trigger_input != nullptr)
+    _trigger_input->remove_trigger(this);
+  _trigger_input = nullptr;
 }

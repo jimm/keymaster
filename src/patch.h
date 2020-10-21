@@ -7,13 +7,10 @@
 #include "named.h"
 #include "connection.h"
 #include "input.h"
+#include "observer.h"
 
-class Patch : public DBObj, public Named {
+class Patch : public DBObj, public Named, public Observer {
 public:
-  vector<Connection *> connections;
-  Message *start_message;
-  Message *stop_message;
-  bool running;
 
   Patch(sqlite3_int64 id, const char *name);
   ~Patch();
@@ -22,10 +19,24 @@ public:
   bool is_running();
   void stop();
 
+  inline vector<Connection *> &connections() { return _connections; }
+  inline Message *start_message() { return _start_message; }
+  inline Message *stop_message() { return _stop_message; }
+
+  void set_start_message(Message *msg);
+  void set_stop_message(Message *msg);
+
   void add_connection(Connection *conn);
   void remove_connection(Connection *conn);
 
+  void update(Observable *o, void *arg);
+
 private:
+  vector<Connection *> _connections;
+  Message *_start_message;
+  Message *_stop_message;
+  bool _running;
+
   void send_message_to_outputs(Message *message);
 };
 

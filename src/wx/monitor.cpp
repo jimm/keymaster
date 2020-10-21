@@ -34,9 +34,9 @@ Monitor::Monitor()
   Show(true);
 
   KeyMaster *km = KeyMaster_instance();
-  for (auto& input : km->inputs)
+  for (auto& input : km->inputs())
     input->add_observer(this);
-  for (auto& output : km->outputs)
+  for (auto& output : km->outputs())
     output->add_observer(this);
 
   timer.Start(TIMER_MILLISECS);
@@ -44,9 +44,9 @@ Monitor::Monitor()
 
 Monitor::~Monitor() {
   KeyMaster *km = KeyMaster_instance();
-  for (auto& input : km->inputs)
+  for (auto& input : km->inputs())
     input->remove_observer(this);
-  for (auto& output : km->outputs)
+  for (auto& output : km->outputs())
     output->remove_observer(this);
 }
 
@@ -114,7 +114,7 @@ void Monitor::on_timer(wxTimerEvent &event) {
 void Monitor::update_list(wxListCtrl *list, deque<MonitorMessage> &message_list) {
   int row = 0;
   for (auto& mon_message : message_list) {
-    list->SetItem(row, 0, mon_message.instrument->name.c_str());
+    list->SetItem(row, 0, mon_message.instrument->name().c_str());
     PmMessage msg = mon_message.message;
     list->SetItem(row, 1, wxString::Format("%02x", Pm_MessageStatus(msg)));
     list->SetItem(row, 2, wxString::Format("%02x", Pm_MessageData1(msg)));

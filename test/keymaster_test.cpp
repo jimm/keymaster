@@ -6,7 +6,7 @@
 #include "test_helper.h"
 
 void assert_no_start_sent(KeyMaster *km) {
-  for (auto& out : km->outputs) {
+  for (auto& out : km->outputs()) {
     for (int i = 0; i < out->num_io_messages; ++i)
       REQUIRE_FALSE(out->io_messages[i] == Pm_Message(0xb0, 7, 0x7f));
   }
@@ -14,7 +14,7 @@ void assert_no_start_sent(KeyMaster *km) {
 }
 
 void assert_no_stop_sent(KeyMaster *km) {
-  for (auto& out : km->outputs) {
+  for (auto& out : km->outputs()) {
     for (int i = 0; i < out->num_io_messages; ++i)
       REQUIRE_FALSE(out->io_messages[i] == Pm_Message(0xb2, 7, 0x7f));
   }
@@ -22,7 +22,7 @@ void assert_no_stop_sent(KeyMaster *km) {
 }
 
 void assert_start_sent(KeyMaster *km) {
-  for (auto& out : km->outputs) {
+  for (auto& out : km->outputs()) {
     for (int i = 0; i < out->num_io_messages; ++i)
       if (out->io_messages[i] == Pm_Message(0xb0, 7, 0x7f))
         return;
@@ -31,7 +31,7 @@ void assert_start_sent(KeyMaster *km) {
 }
 
 void assert_stop_sent(KeyMaster *km) {
-  Output *out = km->outputs[0];
+  Output *out = km->outputs()[0];
   REQUIRE(!out->real_port());
   for (int i = 0; i < out->num_io_messages; ++i)
     if (out->io_messages[i] == Pm_Message(0xb2, 7, 0x7f))
@@ -40,7 +40,7 @@ void assert_stop_sent(KeyMaster *km) {
 }
 
 void clear_out_io_messages(KeyMaster *km) {
-  for (auto& out : km->outputs)
+  for (auto& out : km->outputs())
     out->num_io_messages = 0;
 }
 
@@ -52,7 +52,7 @@ TEST_CASE("send start and stop messages", CATCH_CATEGORY) {
 
   clear_out_io_messages(km);
   km->next_patch();             // second patch in song: has start and stop
-  REQUIRE(km->cursor->patch()->start_message->events.size() > 0);
+  REQUIRE(km->cursor()->patch()->start_message()->events().size() > 0);
   assert_no_stop_sent(km);
   assert_start_sent(km);
 
@@ -72,34 +72,57 @@ TEST_CASE("send start and stop messages", CATCH_CATEGORY) {
 
 TEST_CASE("all songs sorted", CATCH_CATEGORY) {
   KeyMaster *km = load_test_data();
-  REQUIRE(km->all_songs()->songs[0]->name == "Another Song");
-  REQUIRE(km->all_songs()->songs[1]->name == "Song Without Explicit Patch");
-  REQUIRE(km->all_songs()->songs[2]->name == "To Each His Own");
+  REQUIRE(km->all_songs()->songs()[0]->name() == "Another Song");
+  REQUIRE(km->all_songs()->songs()[1]->name() == "Song Without Explicit Patch");
+  REQUIRE(km->all_songs()->songs()[2]->name() == "To Each His Own");
   delete km;
 }
 
 TEST_CASE("inserted song sorts properly", CATCH_CATEGORY) {
   KeyMaster *km = load_test_data();
   Song *s = new Song(UNDEFINED_ID, "Bees, Bees!");
-  km->all_songs()->songs.push_back(s);
+  km->all_songs()->add_song(s);
   km->sort_all_songs();
 
-  REQUIRE(km->all_songs()->songs[0]->name == "Another Song");
-  REQUIRE(km->all_songs()->songs[1]->name == "Bees, Bees!");
-  REQUIRE(km->all_songs()->songs[2]->name == "Song Without Explicit Patch");
-  REQUIRE(km->all_songs()->songs[3]->name == "To Each His Own");
+  REQUIRE(km->all_songs()->songs()[0]->name() == "Another Song");
+  REQUIRE(km->all_songs()->songs()[1]->name() == "Bees, Bees!");
+  REQUIRE(km->all_songs()->songs()[2]->name() == "Song Without Explicit Patch");
+  REQUIRE(km->all_songs()->songs()[3]->name() == "To Each His Own");
   delete km;
 }
 
 TEST_CASE("inserted song sorts properly, case-sensitively", CATCH_CATEGORY) {
   KeyMaster *km = load_test_data();
   Song *s = new Song(UNDEFINED_ID, "a jar full of bees");
-  km->all_songs()->songs.push_back(s);
+  km->all_songs()->add_song(s);
   km->sort_all_songs();
 
-  REQUIRE(km->all_songs()->songs[0]->name == "Another Song");
-  REQUIRE(km->all_songs()->songs[1]->name == "Song Without Explicit Patch");
-  REQUIRE(km->all_songs()->songs[2]->name == "To Each His Own");
-  REQUIRE(km->all_songs()->songs[3]->name == "a jar full of bees");
+  REQUIRE(km->all_songs()->songs()[0]->name() == "Another Song");
+  REQUIRE(km->all_songs()->songs()[1]->name() == "Song Without Explicit Patch");
+  REQUIRE(km->all_songs()->songs()[2]->name() == "To Each His Own");
+  REQUIRE(km->all_songs()->songs()[3]->name() == "a jar full of bees");
   delete km;
+}
+
+TEST_CASE("modified flag", CATCH_CATEGORY) {
+  KeyMaster *km = load_test_data();
+
+  SECTION("false after load") {
+    REQUIRE_FALSE(km->is_modified());
+  }
+
+  SECTION("true after song name change") {
+    km->all_songs()->songs()[0]->set_name("changed");
+    REQUIRE(km->is_modified());
+  }
+
+  SECTION("true after patch name change") {
+    km->all_songs()->songs()[0]->patches()[0]->set_name("changed");
+    REQUIRE(km->is_modified());
+  }
+
+  SECTION("true after connection value change") {
+    km->all_songs()->songs()[0]->patches()[0]->connections()[0]->set_program_prog(99);
+    REQUIRE(km->is_modified());
+  }
 }
