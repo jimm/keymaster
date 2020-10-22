@@ -46,51 +46,68 @@ KeyMaster::~KeyMaster() {
 
 void KeyMaster::add_input(Input *input) {
   _inputs.push_back(input);
-  _modified = true;
+  changed();
 }
 
 void KeyMaster::add_output(Output *output) {
   _outputs.push_back(output);
-  _modified = true;
+  changed();
 }
 
 void KeyMaster::add_message(Message *message) {
   message->add_observer(this);
   _messages.push_back(message);
-  _modified = true;
+  changed();
 }
 
 void KeyMaster::remove_message(Message *message) {
   message->remove_observer(this);
   erase(_messages, message);
   delete message;
-  _modified = true;
+  changed();
 }
 
 void KeyMaster::add_trigger(Trigger *trigger) {
   trigger->add_observer(this);
   _triggers.push_back(trigger);
-  _modified = true;
+  changed();
 }
 
 void KeyMaster::remove_trigger(Trigger *trigger) {
   trigger->remove_observer(this);
   erase(_triggers, trigger);
   delete trigger;
-  _modified = true;
+  changed();
 }
 
 void KeyMaster::add_set_list(SetList *set_list) {
   set_list->add_observer(this);
   _set_lists.push_back(set_list);
-  _modified = true;
+  changed();
 }
 
 void KeyMaster::remove_set_list(SetList *set_list) {
   set_list->remove_observer(this);
   erase(_set_lists, set_list);
   delete set_list;
+  changed();
+}
+
+// ================ observer / observable ================
+
+// Only called by storage after data is loaded or saved.
+void KeyMaster::clear_modified() {
+  _modified = false;
+  Observable::changed((void *)&_modified);
+}
+
+void KeyMaster::update(Observable *_o, void *_arg) {
+  changed();
+}
+
+void KeyMaster::changed(void *_arg) {
   _modified = true;
+  Observable::changed((void *)&_modified);
 }
 
 // ================ running ================

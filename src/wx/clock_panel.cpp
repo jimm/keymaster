@@ -50,13 +50,6 @@ ClockPanel::ClockPanel(wxWindow *parent)
   timer.Start(TIMER_MILLISECS);
 }
 
-ClockPanel::~ClockPanel() {
-  KeyMaster *km = KeyMaster_instance();
-  if (km == nullptr)
-    return;
-  km->clock().remove_observer(this);
-}
-
 void ClockPanel::update(Observable *o, void *arg) {
   ClockChange clock_update = (ClockChange)(long)arg;
   switch (clock_update) {

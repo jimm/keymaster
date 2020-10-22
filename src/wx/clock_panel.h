@@ -11,7 +11,6 @@
 class ClockPanel : public wxPanel, public Observer {
 public:
   ClockPanel(wxWindow *parent);
-  virtual ~ClockPanel();
 
   virtual void update(Observable *o, void *arg);
   void update();

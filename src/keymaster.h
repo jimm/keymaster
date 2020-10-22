@@ -9,12 +9,13 @@
 #include "message.h"
 #include "clock.h"
 #include "observer.h"
+#include "observable.h"
 
 using namespace std;
 
 class Cursor;
 
-class KeyMaster : Observer {
+class KeyMaster : public Observer, public Observable {
 public:
   KeyMaster();
   ~KeyMaster();
@@ -45,8 +46,9 @@ public:
 
   void set_testing(bool val) { _testing = val; }
 
-  // Only called by storage when re-setting modified after data loaded or saved
-  void set_modified(bool val) { _modified = val; }
+// ================ observer / observable ================
+  // Only called by storage after data is loaded or saved.
+  void clear_modified();
 
   // ================ running ================
   void start();
@@ -103,8 +105,10 @@ private:
   // ================ initialization ================
   void create_songs();
 
-  // ================ observer ================
-  void update(Observable *_o, void *_arg) { _modified = true; }
+  // ================ observer / observable ================
+  void update(Observable *o, void *arg);
+  // Call the public method clear_modified() to reset _modified to false
+  void changed(void *arg = nullptr);
 };
 
 KeyMaster *KeyMaster_instance();

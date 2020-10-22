@@ -59,7 +59,7 @@ KeyMaster *Storage::load(bool testing) {
   load_set_lists();
   create_default_patches();
 
-  km->set_modified(false);
+  km->clear_modified();
   return km;
 }
 
@@ -81,7 +81,7 @@ void Storage::save(KeyMaster *keymaster, bool testing) {
   save_songs();
   save_set_lists();
 
-  km->set_modified(false);
+  km->clear_modified();
 }
 
 bool Storage::has_error() {

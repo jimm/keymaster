@@ -1,9 +1,10 @@
+#include <libgen.h>
+#include <unistd.h>
 #include <wx/defs.h>
 #include <wx/filename.h>
 #include <wx/listctrl.h>
 #include <wx/textctrl.h>
 #include <wx/gbsizer.h>
-#include <unistd.h>
 #include "frame.h"
 #include "macros.h"
 #include "set_list_box.h"
@@ -35,10 +36,10 @@
 wxDEFINE_EVENT(Frame_MenuUpdate, wxCommandEvent);
 
 wxBEGIN_EVENT_TABLE(Frame, wxFrame)
-  EVT_MENU(wxID_NEW,  Frame::OnNew)
-  EVT_MENU(wxID_OPEN,  Frame::OnOpen)
-  EVT_MENU(wxID_SAVE,  Frame::OnSave)
-  EVT_MENU(wxID_SAVEAS,  Frame::OnSaveAs)
+  EVT_MENU(wxID_NEW, Frame::OnNew)
+  EVT_MENU(wxID_OPEN, Frame::OnOpen)
+  EVT_MENU(wxID_SAVE, Frame::OnSave)
+  EVT_MENU(wxID_SAVEAS, Frame::OnSaveAs)
   EVT_MENU(ID_GoNextSong, Frame::next_song)
   EVT_MENU(ID_GoPrevSong, Frame::prev_song)
   EVT_MENU(ID_GoNextPatch, Frame::next_patch)
@@ -665,8 +666,7 @@ int Frame::handle_global_key_event(wxKeyEvent &event) {
 
 void Frame::toggle_clock(wxCommandEvent &_event) {
   KeyMaster_instance()->toggle_clock();
-  // clock will send "changed" message which we observe which will tell us
-  // to update the clock panel.
+  // clock will send "changed" message which the clock panel will observe.
 }
 
 void Frame::regular_panic(wxCommandEvent &_event) {
@@ -762,7 +762,8 @@ void Frame::initialize() {
   KeyMaster *km = new KeyMaster();
   km->initialize();
   km->start();
-  km->clock().add_observer(this);
+  km->add_observer(this);
+  km->clock().add_observer(clock_panel);
   update();
 }
 
@@ -776,8 +777,6 @@ void Frame::load(wxString path) {
   }
 
   KeyMaster *old_km = KeyMaster_instance();
-  if (old_km != nullptr)
-    old_km->clock().remove_observer(this);
   bool testing = old_km != nullptr && old_km->is_testing();
 
   Storage storage(path);
@@ -791,11 +790,14 @@ void Frame::load(wxString path) {
   file_path = path;
 
   if (old_km != nullptr) {
+    old_km->clock().remove_observer(clock_panel);
+    old_km->remove_observer(this);
     old_km->stop();
     delete old_km;
   }
   km->start();                  // initializes cursor
-  km->clock().add_observer(this);
+  km->add_observer(this);
+  km->clock().add_observer(clock_panel);
   update();                     // must come after start
 }
 
@@ -808,15 +810,17 @@ void Frame::create_new_keymaster() {
   km->initialize();
 
   if (old_km != nullptr) {
+    old_km->clock().remove_observer(clock_panel);
+    old_km->remove_observer(this);
     old_km->stop();
-    old_km->clock().remove_observer(this);
     delete old_km;
   }
 
   show_user_message("Created new project", 15);
   file_path = "";
   km->start();                  // initializes cursor
-  km->clock().add_observer(this);
+  km->add_observer(this);
+  km->clock().add_observer(clock_panel);
   update();                     // must come after start
 }
 
@@ -826,6 +830,7 @@ void Frame::save() {
 
   Storage storage(file_path);
   storage.save(KeyMaster_instance());
+  update();
 }
 
 bool Frame::dialog_closed(int dialog_status) {
@@ -837,24 +842,30 @@ bool Frame::dialog_closed(int dialog_status) {
 }
 
 void Frame::update(Observable *o, void *arg) {
-  // Right now we only observe the clock
-  ClockChange clock_update = (ClockChange)(long)arg;
-  switch (clock_update) {
-  case ClockChangeBpm:
-  case ClockChangeStart:
-  case ClockChangeStop:
-    clock_panel->update();
-    break;
-  default:                      // ignore beats, for example
-    break;
-  }
+  update();
 }
 
 void Frame::update() {
   clock_panel->update();
+  update_title();
   update_lists();
   update_song_notes();
   update_menu_items();
+}
+
+void Frame::update_title() {
+  KeyMaster *km = KeyMaster_instance();
+  bool modified = km != nullptr && km->is_modified();
+  char *file_name;
+
+  if (file_path.empty())
+    file_name = (char *)"KeyMaster";
+  else {
+    char path[BUFSIZ];
+    strcpy(path, file_path.c_str());
+    file_name = basename(path);
+  }
+  SetTitle(wxString::Format("%s%s", modified ? "* " : "", file_name));
 }
 
 void Frame::update_lists() {

@@ -1,15 +1,16 @@
 #include "observable.h"
 #include "vector_utils.h"
 
+Observable::~Observable() {
+  observers.clear();
+}
+
 void Observable::add_observer(Observer *o) {
-  for (auto observer : observers)
-    if (observer == o)
-      return;
-  observers.push_back(o);
+  observers.insert(o);
 }
 
 void Observable::remove_observer(Observer *o) {
-  erase(observers, o);
+  observers.erase(o);
 }
 
 void Observable::changed(void *arg) {
