@@ -112,6 +112,7 @@ private:
   void OnListInstruments(wxCommandEvent& event);
   void OnMonitor(wxCommandEvent& event);
   void OnAbout(wxCommandEvent& event);
+  void OnExit(wxCommandEvent& event);
 
   void create_new_keymaster();
 

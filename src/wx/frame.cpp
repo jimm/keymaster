@@ -40,6 +40,8 @@ wxBEGIN_EVENT_TABLE(Frame, wxFrame)
   EVT_MENU(wxID_OPEN, Frame::OnOpen)
   EVT_MENU(wxID_SAVE, Frame::OnSave)
   EVT_MENU(wxID_SAVEAS, Frame::OnSaveAs)
+  EVT_MENU(wxID_ABOUT, Frame::OnAbout)
+  EVT_MENU(wxID_EXIT, Frame::OnExit)
   EVT_MENU(ID_GoNextSong, Frame::next_song)
   EVT_MENU(ID_GoPrevSong, Frame::prev_song)
   EVT_MENU(ID_GoNextPatch, Frame::next_patch)
@@ -63,7 +65,6 @@ wxBEGIN_EVENT_TABLE(Frame, wxFrame)
   EVT_MENU(ID_ClockToggle, Frame::toggle_clock)
   EVT_MENU(ID_RegularPanic, Frame::regular_panic)
   EVT_MENU(ID_SuperPanic, Frame::super_panic)
-  EVT_MENU(wxID_ABOUT, Frame::OnAbout)
 
   EVT_LISTBOX(ID_SetListList, Frame::jump_to_set_list)
   EVT_LISTBOX_DCLICK(ID_SetListList, Frame::edit_set_list)
@@ -703,6 +704,37 @@ void Frame::OnAbout(wxCommandEvent &_event) {
                "Jim Menard, jim@jimmenard.com\n"
                "https://github.com/jimm/keymaster/wiki",
                "About KeyMaster", wxOK | wxICON_INFORMATION);
+}
+
+void Frame::OnExit(wxCommandEvent &event) {
+  KeyMaster *km = KeyMaster_instance();
+  if (km != nullptr && km->is_modified()) {
+    wxMessageDialog dialog(
+      this,
+      "The KeyMaster data has been modified. Save before quitting?",
+      "Save?",
+      wxYES_NO | wxCANCEL);
+
+    dialog.SetYesNoCancelLabels("Save", "Quit", "Cancel");
+    switch (dialog.ShowModal()) {
+    case wxID_YES:
+      OnSave(event);
+      goto CLOSE;
+      break;
+    case wxID_NO:
+      goto CLOSE;
+      break;
+    case wxID_CANCEL:
+      return;
+    }
+  }
+
+CLOSE:
+  if (km != nullptr) {
+    km->clock().remove_observer(clock_panel);
+    km->remove_observer(this);
+  }
+  Close(true);
 }
 
 void Frame::OnNew(wxCommandEvent &_event) {
