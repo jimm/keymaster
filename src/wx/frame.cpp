@@ -781,7 +781,8 @@ void Frame::OnSaveAs(wxCommandEvent &_event) {
 // ================ windows ================
 
 void Frame::OnListInstruments(wxCommandEvent &_event) {
-  InstrumentDialog(this, KeyMaster_instance()).run();
+  InstrumentDialog(this, KeyMaster_instance()).ShowModal();
+  update();
 }
 
 void Frame::OnMonitor(wxCommandEvent &event) {
