@@ -54,7 +54,9 @@ void ClockPanel::update(Observable *o, void *arg) {
   ClockChange clock_update = (ClockChange)(long)arg;
   switch (clock_update) {
   case ClockChangeBpm:
-    lc_clock_bpm->SetValue(wxString::Format("%f", KeyMaster_instance()->clock().bpm()));
+    char buf[16];
+    format_float(KeyMaster_instance()->clock().bpm(), buf);
+    lc_clock_bpm->SetValue(buf);
     break;
   case ClockChangeStart:
     onoff_button->SetLabelText("on");
