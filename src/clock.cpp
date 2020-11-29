@@ -1,17 +1,68 @@
+#include <time.h>
 #include <sys/time.h>
+#include <signal.h>
 #include "clock.h"
 #include "input.h"
 
+static PmMessage START_MESSAGE = Pm_Message(START, 0, 0);
+static PmMessage CONTINUE_MESSAGE = Pm_Message(CONTINUE, 0, 0);
+static PmMessage STOP_MESSAGE = Pm_Message(STOP, 0, 0);
 static PmMessage CLOCK_MESSAGE = Pm_Message(CLOCK, 0, 0);
 
+// ================ periodic time management ================
+// See https://www.2net.co.uk/tutorial/periodic_threads
+
+struct periodic_info {
+  sigset_t alarm_sig;
+};
+
+static int make_periodic(unsigned long period_microsecs, struct periodic_info *info) {
+  int ret;
+  struct itimerval value;
+
+  // Block SIGALRM in this thread
+  sigemptyset(&(info->alarm_sig));
+  sigaddset(&(info->alarm_sig), SIGALRM);
+  pthread_sigmask(SIG_BLOCK, &(info->alarm_sig), NULL);
+
+  // Set the timer to go off after the first period and then repetitively
+  value.it_value.tv_sec = period_microsecs / 1000000L;
+  value.it_value.tv_usec = period_microsecs % 1000000L;
+  value.it_interval.tv_sec = period_microsecs / 1000000L;
+  value.it_interval.tv_usec = period_microsecs % 1000000L;
+  ret = setitimer(ITIMER_REAL, &value, NULL);
+  if (ret != 0)
+    perror("Failed to set timer");
+
+  return ret;
+}
+
+static void wait_period(struct periodic_info *info) {
+  int sig;
+
+  /* Wait for the next SIGALRM */
+  sigwait(&(info->alarm_sig), &sig);
+}
+
+static void init_signals() {
+  sigset_t alarm_sig;
+  sigemptyset(&alarm_sig);
+  sigaddset(&alarm_sig, SIGALRM);
+  sigprocmask(SIG_BLOCK, &alarm_sig, NULL);
+}
+
+// ================ clock ================
+
 void *clock_send_thread(void *clock_ptr) {
-  struct timespec rqtp = {0, 0L};
   Clock *clock = (Clock *)clock_ptr;
+  struct periodic_info info;
+
+  if (make_periodic(clock->microsecs_per_tick, &info) != 0)
+    return nullptr;
 
   while (clock->is_running()) {
-    rqtp.tv_nsec = clock->tick();
-    if (nanosleep(&rqtp, nullptr) == -1)
-      return nullptr;
+    clock->tick();
+    wait_period(&info);
   }
   return nullptr;
 }
@@ -20,6 +71,7 @@ Clock::Clock(vector<Input *> &km_inputs)
   : inputs(km_inputs), thread(nullptr)
 {
   set_bpm(120);
+  init_signals();
 }
 
 Clock::~Clock() {
@@ -30,49 +82,43 @@ Clock::~Clock() {
 void Clock::set_bpm(float new_val) {
   if (_bpm != new_val) {
     _bpm = new_val;
-    nanosecs_per_tick = (long)(2.5e9 / _bpm);
+    microsecs_per_tick = (long)(2.5e6 / _bpm);
     changed((void *)ClockChangeBpm);
   }
 }
 
 void Clock::start() {
-  if (is_running())
-    return;
-  tick_within_beat = 0;
-  int status = pthread_create(&thread, 0, clock_send_thread, this);
-  if (status == 0)
-    changed((void *)ClockChangeStart);
+  start_or_continue(START_MESSAGE, ClockChangeStart);
+}
+
+void Clock::continue_clock() {
+  start_or_continue(CONTINUE_MESSAGE, ClockChangeContinue);
 }
 
 void Clock::stop() {
-  if (thread == nullptr)
+  if (!is_running())
     return;
+
+  send(STOP_MESSAGE);
   thread = nullptr;
   changed((void *)ClockChangeStop);
-  tick_within_beat = 0;
 }
 
-// Sends CLOCK message downstream and returns the amount of time to wait
-// until the next tick, in nanoseconds.
-long Clock::tick() {
-  struct timeval tp;
-  struct timezone tzp;
+void Clock::tick() {
+  send(CLOCK_MESSAGE);
+}
 
-  gettimeofday(&tp, &tzp);
-  long start_msecs = (tp.tv_sec * 1000L) + tp.tv_usec;
-
+void Clock::send(PmMessage msg) {
   for (auto &input : inputs)
-    input->read(CLOCK_MESSAGE);
+    input->read(msg);
+}
 
-  if (tick_within_beat == 0)
-    changed((void *)ClockChangeBeat);
-  else {
-    if (++tick_within_beat == CLOCK_TICKS_PER_QUARTER_NOTE)
-      tick_within_beat = 0;
-  }
+void Clock::start_or_continue(PmMessage msg, ClockChange change_type) {
+  if (is_running())
+    return;
 
-  gettimeofday(&tp, &tzp);
-  long end_msecs = (tp.tv_sec * 1000L) + tp.tv_usec;
-
-  return nanosecs_per_tick - (end_msecs - start_msecs);
+  send(msg);
+  int status = pthread_create(&thread, 0, clock_send_thread, this);
+  if (status == 0)
+    changed((void *)change_type);
 }

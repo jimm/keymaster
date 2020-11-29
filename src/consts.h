@@ -15,6 +15,8 @@
 // Number of note per MIDI channel
 #define NOTES_PER_CHANNEL 128
 
+// Clock ticks per Song Position Pointer beat
+#define CLOCK_TICKS_PER_BEAT 6
 #define CLOCK_TICKS_PER_QUARTER_NOTE 24
 
 // Channel messages

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <pthread.h>
+#include <portmidi.h>
 #include "observable.h"
 
 class Input;
@@ -10,15 +11,14 @@ class Input;
 enum ClockChange {
   ClockChangeBpm,
   ClockChangeStart,
-  ClockChangeStop,
-  ClockChangeBeat
+  ClockChangeContinue,
+  ClockChangeStop
 };
 
 class Clock : public Observable {
 public:
   std::vector<Input *> &inputs;
-  long nanosecs_per_tick;
-  int tick_within_beat;
+  unsigned long microsecs_per_tick;
 
   Clock(std::vector<Input *> &inputs);
   ~Clock();
@@ -27,13 +27,17 @@ public:
   void set_bpm(float bpm);
 
   void start();
+  void continue_clock();
   void stop();
-  long tick();
+  void tick();
   bool is_running() { return thread != nullptr; }
 
 protected:
   float _bpm;
   pthread_t thread;
+
+  void send(PmMessage msg);
+  void start_or_continue(PmMessage msg, ClockChange change_type);
 };
 
 #endif /* CLOCK_H */
