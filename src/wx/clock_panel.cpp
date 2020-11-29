@@ -59,15 +59,13 @@ void ClockPanel::update(Observable *o, void *arg) {
     lc_clock_bpm->SetValue(buf);
     break;
   case ClockChangeStart:
+  case ClockChangeContinue:
     onoff_button->SetLabelText("on");
     onoff_button->SetValue(true);
     break;
   case ClockChangeStop:
     onoff_button->SetLabelText("off");
     onoff_button->SetValue(false);
-    break;
-  case ClockChangeBeat:
-    // TODO turn on flashing light for a short while
     break;
   }
 }
