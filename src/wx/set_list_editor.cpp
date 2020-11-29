@@ -1,3 +1,5 @@
+#include <wx/listctrl.h>
+#include <wx/dnd.h>
 #include "set_list_editor.h"
 #include "macros.h"
 #include "../keymaster.h"
@@ -17,6 +19,8 @@ wxBEGIN_EVENT_TABLE(SetListEditor, wxDialog)
   EVT_BUTTON(ID_SLE_RemoveButton, SetListEditor::remove_song)
   EVT_BUTTON(ID_SLE_MoveUp, SetListEditor::move_song_up)
   EVT_BUTTON(ID_SLE_MoveDown, SetListEditor::move_song_down)
+
+  EVT_LIST_BEGIN_DRAG(ID_SLE_AllSongs, SetListEditor::begin_drag)
 
   EVT_BUTTON(wxID_OK, SetListEditor::save)
 wxEND_EVENT_TABLE()
@@ -179,6 +183,25 @@ void SetListEditor::move_song_down(wxCommandEvent& event) {
   set_list_wxlist->SetSelection(selected_index + 1);
 
   update(set_list_wxlist, songs_copy);
+}
+
+void SetListEditor::begin_drag(wxListEvent& event) {
+  int selection = all_songs_wxlist->GetSelection();
+  Song *song = km->all_songs()->songs()[selection];
+  wxDataObjectSimple drag_data;
+  drag_data.SetData(sizeof(Song *), &song);
+
+  wxDropSource dragSource(all_songs_wxlist);
+  dragSource.SetData(drag_data);
+  wxDragResult result = dragSource.DoDragDrop(true);
+  switch (result) {
+  case wxDragCopy:
+  case wxDragMove:
+    fprintf(stderr, "dragged: %s\n", song->name().c_str()); // DEBUG
+    break;
+  default:
+    break;
+  }
 }
 
 void SetListEditor::update(wxListBox *list_box, std::vector<Song *>&song_list) {
