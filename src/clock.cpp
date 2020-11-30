@@ -2,7 +2,7 @@
 #include <sys/time.h>
 #include <signal.h>
 #include "clock.h"
-#include "input.h"
+#include "output.h"
 
 static PmMessage START_MESSAGE = Pm_Message(START, 0, 0);
 static PmMessage CONTINUE_MESSAGE = Pm_Message(CONTINUE, 0, 0);
@@ -67,8 +67,8 @@ void *clock_send_thread(void *clock_ptr) {
   return nullptr;
 }
 
-Clock::Clock(vector<Input *> &km_inputs)
-  : inputs(km_inputs), thread(nullptr)
+Clock::Clock(vector<Output *> &km_outputs)
+  : outputs(km_outputs), thread(nullptr)
 {
   set_bpm(120);
   init_signals();
@@ -109,8 +109,10 @@ void Clock::tick() {
 }
 
 void Clock::send(PmMessage msg) {
-  for (auto &input : inputs)
-    input->read(msg);
+  PmEvent event {msg, 0};
+
+  for (auto &output : outputs)
+    output->write(&event, 1);
 }
 
 void Clock::start_or_continue(PmMessage msg, ClockChange change_type) {

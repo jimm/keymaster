@@ -3,7 +3,6 @@
 #include "../src/editor.h"
 
 #define CATCH_CATEGORY "[editor]"
-#define TEST_FILE "test/testfile.org"
 
 TEST_CASE("create and add message", CATCH_CATEGORY) {
   KeyMaster *km = load_test_data();
