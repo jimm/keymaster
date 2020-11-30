@@ -4,10 +4,6 @@
 #include "device.h"
 #include "vector_utils.h"
 
-#define PATCH_STOP  {if (_cursor->patch() != nullptr) _cursor->patch()->stop();}
-#define PATCH_START {update_clock(); if (_cursor->patch() != nullptr) _cursor->patch()->start();}
-
-
 static KeyMaster *km_instance = nullptr;
 
 KeyMaster *KeyMaster_instance() {
@@ -17,10 +13,12 @@ KeyMaster *KeyMaster_instance() {
 // ================ allocation ================
 
 KeyMaster::KeyMaster()
-  : _running(false), _testing(false), _modified(false), _clock(_inputs)
+  : _running(false), _testing(false), _modified(false), _clock(_outputs)
 {
   _set_lists.push_back(new SetList(UNDEFINED_ID, (char *)"All Songs"));
   _cursor = new Cursor(this);
+  _clock_context.song = nullptr;
+    _clock_context.running = false;
   km_instance = this;
 }
 
@@ -119,29 +117,17 @@ void KeyMaster::start() {
   for (auto& in : _inputs)
     in->start();
   _running = true;
-  PATCH_START;
+  patch_start();
 }
 
 void KeyMaster::stop() {
   stop_clock();
-  PATCH_STOP;
+  patch_stop();
   _running = false;
   for (auto& in : _inputs)
     in->stop();
   for (auto& out : _outputs)
     out->stop();
-}
-
-// ================ clock ================
-
-void KeyMaster::update_clock() {
-  Song *curr_song = _cursor->song();
-  if (curr_song == nullptr || !curr_song->clock_on_at_start())
-    stop_clock();
-  else {
-    set_clock_bpm(curr_song->bpm());
-    start_clock();
-  }
 }
 
 // ================ initialization ================
@@ -209,80 +195,80 @@ void KeyMaster::create_songs() {
 // ================ movement ================
 
 void KeyMaster::next_patch() {
-  PATCH_STOP;
+  patch_stop();
   _cursor->next_patch();
-  PATCH_START;
+  patch_start();
 }
 
 void KeyMaster::prev_patch() {
-  PATCH_STOP;
+  patch_stop();
   _cursor->prev_patch();
-  PATCH_START;
+  patch_start();
 }
 
 void KeyMaster::next_song() {
-  PATCH_STOP;
+  patch_stop();
   _cursor->next_song();
-  PATCH_START;
+  patch_start();
 }
 
 void KeyMaster::prev_song() {
-  PATCH_STOP;
+  patch_stop();
   _cursor->prev_song();
-  PATCH_START;
+  patch_start();
 }
 
 // ================ going places ================
 
 void KeyMaster::goto_song(Song *song) {
-  PATCH_STOP;
+  patch_stop();
   _cursor->goto_song(song);
-  PATCH_START;
+  patch_start();
 }
 
 void KeyMaster::goto_patch(Patch *patch) {
-  PATCH_STOP;
+  patch_stop();
   _cursor->goto_patch(patch);
-  PATCH_START;
+  patch_start();
 }
 
 void KeyMaster::goto_song(string name_regex) {
-  PATCH_STOP;
+  patch_stop();
   _cursor->goto_song(name_regex);
-  PATCH_START;
+  patch_start();
 }
 
 void KeyMaster::goto_set_list(string name_regex) {
-  PATCH_STOP;
+  patch_stop();
   _cursor->goto_set_list(name_regex);
-  PATCH_START;
+  patch_start();
 }
 
 void KeyMaster::jump_to_set_list_index(int i) {
   if (i == _cursor->set_list_index)
     return;
 
-  PATCH_STOP;
+  patch_stop();
   _cursor->jump_to_set_list_index(i);
-  PATCH_START;
+  patch_start();
 }
 
 void KeyMaster::jump_to_song_index(int i) {
   if (i == _cursor->song_index)
     return;
 
-  PATCH_STOP;
+  patch_stop();
   _cursor->jump_to_song_index(i);
-  PATCH_START;
+  patch_start();
 }
 
 void KeyMaster::jump_to_patch_index(int i) {
   if (i == _cursor->patch_index)
     return;
 
-  PATCH_STOP;
+  patch_stop();
   _cursor->jump_to_patch_index(i);
-  PATCH_START;
+  patch_start();
 }
 
 // ================ doing things ================
@@ -319,4 +305,29 @@ bool songNameComparator(Song *s1, Song *s2) {
 
 void KeyMaster::sort_all_songs() {
   sort(all_songs()->songs().begin(), all_songs()->songs().end(), songNameComparator);
+}
+
+void KeyMaster::patch_stop() {
+  _clock_context.song = _cursor->song();
+  _clock_context.running = _clock.is_running();
+
+  if (_cursor->patch() != nullptr)
+    _cursor->patch()->stop();
+}
+
+void KeyMaster::patch_start() {
+  if (_cursor->patch() != nullptr)
+    _cursor->patch()->start();
+
+  // clock
+  Song *curr_song = _cursor->song();
+  if (_clock_context.song == curr_song)
+    return;
+
+  if (_clock_context.running)
+    stop_clock();
+
+  set_clock_bpm(curr_song->bpm());
+  if (curr_song != nullptr && curr_song->clock_on_at_start())
+    start_clock();
 }

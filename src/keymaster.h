@@ -15,6 +15,11 @@ using namespace std;
 
 class Cursor;
 
+typedef struct ClockContext {
+  Song *song;
+  bool running;
+} ClockContext;
+
 class KeyMaster : public Observer, public Observable {
 public:
   KeyMaster();
@@ -97,6 +102,7 @@ private:
   vector<SetList *> _set_lists; // all set lists, including all_songs
   Cursor *_cursor;
   Clock _clock;
+  ClockContext _clock_context;
   bool _running;
   bool _testing;
   bool _modified;
@@ -104,6 +110,10 @@ private:
 
   // ================ initialization ================
   void create_songs();
+
+  // ================ helpers ================
+  void patch_stop();
+  void patch_start();
 
   // ================ observer / observable ================
   void update(Observable *o, void *arg);

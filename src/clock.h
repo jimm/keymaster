@@ -6,7 +6,7 @@
 #include <portmidi.h>
 #include "observable.h"
 
-class Input;
+class Output;
 
 enum ClockChange {
   ClockChangeBpm,
@@ -17,10 +17,10 @@ enum ClockChange {
 
 class Clock : public Observable {
 public:
-  std::vector<Input *> &inputs;
+  std::vector<Output *> &outputs;
   unsigned long microsecs_per_tick;
 
-  Clock(std::vector<Input *> &inputs);
+  Clock(std::vector<Output *> &outputs);
   ~Clock();
 
   float bpm() { return _bpm; }

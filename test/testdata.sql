@@ -22,7 +22,7 @@ values
   (7, null, 1, '007f36b0', null, 1);
 
 insert into songs (id, name, notes, bpm, clock_on_at_start) values
-  (1, 'To Each His Own', 'example notes', 82, 1),
+  (1, 'To Each His Own', 'example notes', 82, 0),
   (2, 'Another Song', 'this song has note text
 that spans multiple lines', 120, 0),
   (3, 'Song Without Explicit Patch', null, 120, 0);

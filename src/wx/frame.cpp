@@ -517,11 +517,8 @@ bool Frame::edit_song(Song *song) {
     return false;
 
   int dialog_status = SongEditor(this, song).ShowModal();
-  if (dialog_status == wxID_OK) {
-    KeyMaster *km = KeyMaster_instance();
-    km->sort_all_songs();
-    km->update_clock();
-  }
+  if (dialog_status == wxID_OK)
+    KeyMaster_instance()->sort_all_songs();
   return dialog_closed(dialog_status);
 }
 
