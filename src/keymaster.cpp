@@ -377,7 +377,6 @@ void KeyMaster::patch_start() {
   if (_cursor->patch() != nullptr)
     _cursor->patch()->start();
 
-
   // clock
   Song *curr_song = _cursor->song();
   if (_clock_context.song == curr_song)
