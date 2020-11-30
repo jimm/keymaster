@@ -6,23 +6,24 @@
 
 #define BPM_WIDTH 52
 #define BPM_HEIGHT 20
-#define TIMER_MILLISECS 10
-#define TIMER_ID 20000
 
 enum {
   ID_ClockBPM = 200,
-  ID_ClockToggle
+  ID_ClockStart,
+  ID_ClockContinue,
+  ID_ClockStop
 };
 
 wxBEGIN_EVENT_TABLE(ClockPanel, wxPanel)
   EVT_TEXT_ENTER(ID_ClockBPM, ClockPanel::set_clock_bpm)
-  EVT_TOGGLEBUTTON(ID_ClockToggle, ClockPanel::toggle_clock)
-  EVT_TIMER(TIMER_ID, ClockPanel::on_timer)
+  EVT_BUTTON(ID_ClockStart, ClockPanel::start_clock)
+  EVT_BUTTON(ID_ClockContinue, ClockPanel::continue_clock)
+  EVT_BUTTON(ID_ClockStop, ClockPanel::stop_clock)
 wxEND_EVENT_TABLE()
 
 
 ClockPanel::ClockPanel(wxWindow *parent)
-: wxPanel(parent, wxID_ANY), timer(this, TIMER_ID), display_bpm(0)
+  : wxPanel(parent, wxID_ANY), display_bpm(0)
 {     
   lc_clock_bpm = new wxTextCtrl(this, ID_ClockBPM, "", wxDefaultPosition,
                                 wxSize(BPM_WIDTH, BPM_HEIGHT), wxTE_PROCESS_ENTER);
@@ -35,8 +36,13 @@ ClockPanel::ClockPanel(wxWindow *parent)
   // Spaces after "BPM" are for visual spacing
   control_sizer->Add(new wxStaticText(this, wxID_ANY, TITLE_STR("BPM")), wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
 
-  onoff_button = new wxToggleButton(this, ID_ClockToggle, "off");
-  control_sizer->Add(onoff_button, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
+  start_button = new wxButton(this, ID_ClockStart, "Start");
+  control_sizer->Add(start_button, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
+  continue_button = new wxButton(this, ID_ClockContinue, "Cont.");
+  control_sizer->Add(continue_button, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
+  stop_button = new wxButton(this, ID_ClockStop, "Stop");
+  control_sizer->Add(stop_button, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL));
+  update_clock_buttons(false, false, true);
 
   sizer->Add(control_sizer);
 
@@ -47,7 +53,6 @@ ClockPanel::ClockPanel(wxWindow *parent)
     km->clock().add_observer(this);
 
   update();
-  timer.Start(TIMER_MILLISECS);
 }
 
 void ClockPanel::update(Observable *o, void *arg) {
@@ -59,13 +64,13 @@ void ClockPanel::update(Observable *o, void *arg) {
     lc_clock_bpm->SetValue(buf);
     break;
   case ClockChangeStart:
+    update_clock_buttons(true, false, false);
+    break;
   case ClockChangeContinue:
-    onoff_button->SetLabelText("on");
-    onoff_button->SetValue(true);
+    update_clock_buttons(false, true, false);
     break;
   case ClockChangeStop:
-    onoff_button->SetLabelText("off");
-    onoff_button->SetValue(false);
+    update_clock_buttons(false, false, true);
     break;
   }
 }
@@ -79,17 +84,28 @@ void ClockPanel::set_clock_bpm(wxCommandEvent& event) {
     km->set_clock_bpm(bpm);
 }
 
-void ClockPanel::toggle_clock(wxCommandEvent& event) {
+void ClockPanel::start_clock(wxCommandEvent& event) {
   KeyMaster *km = KeyMaster_instance();
-  if (km == nullptr)
+  if (km == nullptr || km->clock_is_running())
     return;
-  km->toggle_clock();
-  update();
+  km->start_clock();
+  // Clock will fire update we're observing
 }
 
-void ClockPanel::on_timer(wxTimerEvent &event) {
-  Refresh();
-  Update();
+void ClockPanel::continue_clock(wxCommandEvent& event) {
+  KeyMaster *km = KeyMaster_instance();
+  if (km == nullptr || km->clock_is_running())
+    return;
+  km->continue_clock();
+  // Clock will fire update we're observing
+}
+
+void ClockPanel::stop_clock(wxCommandEvent& event) {
+  KeyMaster *km = KeyMaster_instance();
+  if (km == nullptr || !km->clock_is_running())
+    return;
+  km->stop_clock();
+  // Clock will fire update we're observing
 }
 
 void ClockPanel::update() {
@@ -106,7 +122,10 @@ void ClockPanel::update() {
     lc_clock_bpm->SetValue(buf);
     display_bpm = bpm;
   }
+}
 
-  onoff_button->SetLabelText(clock.is_running() ? "on" : "off");
-  onoff_button->SetValue(clock.is_running());
+void ClockPanel::update_clock_buttons(bool start, bool cont, bool stop) {
+  start_button->Enable(stop);
+  continue_button->Enable(stop);
+  stop_button->Enable(!stop);
 }

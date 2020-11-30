@@ -297,6 +297,36 @@ void KeyMaster::panic(bool send_notes_off) {
   }
 }
 
+// ================ clock ================
+
+void KeyMaster::start_clock() {
+  _clock.start();
+}
+
+void KeyMaster::continue_clock() {
+  _clock.continue_clock();
+}
+
+void KeyMaster::stop_clock() {
+  _clock.stop();
+}
+
+// TODO remove this once triggers have start/continue/stop actions?
+void KeyMaster::toggle_clock() {
+  if (_clock.is_running())
+    _clock.stop();
+  else
+    _clock.start();
+}
+
+bool KeyMaster::clock_is_running() {
+  return _clock.is_running();
+}
+
+void KeyMaster::set_clock_bpm(int bpm) {
+  _clock.set_bpm(bpm);
+}
+
 // ================ helpers ================
 
 bool songNameComparator(Song *s1, Song *s2) {
@@ -319,6 +349,7 @@ void KeyMaster::patch_start() {
   if (_cursor->patch() != nullptr)
     _cursor->patch()->start();
 
+
   // clock
   Song *curr_song = _cursor->song();
   if (_clock_context.song == curr_song)
@@ -330,4 +361,7 @@ void KeyMaster::patch_start() {
   set_clock_bpm(curr_song->bpm());
   if (curr_song != nullptr && curr_song->clock_on_at_start())
     start_clock();
+ 
+  _clock_context.song = curr_song;
+  _clock_context.running = _clock.is_running();
 }
