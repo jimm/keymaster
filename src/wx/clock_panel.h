@@ -17,14 +17,17 @@ public:
 
 private:
   wxTextCtrl *lc_clock_bpm;
-  wxToggleButton *onoff_button;
-  wxTimer timer;
+  wxButton *start_button;
+  wxButton *continue_button;
+  wxButton *stop_button;
   float display_bpm;
 
   void set_clock_bpm(wxCommandEvent& event);
-  void toggle_clock(wxCommandEvent& event);
+  void start_clock(wxCommandEvent& event);
+  void continue_clock(wxCommandEvent& event);
+  void stop_clock(wxCommandEvent& event);
 
-  void on_timer(wxTimerEvent &event);
+  void update_clock_buttons(bool start, bool cont, bool stop);
 
   wxDECLARE_EVENT_TABLE();
 };
