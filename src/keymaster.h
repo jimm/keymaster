@@ -67,13 +67,12 @@ public:
   void stop();
 
   // ================ clock ================
-  void start_clock() { _clock.start(); }
-  void continue_clock() { _clock.continue_clock(); }
-  void stop_clock() { _clock.stop(); }
-  void toggle_clock() { if (_clock.is_running()) _clock.stop(); else _clock.start(); }
-  void set_clock_bpm(int bpm) { _clock.set_bpm(bpm); }
-  // Get BPM and start/stop from current song and update state of the clock
-  void update_clock();
+  void start_clock();
+  void continue_clock();
+  void stop_clock();
+  void toggle_clock();
+  bool clock_is_running();
+  void set_clock_bpm(int bpm);
 
   // ================ initialization ================
   void initialize();

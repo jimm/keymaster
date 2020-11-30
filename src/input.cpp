@@ -186,14 +186,6 @@ void Input::read(PmMessage msg) {
   if (!enabled && real_port())
     return;
 
-  unsigned char status = Pm_MessageStatus(msg);
-  // KeyMaster_instance() will always be non-null; inputs are always
-  // attached to them.
-  if (status == START || status == CONTINUE)
-    KeyMaster_instance()->stop_clock();
-  else if (status == STOP)
-    KeyMaster_instance()->start_clock();
-
   for (auto& trigger : _triggers)
     trigger->signal_message(msg);
 
@@ -205,8 +197,26 @@ void Input::read(PmMessage msg) {
 
   changed((void *)(long)msg);
 
-  for (auto &conn : connections_for_message(msg))
-    conn->midi_in(msg);
+  // Send message to connections, but not if they are start/continue/stop
+  // messages because those are sent directly to the outputs by the clock.
+  //
+  // KeyMaster_instance() will always be non-null; inputs are always
+  // attached to them.
+  unsigned char status = Pm_MessageStatus(msg);
+  switch (status) {
+  case START:
+    KeyMaster_instance()->start_clock();
+    break;
+  case CONTINUE:
+    KeyMaster_instance()->continue_clock();
+    break;
+  case STOP:
+    KeyMaster_instance()->stop_clock();
+  default:
+    for (auto &conn : connections_for_message(msg))
+      conn->midi_in(msg);
+    break;
+  }
 }
 
 // Removes a single PmMessages from our message queue in a thread-safe
