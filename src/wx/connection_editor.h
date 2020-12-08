@@ -1,6 +1,7 @@
 #ifndef CONNECTION_EDITOR_H
 #define CONNECTION_EDITOR_H
 
+#include <vector>
 #include <wx/wxprec.h>
 #ifndef WX_PRECOMP
  #include <wx/wx.h>
@@ -44,6 +45,7 @@ enum {
 
 class KeyMaster;
 class Instrument;
+class Curve;
 class Connection;
 class Controller;
 class ControllerMappings;
@@ -72,6 +74,7 @@ private:
   wxTextCtrl *tc_zone_high;
   wxTextCtrl *tc_xpose;
   wxComboBox *cb_vel_curve;
+  vector<Curve *> displayed_curves;
 
   // filters
   wxCheckBox *cb_pass_note;   // both on and off
@@ -97,6 +100,7 @@ private:
   wxWindow *make_program_panel(wxWindow *parent);
   wxWindow *make_zone_panel(wxWindow *parent);
   wxWindow *make_xpose_panel(wxWindow *parent);
+  void make_velocity_curve_dropdown(wxWindow *parent);
   wxWindow *make_filter_panel(wxWindow *parent);
   wxWindow *make_cc_maps_panel(wxWindow *parent);
 

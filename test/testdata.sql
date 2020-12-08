@@ -35,20 +35,20 @@ insert into patches (id, song_id, position, name, start_message_id, stop_message
 
 insert into connections
   (id, patch_id, position, input_id, input_chan, output_id, output_chan,
-  bank_msb, bank_lsb, prog, zone_low, zone_high, xpose, velocity_curve,
+  bank_msb, bank_lsb, prog, zone_low, zone_high, xpose, velocity_curve_id,
   note, poly_pressure, chan_pressure, program_change, pitch_bend,
   controller, song_pointer, song_select, tune_request, sysex,
   clock, start_continue_stop, system_reset)
 values
-  (1, 1, 0, 1, null, 3, null, null, null, null, 0, 127, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
-  (2, 1, 1, 2, null, 4, null, 3, 2, 12, 0, 127, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
-  (3, 2, 0, 1, null, 3, null, null, null, null, 0, 127, 12, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
-  -- exponential velocity (1)
-  (4, 2, 1, 2, null, 4, null, null, 5, null, 0, 127, -12, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
-  (5, 3, 0, 1, 2, 3, 3, null, null, null, 0, 63, 12, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
-  (6, 3, 1, 2, 0, 4, 4, null, null, null, 64, 127, -12, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
-  (7, 4, 0, 1, 2, 3, 3, null, null, null, 0, 63, 12, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
-  (8, 4, 1, 2, 0, 4, 4, null, null, null, 64, 127, -12, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1);
+  (1, 1, 0, 1, null, 3, null, null, null, null, 0, 127, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
+  (2, 1, 1, 2, null, 4, null, 3, 2, 12, 0, 127, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
+  (3, 2, 0, 1, null, 3, null, null, null, null, 0, 127, 12, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
+  -- exponential velocity (2)
+  (4, 2, 1, 2, null, 4, null, null, 5, null, 0, 127, -12, 2, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
+  (5, 3, 0, 1, 2, 3, 3, null, null, null, 0, 63, 12, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
+  (6, 3, 1, 2, 0, 4, 4, null, null, null, 64, 127, -12, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
+  (7, 4, 0, 1, 2, 3, 3, null, null, null, 0, 63, 12, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1),
+  (8, 4, 1, 2, 0, 4, 4, null, null, null, 64, 127, -12, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1);
 
 insert into controller_mappings
   (id, connection_id, cc_num, translated_cc_num, filtered,

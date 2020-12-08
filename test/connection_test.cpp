@@ -48,6 +48,7 @@ TEST_CASE("filter and modify", CATCH_CATEGORY) {
   Input in(UNDEFINED_ID, pmNoDevice, "in 1 port", "in1");
   Output out(UNDEFINED_ID, pmNoDevice, "out 1 port", "out1");
   Connection conn(UNDEFINED_ID, &in, 0, &out, 0);
+
   conn.start();
 
   SECTION("filter other input chan") {
@@ -123,21 +124,30 @@ TEST_CASE("filter and modify", CATCH_CATEGORY) {
   }
 
   SECTION("!velocity_curve") {
+    KeyMaster km;
+
+    Curve *exp = new Curve(UNDEFINED_ID, "Exponential", "exp");
+    exp->curve[64] = 32;
+    km.add_velocity_curve(exp);
+
+    Curve *invexp = new Curve(UNDEFINED_ID, "Inverse Exponential", "-exp");
+    invexp->curve[64] = 84;
+    km.add_velocity_curve(invexp);
+
     conn.output()->clear();
 
     conn.midi_in(Pm_Message(NOTE_ON, 64, 64));
-    conn.set_velocity_curve(curve_with_shape(Exponential));
+    conn.set_velocity_curve(km.velocity_curve_with_name("Exponential"));
     conn.midi_in(Pm_Message(NOTE_ON, 64, 64));
-    conn.set_velocity_curve(curve_with_shape(InverseExponential));
+    conn.set_velocity_curve(km.velocity_curve_with_name("Inverse Exponential"));
     conn.midi_in(Pm_Message(NOTE_ON, 64, 64));
     conn.midi_in(Pm_Message(NOTE_OFF, 64, 64));
 
     REQUIRE(conn.output()->num_io_messages == 4);
     REQUIRE(conn.output()->io_messages[0] == Pm_Message(NOTE_ON,  64, 64));
-    REQUIRE(Pm_MessageData2(conn.output()->io_messages[1]) < 64); // exponential
-    REQUIRE(Pm_MessageData2(conn.output()->io_messages[2]) > 64); // inverse exponential
-    REQUIRE(Pm_MessageData2(conn.output()->io_messages[3]) > 64);
-
+    REQUIRE(Pm_MessageData2(conn.output()->io_messages[1]) == 32); // exponential
+    REQUIRE(Pm_MessageData2(conn.output()->io_messages[2]) == 84); // inverse exponential
+    REQUIRE(Pm_MessageData2(conn.output()->io_messages[3]) == 84);
   }
 
   SECTION("!zone") {

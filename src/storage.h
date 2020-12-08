@@ -31,6 +31,7 @@ private:
 
   void load_schema_version();
   void load_instruments();
+  void load_velocity_curves();
   void load_messages();
   void load_triggers();
   void load_songs();
@@ -42,6 +43,8 @@ private:
 
   void save_schema_version();
   void save_instruments();
+  void save_velocity_curves();
+  void save_velocity_curves(vector<Curve *> &curves);
   void save_messages();
   void save_triggers();
   void save_songs();
