@@ -162,10 +162,10 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
     p = s->patches().back();
     conn = p->connections()[0];
     REQUIRE(conn->xpose() == 12);
-    REQUIRE(conn->velocity_curve()->shape == Linear);
+    REQUIRE(conn->velocity_curve()->  name() == "Linear");
     conn = p->connections().back();
     REQUIRE(conn->xpose() == -12);
-    REQUIRE(conn->velocity_curve()->shape == Exponential);
+    REQUIRE(conn->velocity_curve()->name() == "Exponential");
   }
 
   SECTION("load zone") {
@@ -285,9 +285,9 @@ TEST_CASE("save", CATCH_CATEGORY) {
 
   patch = km->all_songs()->songs()[TO_EACH_INDEX]->patches().back();
   Connection *conn = patch->connections().front();
-  REQUIRE(conn->velocity_curve()->shape == Linear);
+  REQUIRE(conn->velocity_curve()->name() == "Linear");
   conn = patch->connections().back();
-  REQUIRE(conn->velocity_curve()->shape == Exponential);
+  REQUIRE(conn->velocity_curve()->name() == "Exponential");
 
   REQUIRE(km->set_lists().size() == 3);
   REQUIRE(km->set_lists()[0] == km->all_songs());

@@ -38,6 +38,8 @@ KeyMaster::~KeyMaster() {
     delete set_list;
   for (auto& msg : _messages)
     delete msg;
+  for (auto& curve : _velocity_curves)
+    delete curve;
 }
 
 // ================ accessors ================
@@ -63,6 +65,31 @@ void KeyMaster::remove_message(Message *message) {
   erase(_messages, message);
   delete message;
   changed();
+}
+
+void KeyMaster::add_velocity_curve(Curve *velocity_curve) {
+  _velocity_curves.push_back(velocity_curve);
+  changed();
+}
+
+void KeyMaster::remove_velocity_curve(Curve *velocity_curve) {
+  erase(_velocity_curves, velocity_curve);
+  delete velocity_curve;
+  changed();
+}
+
+Curve * KeyMaster::velocity_curve_with_name(const char *name) {
+  for (auto &curve : _velocity_curves)
+    if (curve->name() == name)
+      return curve;
+  return nullptr;
+}
+
+Curve * KeyMaster::velocity_curve_with_id(sqlite3_int64 id) {
+  for (auto &curve : _velocity_curves)
+    if (curve->id() == id)
+      return curve;
+  return nullptr;
 }
 
 void KeyMaster::add_trigger(Trigger *trigger) {
@@ -134,6 +161,7 @@ void KeyMaster::stop() {
 
 void KeyMaster::initialize() {
   load_instruments();
+  generate_default_curves(this->_velocity_curves);
   create_songs();
   _modified = false;
 }

@@ -7,6 +7,7 @@ drop table if exists patches;
 drop table if exists songs;
 drop table if exists triggers;
 drop table if exists messages;
+drop table if exists velocity_curves;
 drop table if exists instruments;
 
 create table instruments (
@@ -14,6 +15,13 @@ create table instruments (
   type integer not null default 0,  -- 0 == input, 1 == output
   name text,
   device_name text
+);
+
+create table velocity_curves (
+  id integer primary key,
+  name text,
+  short_name text,
+  curve text                    -- 128 bytes encoded as two-digit hex chars
 );
 
 create table messages (
@@ -54,16 +62,16 @@ create table connections (
   patch_id integer not null references patches(id),
   position integer not null default 0,
   input_id integer not null,
-  input_chan,
+  input_chan integer,
   output_id integer not null,
-  output_chan,
+  output_chan integer,
   bank_msb int,
   bank_lsb int,
   prog int,
   zone_low integer not null default 0,
   zone_high integer not null default 127,
   xpose integer not null default 0,
-  velocity_curve integer not null default 0,
+  velocity_curve_id integer not null references velocity_curves(id),
   -- pass-through booleans
   note integer not null default 1,
   poly_pressure integer not null default 1,

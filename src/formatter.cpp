@@ -13,6 +13,10 @@ static const char * NOTE_NAMES[] = {
 static const int NOTE_OFFSETS[] = {
   9, 11, 0, 2, 4, 5, 7
 };
+static const char HEX_DIGITS[] = {
+  '0', '1', '2', '3', '4', '5', '6', '7',
+  '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
+};
 
 void note_num_to_name(int num, char *buf) {
   int oct = (num / 12) - 1;
@@ -189,6 +193,40 @@ bool check_byte_value(int val) {
 
   fprintf(stderr, "byte value %d is out of range\n", val);
   return false;
+}
+
+// Reads two-digit hex chars and converts them to bytes, returning a newly
+// allocated buffer. Ignores any non-hex characters in `hex`.
+unsigned char * hex_to_bytes(const char *hex) {
+  unsigned char *buf = (unsigned char *)malloc(strlen(hex) / 2);
+  int i = 0;
+
+  while (*hex) {
+    if (isxdigit(*hex)) {
+      buf[i++] = hex_to_byte(hex);
+      ++hex;
+      if (*hex) ++hex;          // don't skip over \0 if malformed
+    }
+    else
+      ++hex;
+  }
+
+  return (unsigned char *)realloc(buf, i);
+}
+
+// Converts `bytes` into two-digit hex characters and returns a newly
+// allocated zero-terminated buffer.
+char * bytes_to_hex(unsigned char *bytes, int len) {
+  char *buf = (char *)malloc(len * 2 + 1);
+  buf[len * 2] = 0;
+
+  char *p = buf;
+  for (int i = 0; i < len; ++i) {
+    *p++ = HEX_DIGITS[(bytes[i] >> 4) & 0x0f];
+    *p++ = HEX_DIGITS[bytes[i] & 0x0f];
+  }
+  *p = 0;
+  return buf;
 }
 
 // private helper for message_from_bytes

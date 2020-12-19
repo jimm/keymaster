@@ -21,6 +21,14 @@ int int_from_chars(const char *str);
 // one, or two chars used.
 unsigned char hex_to_byte(const char *hex);
 
+// Reads two-digit hex chars and converts them to bytes, returning a newly
+// allocated buffer. Ignores any non-hex characters in `hex`.
+unsigned char * hex_to_bytes(const char *hex);
+
+// Converts `bytes` into two-digit hex characters and returns a newly
+// allocated zero-terminated buffer.
+char * bytes_to_hex(unsigned char *bytes, int len);
+
 // Translates hex bytes in `str` into a single non-sysex MIDI message. If
 // `str` is `nullptr` returns a message consisting of three zero bytes.
 PmMessage message_from_bytes(const char *str);

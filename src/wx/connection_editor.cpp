@@ -21,12 +21,12 @@ wxBEGIN_EVENT_TABLE(ConnectionEditor, wxDialog)
   EVT_LIST_ITEM_DESELECTED(ID_CE_ControllerMappings, ConnectionEditor::update_buttons)
 wxEND_EVENT_TABLE()
 
-static CurveShape curve_display_order[] = {
-  Linear,
-  Exponential,
-  HalfExponential,
-  InverseExponential,
-  HalfInverseExponential
+static const char * const curve_display_order[] = {
+  "Linear",
+  "Exponential",
+  "Half Exponential",
+  "Inverse Exponential",
+  "Half Inverse Exponential"
 };
 
 ConnectionEditor::ConnectionEditor(wxWindow *parent, Connection *c)
@@ -191,12 +191,7 @@ wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
   wxBoxSizer *vel_curve_sizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer *vel_curve_field_sizer = new wxBoxSizer(wxHORIZONTAL);
 
-  // velocity curve dropdown
-  wxArrayString choices;
-  for (auto curve_shape : curve_display_order)
-    choices.Add(curve_with_shape(curve_shape)->name);
-  cb_vel_curve = new wxComboBox(p, ID_CE_VelocityCurve, connection->velocity_curve()->name,
-                                wxDefaultPosition, wxDefaultSize, choices, wxCB_READONLY);
+  make_velocity_curve_dropdown(p);
   vel_curve_field_sizer->Add(cb_vel_curve);
 
   vel_curve_sizer->Add(new wxStaticText(p, wxID_ANY, "Velocity Curve"));
@@ -208,6 +203,29 @@ wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
   outer_sizer->Add(vel_curve_sizer);
   p->SetSizerAndFit(outer_sizer);
   return p;
+}
+
+void ConnectionEditor::make_velocity_curve_dropdown(wxWindow *parent) {
+  for (auto curve_name : curve_display_order)
+    displayed_curves.push_back(km->velocity_curve_with_name(curve_name));
+  for (auto curve : km->velocity_curves()) {
+    bool already_displayed = false;
+    for (auto already_displayed_curve : displayed_curves) {
+      if (curve == already_displayed_curve) {
+        already_displayed = true;
+        break;
+      }
+    }
+    if (!already_displayed)
+      displayed_curves.push_back(curve);
+  }
+  wxArrayString choices;
+  for (auto curve : displayed_curves)
+    choices.Add(curve->name());
+  Curve *curve = connection->velocity_curve();
+  cb_vel_curve = new wxComboBox(
+    parent, ID_CE_VelocityCurve, curve ? curve->name() : "Linear",
+    wxDefaultPosition, wxDefaultSize, choices, wxCB_READONLY);
 }
 
 wxWindow *ConnectionEditor::make_filter_panel(wxWindow *parent) {
@@ -390,7 +408,7 @@ void ConnectionEditor::save(wxCommandEvent& _) {
   connection->set_zone_high(note_name_to_num(tc_zone_high->GetValue()));
   connection->set_xpose(int_from_chars(tc_xpose->GetValue()));
   n = cb_vel_curve->GetCurrentSelection();
-  connection->set_velocity_curve(curve_with_shape(curve_display_order[n]));
+  connection->set_velocity_curve(displayed_curves[n]);
 
   MessageFilter &mf = connection->message_filter();
   mf.set_note(cb_pass_note->IsChecked());

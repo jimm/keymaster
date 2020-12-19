@@ -53,6 +53,7 @@ KeyMaster *Storage::load(bool testing) {
 
   load_schema_version();
   load_instruments();
+  load_velocity_curves();
   load_messages();
   load_triggers();
   load_songs();
@@ -76,6 +77,7 @@ void Storage::save(KeyMaster *keymaster, bool testing) {
 
   km = keymaster;
   save_instruments();
+  save_velocity_curves();
   save_messages();
   save_triggers();
   save_songs();
@@ -92,7 +94,8 @@ string Storage::error() {
   return error_str;
 }
 
-// Initializes the database by dropping/recreating all tables.
+// Initializes the database by dropping/recreating all tables and adding
+// some data.
 void Storage::initialize() {
   char *error_buf;
 
@@ -102,6 +105,10 @@ void Storage::initialize() {
     fprintf(stderr, "%s\n", error_buf);
     error_str = error_buf;
   }
+
+  vector<Curve *> generated;
+  generate_default_curves(generated);
+  save_velocity_curves(generated);
 }
 
 int Storage::schema_version() {
@@ -174,6 +181,25 @@ void Storage::load_instruments() {
       else
         km->add_output(new Output(id, pmNoDevice, device_name, name));
     }
+  }
+  sqlite3_finalize(stmt);
+}
+
+void Storage::load_velocity_curves() {
+  sqlite3_stmt *stmt;
+  const char * const sql = "select id, name, short_name, curve from velocity_curves";
+
+  sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    int col = 0;
+    sqlite3_int64 id = sqlite3_column_int64(stmt, col++);
+    const char *name = text_or_null(stmt, col++, "");
+    const char *short_name = text_or_null(stmt, col++, "");
+    const char *bytes = (const char *)sqlite3_column_text(stmt, col++);
+
+    Curve *curve = new Curve(id, name, short_name);
+    km->add_velocity_curve(curve);
+    curve->from_chars(bytes);
   }
   sqlite3_finalize(stmt);
 }
@@ -347,7 +373,7 @@ void Storage::load_connections(Patch *p) {
     "select id,"
     "   input_id, input_chan, output_id, output_chan,"
     "   bank_msb, bank_lsb, prog,"
-    "   zone_low, zone_high, xpose, velocity_curve,"
+    "   zone_low, zone_high, xpose, velocity_curve_id,"
     "   note, poly_pressure, chan_pressure, program_change, pitch_bend,"
     "   controller, song_pointer, song_select, tune_request, sysex,"
     "   clock, start_continue_stop, system_reset"
@@ -371,7 +397,7 @@ void Storage::load_connections(Patch *p) {
     int zone_low = int_or_null(stmt, col++, 0);
     int zone_high = int_or_null(stmt, col++, 127);
     int xpose = int_or_null(stmt, col++, 0);
-    int velocity_curve = int_or_null(stmt, col++, 0);
+    sqlite3_int64 velocity_curve_id = sqlite3_column_int64(stmt, col++);
 
     int note = sqlite3_column_int(stmt, col++);
     int poly_pressure = sqlite3_column_int(stmt, col++);
@@ -398,7 +424,7 @@ void Storage::load_connections(Patch *p) {
     conn->set_zone_low(zone_low);
     conn->set_zone_high(zone_high);
     conn->set_xpose(xpose);
-    conn->set_velocity_curve(curve_with_shape(static_cast<CurveShape>(velocity_curve)));
+    conn->set_velocity_curve(km->velocity_curve_with_id(velocity_curve_id));
     mf.set_note(note);
     mf.set_poly_pressure(poly_pressure);
     mf.set_chan_pressure(chan_pressure);
@@ -527,6 +553,32 @@ void Storage::save_instruments() {
   sqlite3_finalize(stmt);
 }
 
+void Storage::save_velocity_curves() {
+  save_velocity_curves(km->velocity_curves());
+}
+
+void Storage::save_velocity_curves(vector<Curve *> &curves) {
+  sqlite3_stmt *stmt;
+  const char * const sql =
+    "insert into velocity_curves (id, name, short_name, curve) values (?, ?, ?, ?)";
+
+  sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
+  for (auto& curve : curves) {
+    char *hex_chars = bytes_to_hex(curve->curve, 128);
+
+    int col = 1;
+    sqlite3_bind_null(stmt, col++);
+    sqlite3_bind_text(stmt, col++, curve->name().c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, col++, curve->short_name().c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, col++, hex_chars, -1, SQLITE_STATIC);
+    free(hex_chars);
+    sqlite3_step(stmt);
+    extract_id(curve);
+    sqlite3_reset(stmt);
+  }
+  sqlite3_finalize(stmt);
+}
+
 void Storage::save_messages() {
   sqlite3_stmt *stmt;
   const char * const sql =
@@ -643,7 +695,7 @@ void Storage::save_connections(Patch *patch) {
   const char * const sql =
     "insert into connections"
     "   (id, patch_id, position, input_id, input_chan, output_id, output_chan,"
-    "    bank_msb, bank_lsb, prog, zone_low, zone_high, xpose, velocity_curve,"
+    "    bank_msb, bank_lsb, prog, zone_low, zone_high, xpose, velocity_curve_id,"
     "    note, poly_pressure, chan_pressure, program_change, pitch_bend,"
     "    controller, song_pointer, song_select, tune_request, sysex,"
     "    clock, start_continue_stop, system_reset)"
@@ -666,7 +718,7 @@ void Storage::save_connections(Patch *patch) {
     sqlite3_bind_int(stmt, col++, conn->zone_low());
     sqlite3_bind_int(stmt, col++, conn->zone_high());
     sqlite3_bind_int(stmt, col++, conn->xpose());
-    sqlite3_bind_int(stmt, col++, int(conn->velocity_curve()->shape));
+    bind_obj_id_or_null(stmt, col++, conn->velocity_curve());
 
     MessageFilter &mf = conn->message_filter();
     sqlite3_bind_int(stmt, col++, mf.note() ? 1 : 0);

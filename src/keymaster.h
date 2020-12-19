@@ -7,6 +7,7 @@
 #include "input.h"
 #include "output.h"
 #include "message.h"
+#include "curve.h"
 #include "clock.h"
 #include "observer.h"
 #include "observable.h"
@@ -32,6 +33,7 @@ public:
   inline vector<SetList *> &set_lists() { return _set_lists; }
   inline vector<Trigger *> &triggers() { return _triggers; }
   inline vector<Message *> &messages() { return _messages; }
+  inline vector<Curve *> &velocity_curves() { return _velocity_curves; }
   inline Cursor *cursor() { return _cursor; }
   inline Clock &clock() { return _clock; }
   inline bool is_testing() { return _testing; }
@@ -42,6 +44,11 @@ public:
 
   void add_message(Message *message);
   void remove_message(Message *message);
+
+  void add_velocity_curve(Curve *velocity_curve);
+  void remove_velocity_curve(Curve *velocity_curve);
+  Curve *velocity_curve_with_name(const char *name);
+  Curve *velocity_curve_with_id(sqlite3_int64 id);
 
   void add_trigger(Trigger *trigger);
   void remove_trigger(Trigger *trigger);
@@ -106,6 +113,7 @@ private:
   bool _testing;
   bool _modified;
   vector<Message *> _messages;
+  vector<Curve *> _velocity_curves;
 
   // ================ initialization ================
   void create_songs();

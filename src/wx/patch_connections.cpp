@@ -66,23 +66,8 @@ void PatchConnections::update() {
     if (conn->xpose() != -1)
       SetItem(i, col++, wxString::Format("%c%2d", conn->xpose() < 0 ? '-' : ' ', abs(conn->xpose())));
 
-    switch (conn->velocity_curve()->shape) {
-    case Linear:
-      SetItem(i, col++, "");
-      break;
-    case Exponential:
-      SetItem(i, col++, "exp");
-      break;
-    case HalfExponential:
-      SetItem(i, col++, "exp/2");
-      break;
-    case InverseExponential:
-      SetItem(i, col++, "-exp");
-      break;
-    case HalfInverseExponential:
-      SetItem(i, col++, "-exp/2");
-      break;
-    }
+    Curve *curve = conn->velocity_curve();
+    SetItem(i, col++, curve ? curve->short_name() : "");
 
     format_program(conn->program_bank_msb(), conn->program_bank_lsb(),
                    conn->program_prog(), buf);

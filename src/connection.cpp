@@ -12,7 +12,7 @@ Connection::Connection(sqlite3_int64 id, Input *in, int in_chan, Output *out,
   : DBObj(id),
     _input(in), _input_chan(in_chan),
     _output(out), _output_chan(out_chan),
-    _xpose(0), _velocity_curve(curve_with_shape(Linear)),
+    _xpose(0), _velocity_curve(nullptr),
     _processing_sysex(false),
     _running(false), _changing_was_running(false)
 {
@@ -249,7 +249,8 @@ void Connection::midi_in(PmMessage msg) {
   case NOTE_ON: case NOTE_OFF: case POLY_PRESSURE:
     if (inside_zone(data1)) {
       data1 += _xpose;
-      data2 = _velocity_curve->curve[data2];
+      if (_velocity_curve != nullptr)
+        data2 = _velocity_curve->curve[data2];
       if (data1 >= 0 && data1 <= 127) {
         if (_output_chan != CONNECTION_ALL_CHANNELS)
           status = high_nibble + _output_chan;
