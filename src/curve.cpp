@@ -6,7 +6,7 @@
 void generate_default_curves(vector<Curve *> &vec) {
   Curve *curve;
 
-  curve = new Curve(1, "Linear", "lin");
+  curve = new Curve(1, "Linear", "");
   memcpy(curve->curve, linear_curve, 128);
   vec.push_back(curve);
 
@@ -30,6 +30,14 @@ void generate_default_curves(vector<Curve *> &vec) {
 Curve::Curve(sqlite3_int64 id, const char *c_name, const char *c_short_name)
   : DBObj(id), Named(c_name), _short_name(c_short_name)
 {
+}
+
+// copy constructor
+Curve::Curve(const Curve &other)
+  : DBObj(UNDEFINED_ID), Named(((Curve &)other).name().c_str())
+{
+  _short_name = ((Curve &)other).short_name();
+  memcpy(curve, other.curve, 128);
 }
 
 void Curve::from_chars(const char *str) {

@@ -14,6 +14,7 @@ public:
   unsigned char curve[128];
 
   Curve(sqlite3_int64 id, const char *c_name, const char *c_short_name);
+  Curve(const Curve &other);
 
   void from_chars(const char *str);
 

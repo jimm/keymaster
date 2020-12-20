@@ -2,7 +2,7 @@
 #include "events.h"
 
 /*
- * A FrameList is a wxListCtrl that tells the frame to update its menu
+ * A FrameListBox is a wxListCtrl that tells the frame to update its menu
  * whenever an item is selected/deselected.
  */
 FrameListBox::FrameListBox(wxWindow *parent, wxWindowID id, wxPoint pos, wxSize size, long style)

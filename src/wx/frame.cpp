@@ -22,6 +22,7 @@
 #include "song_editor.h"
 #include "patch_editor.h"
 #include "clock_panel.h"
+#include "curve_editor.h"
 #include "../keymaster.h"
 #include "../cursor.h"
 #include "../storage.h"
@@ -61,6 +62,7 @@ wxBEGIN_EVENT_TABLE(Frame, wxFrame)
   EVT_MENU(ID_DestroyConnection, Frame::destroy_connection)
   EVT_MENU(ID_DestroySetList, Frame::destroy_set_list)
   EVT_MENU(ID_ListInstruments, Frame::OnListInstruments)
+  EVT_MENU(ID_CurveEditor, Frame::OnCurveEditor)
   EVT_MENU(ID_Monitor, Frame::OnMonitor)
   EVT_MENU(ID_ClockToggle, Frame::toggle_clock)
   EVT_MENU(ID_RegularPanic, Frame::regular_panic)
@@ -253,6 +255,8 @@ void Frame::make_menu_bar() {
   wxMenu *menu_windows = new wxMenu;
   menu_windows->Append(ID_ListInstruments, "&Instruments\tCtrl-I",
                       "Displays input and output instruments");
+  menu_windows->Append(ID_CurveEditor, "&Velocity Curves",
+                       "Edit velocity curves");
   menu_windows->Append(ID_Monitor, "MIDI &Monitor\tCtrl-M",
                       "Open the MIDI Monitor window");
 
@@ -782,6 +786,11 @@ void Frame::OnSaveAs(wxCommandEvent &_event) {
 
 void Frame::OnListInstruments(wxCommandEvent &_event) {
   InstrumentDialog(this, KeyMaster_instance()).ShowModal();
+  update();
+}
+
+void Frame::OnCurveEditor(wxCommandEvent& event) {
+  CurveEditor(this, KeyMaster_instance()).ShowModal();
   update();
 }
 

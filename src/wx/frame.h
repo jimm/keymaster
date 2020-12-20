@@ -34,6 +34,7 @@ enum {
   ID_DestroyConnection,
   ID_DestroySetList,
   ID_ListInstruments,
+  ID_CurveEditor,
   ID_Monitor,
   ID_ClockToggle,
   ID_RegularPanic,
@@ -110,6 +111,7 @@ private:
   void OnSave(wxCommandEvent& event);
   void OnSaveAs(wxCommandEvent& event);
   void OnListInstruments(wxCommandEvent& event);
+  void OnCurveEditor(wxCommandEvent& event);
   void OnMonitor(wxCommandEvent& event);
   void OnAbout(wxCommandEvent& event);
   void OnExit(wxCommandEvent& event);
