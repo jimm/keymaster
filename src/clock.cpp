@@ -82,6 +82,10 @@ Clock::~Clock() {
 void Clock::set_bpm(float new_val) {
   if (_bpm != new_val) {
     _bpm = new_val;
+
+    // 60 secs per minute / 24 ticks per beat = (2.5 secs-beats / minute-ticks)
+    // (2.5 secs-beats / minute-ticks) * MICROSECS_PER_SECOND = (2.5e6 millisecs-beats / minute-ticks)
+    // (2.5e6 millisecs-beat / minute-tick) / X beats per minute = X millisecs/tick
     microsecs_per_tick = (long)(2.5e6 / _bpm);
     changed((void *)ClockChangeBpm);
   }
