@@ -26,7 +26,7 @@ create table velocity_curves (
 
 create table messages (
   id integer primary key,
-  name name not null,
+  name text not null,
   bytes text not null
 );
 
