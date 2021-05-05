@@ -148,7 +148,7 @@ string Message::to_string() {
 // numbers. Each message is separated by a newline and each byte within the
 // message is separated by a space.
 string Message::to_editable_string() {
-  char buf[4];
+  char buf[BUFSIZ];
   string str;
   bool in_sysex = false;
 
@@ -165,7 +165,9 @@ string Message::to_editable_string() {
         in_sysex = false;
         str += "f7\n";
       }
-      sprintf(buf, "%02x %02x %02x\n", status, Pm_MessageData1(msg), Pm_MessageData2(msg));
+      sprintf(buf, "%02x %02x %02x\n", (unsigned char)status,
+              (unsigned char)Pm_MessageData1(msg),
+              (unsigned char)Pm_MessageData2(msg));
       str += buf;
       break;
     case PROGRAM_CHANGE: case CHANNEL_PRESSURE: case SONG_SELECT:
@@ -173,7 +175,8 @@ string Message::to_editable_string() {
         in_sysex = false;
         str += "f7\n";
       }
-      sprintf(buf, "%02x %02x\n", status, Pm_MessageData1(msg));
+      sprintf(buf, "%02x %02x\n", (unsigned char)status,
+              (unsigned char)Pm_MessageData1(msg));
       str += buf;
       break;
     case TUNE_REQUEST:

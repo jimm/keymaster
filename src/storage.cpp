@@ -918,25 +918,23 @@ PmMessage Storage::single_message_from_hex_bytes(char *bytes) {
   unsigned char byte;
   PmMessage msg = 0;
 
-  byte = hex_to_byte(bytes); bytes += 2;
-  msg = byte;
-
-  byte = hex_to_byte(bytes); bytes += 2;
-  msg = (msg << 8) + byte;
-
-  byte = hex_to_byte(bytes); bytes += 2;
-  msg = (msg << 8) + byte;
-
-  byte = hex_to_byte(bytes);
-  msg = (msg << 8) + byte;
+  for (int i = 0; i < 4; ++i) {
+    msg <<= 8;
+    msg += hex_to_byte(bytes);
+    bytes += 2;
+  }
 
   return msg;
 }
 
 // FIXME use standard Message format 007f35b0
 string Storage::single_message_to_hex_bytes(PmMessage msg) {
-  char buf[7];
+  char buf[7], *p = buf;
 
-  sprintf(buf, "00%02x%02x%02x", Pm_MessageData2(msg), Pm_MessageData1(msg), Pm_MessageStatus(msg));
+  for (int i = 0; i < 4; ++i) {
+    sprintf(p, "%02x", (unsigned char)(msg & 0xff));
+    msg >>= 8;
+    p += 2;
+  }
   return string(buf);
 }

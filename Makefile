@@ -28,7 +28,7 @@ CATCH_CATEGORY ?= ""
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $^
+	$(CXX) $(LDFLAGS) -o $@ $^
 
 -include $(SRC:%.cpp=%.d)
 -include $(TEST_SRC:%.cpp=%.d)
@@ -52,7 +52,7 @@ test: $(NAME)_test
 	./$(NAME)_test --use-colour no $(CATCH_CATEGORY)
 
 $(NAME)_test:	$(OBJS) $(TEST_OBJS)
-	$(LD) $(LDFLAGS) -o $@ $(filter-out $(TEST_OBJ_FILTERS),$^)
+	$(CXX) $(LDFLAGS) -o $@ $(filter-out $(TEST_OBJ_FILTERS),$^)
 
 install:	$(bindir)/$(NAME)
 
