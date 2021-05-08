@@ -14,6 +14,7 @@
 #include "patch_window.h"
 #include "prompt_window.h"
 #include "trigger_window.h"
+#include "messages_window.h"
 #include "midi_monitor_window.h"
 #include "../cursor.h"
 
@@ -149,11 +150,12 @@ void GUI::create_windows() {
   patch = new PatchWindow(geom_patch_rect(), "Patch",
                           max_name_len(&km->inputs()), max_name_len(&km->outputs()));
   message = new Window(geom_message_rect(), "");
-  trigger = new TriggerWindow(geom_trigger_rect(), "");
-  info = new InfoWindow(geom_info_rect(), "");
+  messages = new MessagesWindow(geom_messages_rect(), "");
+  trigger = new TriggerWindow(geom_triggers_rect(), "");
+  info = new InfoWindow(geom_info_rect(), "Notes / Help");
 
   play_song = new ListWindow<Patch>(geom_play_song_rect(), "");
-  play_notes = new InfoWindow(geom_play_notes_rect(), "");
+  play_notes = new InfoWindow(geom_play_notes_rect(), "Notes / Help");
   play_patch = new PatchWindow(geom_play_patch_rect(), "Patch",
                                max_name_len(&km->inputs()), max_name_len(&km->outputs()));
 
@@ -167,7 +169,8 @@ void GUI::resize_windows() {
   song->move_and_resize(geom_song_rect());
   patch->move_and_resize(geom_patch_rect());
   message->move_and_resize(geom_message_rect());
-  trigger->move_and_resize(geom_trigger_rect());
+  messages->move_and_resize(geom_messages_rect());
+  trigger->move_and_resize(geom_triggers_rect());
   info->move_and_resize(geom_info_rect());
 
   play_song->move_and_resize(geom_play_song_rect());
@@ -185,6 +188,7 @@ void GUI::free_windows() {
   delete patch;
   delete message;
   delete trigger;
+  delete messages;
   delete info;
 
   delete play_song;
@@ -218,6 +222,7 @@ void GUI::refresh_all() {
     song->draw();
     patch->draw();
     message->draw();
+    messages->draw();
     trigger->draw();
     info->draw();
     break;
@@ -239,6 +244,7 @@ void GUI::refresh_all() {
     wnoutrefresh(song->win);
     wnoutrefresh(patch->win);
     wnoutrefresh(info->win);
+    wnoutrefresh(messages->win);
     wnoutrefresh(trigger->win);
     break;
   case CURSES_LAYOUT_PLAY:

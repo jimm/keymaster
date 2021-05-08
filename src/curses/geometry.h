@@ -8,7 +8,8 @@ typedef struct rect {
 rect geom_set_lists_rect();
 rect geom_set_list_rect();
 rect geom_song_rect();
-rect geom_trigger_rect();
+rect geom_messages_rect();
+rect geom_triggers_rect();
 rect geom_patch_rect();
 rect geom_message_rect();
 rect geom_info_rect();

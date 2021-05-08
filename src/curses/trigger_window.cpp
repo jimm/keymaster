@@ -11,9 +11,9 @@ TriggerWindow::TriggerWindow(struct rect r, const char *title_prefix)
 TriggerWindow::~TriggerWindow() {
 }
 
-void TriggerWindow::set_contents(const char *win_title, Trigger *trigger) {
+void TriggerWindow::set_contents(const char *win_title, Trigger *t) {
   title = win_title;
-  trigger = trigger;
+  trigger = t;
 }
 
 void TriggerWindow::draw() {

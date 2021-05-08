@@ -10,6 +10,7 @@ class InfoWindow : public Window {
 public:
   vector<char *> *text_lines;
   vector<char *> *help_lines;
+  vector<char *> *contents_lines;
   vector<char *> *display_list;
 
   InfoWindow(struct rect, const char *);

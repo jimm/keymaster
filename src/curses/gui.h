@@ -8,6 +8,7 @@ using namespace std;
 
 class InfoWindow;
 class PatchWindow;
+class MessagesWindow;
 class TriggerWindow;
 class MIDIMonitorWindow;
 class Window;
@@ -41,6 +42,7 @@ private:
   ListWindow<Song> *set_list;
   ListWindow<Patch> *song;
   PatchWindow *patch;
+  MessagesWindow *messages;
   TriggerWindow *trigger;
   InfoWindow *info;
 
