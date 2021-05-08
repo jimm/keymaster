@@ -76,6 +76,7 @@ void Storage::save(KeyMaster *keymaster, bool testing) {
     return;
 
   km = keymaster;
+  save_schema_version();
   save_instruments();
   save_velocity_curves();
   save_messages();

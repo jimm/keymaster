@@ -5,6 +5,10 @@
 #include "test_helper.h"
 #include "../src/storage.h"
 
+void error_message(const char * const msg) {
+  fprintf(stderr, "%s\n", msg);
+}
+
 void _initialize_database() {
   if (access(TEST_DB_PATH, F_OK) != -1)
     remove(TEST_DB_PATH);

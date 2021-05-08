@@ -9,7 +9,6 @@ CPPFLAGS += -std=c++11 -MD -MP -g $(DEBUG) $(WXFLAGS)
 
 LD = $(shell wx-config --ld)
 LIBS = -lc -lc++ -lsqlite3 -lportmidi
-LDFLAGS += $(LIBS) $(WXLIBS)
 
 prefix = /usr/local
 exec_prefix = $(prefix)
@@ -17,9 +16,8 @@ bindir = $(exec_prefix)/bin
 
 SRC = $(wildcard src/*.cpp) $(wildcard src/wx/*.cpp)
 OBJS = $(SRC:%.cpp=%.o)
-TEST_SRC = $(wildcard test/*.cpp)
+TEST_SRC = $(wildcard src/*.cpp) $(wildcard test/*.cpp)
 TEST_OBJS = $(TEST_SRC:%.cpp=%.o)
-TEST_OBJ_FILTERS = src/wx/app_main.o
 
 CATCH_CATEGORY ?= ""
 
@@ -28,7 +26,7 @@ CATCH_CATEGORY ?= ""
 all: $(NAME)
 
 $(NAME): $(OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $^
+	$(CXX) $(LDFLAGS) $(LIBS) $(WXLIBS) -o $@ $^
 
 -include $(SRC:%.cpp=%.d)
 -include $(TEST_SRC:%.cpp=%.d)
@@ -51,8 +49,8 @@ src/generated_curves.h:	bin/generate_curves.py
 test: $(NAME)_test
 	./$(NAME)_test --use-colour no $(CATCH_CATEGORY)
 
-$(NAME)_test:	$(OBJS) $(TEST_OBJS)
-	$(CXX) $(LDFLAGS) -o $@ $(filter-out $(TEST_OBJ_FILTERS),$^)
+$(NAME)_test:	$(TEST_OBJS)
+	$(CXX) $(LDFLAGS) $(LIBS) -o $@ $(filter-out src/error.o,$^)
 
 install:	$(bindir)/$(NAME)
 
