@@ -76,4 +76,6 @@ private:
   string single_message_to_hex_bytes(PmMessage msg);
 };
 
+const char * last_loaded_file_path();
+
 #endif /* STORAGE_H */

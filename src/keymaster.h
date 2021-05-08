@@ -33,6 +33,7 @@ public:
   inline Clock &clock() { return _clock; }
   inline bool is_testing() { return _testing; }
   inline bool is_modified() { return _modified; }
+  inline bool is_running() { return _running; }
 
   void add_input(Input *input);
   void add_output(Output *output);

@@ -1,10 +1,11 @@
 #include "error.h"
-#include "wx/app.h"
+#include "curses/gui.h"
 
 void error_message(const char * const msg) {
   fprintf(stderr, "%s\n", msg);
-  App *app = app_instance();
-  if (app != nullptr) {
-    app->show_user_message(msg, 10);
+  GUI *gui = gui_instance();
+  if (gui != nullptr) {
+    gui->show_message(msg);
+    gui->clear_message_after(30);
   }
 }

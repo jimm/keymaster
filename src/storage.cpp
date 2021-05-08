@@ -20,14 +20,23 @@ using namespace std;
 #define INSTRUMENT_TYPE_INPUT 0
 #define INSTRUMENT_TYPE_OUTPUT 1
 
+char last_loaded_file_path_str[BUFSIZ] = {0};
+
+const char * last_loaded_file_path() { return last_loaded_file_path_str; }
+
 Storage::Storage(const char *path) : loading_version(0) {
   int status = sqlite3_open(path, &db);
-  if (status != 0) {
-    db = nullptr;
-    char error_buf[BUFSIZ];
-    sprintf(error_buf,  "error opening database file %s", path);
-    error_str = error_buf;
+  if (status == 0) {
+    strncpy((char *)last_loaded_file_path_str, path, BUFSIZ-1);
+    last_loaded_file_path_str[BUFSIZ-1] = 0;
+    return;
   }
+
+  // error handling
+  db = nullptr;
+  char error_buf[BUFSIZ];
+  sprintf(error_buf,  "error opening database file %s", path);
+  error_str = error_buf;
 }
 
 Storage::~Storage() {
