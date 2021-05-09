@@ -26,10 +26,11 @@ void ListWindow<T>::set_contents(const char *title_str, vector<T *> *l,
 template <class T>
 void ListWindow<T>::draw() {
   Window::draw();
-  if (list == nullptr || curr_item == nullptr)
+  if (list == nullptr)
     return;
 
-  typename vector<T *>::iterator curr_index = find(list->begin(), list->end(), curr_item);
+  typename vector<T *>::iterator curr_index =
+    curr_item ? find(list->begin(), list->end(), curr_item) : list->begin();
   int vis_height = visible_height();
 
   if (curr_index < offset)
@@ -44,7 +45,7 @@ void ListWindow<T>::draw() {
     if (thing == curr_item)
       wattron(win, A_REVERSE);
     waddch(win, ' ');
-    string list_entry = thing->name();
+    string list_entry = thing->to_list_window_string();
     make_fit(list_entry, 2);
     waddstr(win, list_entry.c_str());
     waddch(win, ' ');
@@ -59,7 +60,7 @@ template <typename T>
 void ListWindow<T>::debug() {
   fprintf(stderr, "list_window %p, offset %p\n", this, (void *)&offset);
   Window::debug();
-  fprintf(stderr, "  list in list window %p:\n", this);
+  fprintf(stderr, "  list in list window %p:\n", list);
   fprintf(stderr, "  address of curr_item = %p\r\n", curr_item);
 }
 

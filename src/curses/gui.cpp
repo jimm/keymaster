@@ -13,8 +13,6 @@
 #include "list_window.cpp"      // for templates
 #include "patch_window.h"
 #include "prompt_window.h"
-#include "trigger_window.h"
-#include "messages_window.h"
 #include "midi_monitor_window.h"
 #include "../cursor.h"
 
@@ -150,9 +148,9 @@ void GUI::create_windows() {
   patch = new PatchWindow(geom_patch_rect(), "Patch",
                           max_name_len(&km->inputs()), max_name_len(&km->outputs()));
   message = new Window(geom_message_rect(), "");
-  messages = new MessagesWindow(geom_messages_rect(), "");
-  trigger = new TriggerWindow(geom_triggers_rect(), "");
-  info = new InfoWindow(geom_info_rect(), "Notes / Help");
+  messages = new ListWindow<Message>(geom_messages_rect(), 0);
+  triggers = new ListWindow<Trigger>(geom_triggers_rect(), 0);
+  info = new InfoWindow(geom_info_rect(), "");
 
   play_song = new ListWindow<Patch>(geom_play_song_rect(), "");
   play_notes = new InfoWindow(geom_play_notes_rect(), "Notes / Help");
@@ -170,7 +168,7 @@ void GUI::resize_windows() {
   patch->move_and_resize(geom_patch_rect());
   message->move_and_resize(geom_message_rect());
   messages->move_and_resize(geom_messages_rect());
-  trigger->move_and_resize(geom_triggers_rect());
+  triggers->move_and_resize(geom_triggers_rect());
   info->move_and_resize(geom_info_rect());
 
   play_song->move_and_resize(geom_play_song_rect());
@@ -187,7 +185,7 @@ void GUI::free_windows() {
   delete song;
   delete patch;
   delete message;
-  delete trigger;
+  delete triggers;
   delete messages;
   delete info;
 
@@ -221,9 +219,9 @@ void GUI::refresh_all() {
     set_list->draw();
     song->draw();
     patch->draw();
-    message->draw();
     messages->draw();
-    trigger->draw();
+    triggers->draw();
+    message->draw();
     info->draw();
     break;
   case CURSES_LAYOUT_PLAY:
@@ -245,7 +243,7 @@ void GUI::refresh_all() {
     wnoutrefresh(patch->win);
     wnoutrefresh(info->win);
     wnoutrefresh(messages->win);
-    wnoutrefresh(trigger->win);
+    wnoutrefresh(triggers->win);
     break;
   case CURSES_LAYOUT_PLAY:
     wnoutrefresh(play_song->win);
@@ -277,8 +275,9 @@ void GUI::set_normal_window_data() {
   Patch *p = km->cursor()->patch();
 
   set_lists->set_contents("Song Lists", &km->set_lists(), km->cursor()->set_list());
-
   set_list->set_contents(sl->name().c_str(), &sl->songs(), km->cursor()->song());
+  messages->set_contents("Messages", &km->messages(), 0);
+  triggers->set_contents("Triggers", &km->triggers(), 0);
 
   if (s != nullptr) {
     song->set_contents(s->name().c_str(), &s->patches(), km->cursor()->patch());

@@ -42,6 +42,8 @@ public:
   bool signal_message(PmMessage msg);
   bool signal_key(int key_code);
 
+  string to_list_window_string();
+
 private:
   Input *_trigger_input;
   int _trigger_key_code;

@@ -1,3 +1,4 @@
+#include <sstream>
 #include <stdlib.h>
 #include <string.h>
 #include "trigger.h"
@@ -66,6 +67,58 @@ bool Trigger::signal_key(int key_code) {
       return true;
   }
   return false;
+}
+
+
+string Trigger::to_list_window_string() {
+  ostringstream ostr;
+
+  if (_trigger_input != nullptr) {
+    ostr << _trigger_input->name()
+        << " ["
+        << ' ' << std::hex << (_trigger_message & 0xff)
+        << ' ' << std::hex << ((_trigger_message >> 8) & 0xff)
+        << ' ' << std::hex << ((_trigger_message >> 16) & 0xff)
+         << ']';
+  }
+  if (_trigger_key_code != UNDEFINED) {
+    if (!ostr.str().empty())
+      ostr << " | ";
+    if (_trigger_key_code >= 330 && _trigger_key_code <= 354)
+      ostr << 'F' << (_trigger_key_code - 330 + 1);
+    else
+      ostr << (char)_trigger_key_code;
+  }
+  if (!ostr.str().empty())
+    ostr << " | ";
+  switch (_action) {
+  case TA_NEXT_SONG:
+    ostr << "next song";
+    break;
+  case TA_PREV_SONG:
+    ostr << "prev song";
+    break;
+  case TA_NEXT_PATCH:
+    ostr << "next patch";
+    break;
+  case TA_PREV_PATCH:
+    ostr << "prev patch";
+    break;
+  case TA_PANIC:
+    ostr << "panic";
+    break;
+  case TA_SUPER_PANIC:
+    ostr << "super panic";
+    break;
+  case TA_TOGGLE_CLOCK:
+    ostr << "toggle clock";
+    break;
+  case TA_MESSAGE:
+    ostr << _output_message->name();
+    break;
+  }
+
+  return ostr.str();
 }
 
 void Trigger::perform_action() {
