@@ -39,9 +39,18 @@ extern char **environ; /* the environment */
 void append_quoted_string(string &str, string &quote_me) {
   str += '"';
   for (auto& ch : quote_me) {
-    if (ch == '"')
+    switch (ch) {
+    case '"':
       str += '\\';
-    str += ch;
+      str += ch;
+      break;
+    case '\n':
+      str += "\\n";
+      break;
+    default:
+      str += ch;
+      break;
+    }
   }
   str += '"';
 }
@@ -335,9 +344,11 @@ void Web::return_status() {
 
   Song *song = km->cursor()->song();
   if (song != nullptr) {
-    str += ",\"song\":{\"name\":\"";
-    str += song->name();
-    str += "\",\"patches\":";
+    str += ",\"song\":{\"name\":";
+    append_quoted_string(str, song->name());
+    str += ",\"notes\":";
+    append_quoted_string(str, song->notes());
+    str += ",\"patches\":";
     append_json_list_of_names<Patch>(str, song->patches());
     str += "}";
   }
