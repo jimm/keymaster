@@ -26,6 +26,21 @@ table h1, table li, table pre {
   padding: 0 0.5em 0 0.5em;
 }
 
+ul#song-lists {
+  max-height: 5em;
+  overflow-y: scroll;
+}
+
+ul#songs {
+  max-height: 20em;
+  overflow-y: scroll;
+}
+
+pre#notes {
+  max-height: 20em;
+  overflow-y: scroll;
+}
+
 /* ================ black on white ================ */
 .default {
   background-color: white;

@@ -4,18 +4,6 @@ const CONN_HEADERS = "<tr>\n  <th>Input</th>\n  <th>Chan</th>\n  <th>Output</th>
 
 const COLOR_SCHEMES = ['default', 'green', 'amber', 'blue'];
 
-const KEY_BINDINGS = {
-  'j': 'next_patch',
-  'down': 'next_patch',
-  'k': 'prev_patch',
-  'up': 'prev_patch',
-  'n': 'next_song',
-  'left': 'next_song',
-  'p': 'prev_song',
-  'right': 'prev_song',
-  'esc': 'panic'
-};
-
 var color_scheme_index = 0;
 
 function notes_or_help(notes) {
@@ -41,6 +29,20 @@ q   - quit
 `);
 }
 
+function ensureElementInViewport(el) {
+  parent = el.parent()[0];
+  el = el[0];
+  if (el === undefined)
+    return;
+
+  var rect = el.getBoundingClientRect();
+  var parent_rect = parent.getBoundingClientRect();
+  if (rect.top < parent_rect.top)
+    el.scrollIntoView(true);
+  else if (rect.bottom > parent_rect.bottom)
+    el.scrollIntoView(false);
+}
+
 function list_item(val, highlighted_value) {
   var classes;
   classes = val === highlighted_value ? "selected reverse-" + COLOR_SCHEMES[color_scheme_index] : '';
@@ -48,39 +50,24 @@ function list_item(val, highlighted_value) {
 };
 
 function list(id, vals, highlighted_value) {
-  var lis, val;
-  lis = (function() {
-    var _i, _len, _results;
-    _results = [];
-    for (_i = 0, _len = vals.length; _i < _len; _i++) {
-      val = vals[_i];
-      _results.push(list_item(val, highlighted_value));
-    }
-    return _results;
-  })();
-  return $('#' + id).html(lis.join("\n"));
+  var list = vals.map((val, idx) => list_item(val, highlighted_value));
+  $(`ul#${id}`).html(list.join("\n"));
+  ensureElementInViewport($(`ul#${id} li.selected`));
 };
 
 function connection_row(conn) {
-  var key, vals, z;
-  vals = (function() {
-    var _i, _len, _ref, _results;
-    _ref = ['input', 'input_chan', 'output', 'output_chan', 'pc', 'zone', 'xpose', 'filter'];
-    _results = [];
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      key = _ref[_i];
-      if (key == 'zone') {
-        z = conn['zone'];
-        if (z.low == 0 && z.high == 127)
-          _results.push('');
+  var vals = ['input', 'input_chan', 'output', 'output_chan', 'pc', 'zone', 'xpose', 'filter']
+      .map((key, idx) => {
+        if (key == 'zone') {
+          z = conn.zone;
+          if (z.low == 0 && z.high == 127)
+            return '';
+          else
+            return '' + z.low + ' - ' + z.high;
+        }
         else
-          _results.push('' + z.low + ' - ' + z.high);
-      }
-      else
-        _results.push(conn[key]);
-    }
-    return _results;
-  })();
+          return conn[key];
+      });
   return "<tr><td>" + (vals.join('</td><td>')) + "</td></tr>";
 };
 
@@ -100,11 +87,7 @@ function connection_rows(connections) {
 };
 
 function maybe_name(data, key) {
-  if (data[key]) {
-    return data[key]['name'];
-  } else {
-    return '';
-  }
+  return data[key] ? data[key]['name'] : '';
 };
 
 function message(str) {
@@ -153,19 +136,56 @@ function cycle_colors() {
   return set_colors();
 };
 
+// ================ local funcs ================
+
+function goto_song() {
+  console.log("TODO: goto_song");
+}
+
+function goto_set_list() {
+  console.log("TODO: goto_set_list");
+}
+
+// ================ bind keys ================
+
+const KEYMASTER_KEY_BINDINGS = {
+  'j': 'next_patch',
+  'down': 'next_patch',
+  'k': 'prev_patch',
+  'up': 'prev_patch',
+  'n': 'next_song',
+  'left': 'next_song',
+  'p': 'prev_song',
+  'right': 'prev_song',
+  'esc': 'panic'
+};
+
+const LOCAL_KEY_BINDINGS = {
+  'g': goto_song,
+  't': goto_set_list
+}
+
 function bind_keypress(key, val) {
   return $(document).bind('keydown', key, function() {
     return keypress(val);
   });
 };
 
-for (key in KEY_BINDINGS) {
-  val = KEY_BINDINGS[key];
+for (key in KEYMASTER_KEY_BINDINGS) {
+  val = KEYMASTER_KEY_BINDINGS[key];
   bind_keypress(key, val);
 }
 
-$(document).bind('keydown', 'c', function() {
-  return cycle_colors();
-});
+function bind_local_call(key, func) {
+  $(document).bind('keydown', key, function() {
+    return func();
+  });
+}
+
+for (key in LOCAL_KEY_BINDINGS) {
+  func = LOCAL_KEY_BINDINGS[key];
+  bind_local_call(key, func);
+
+// ================ initialize data ================
 
 keypress('status');

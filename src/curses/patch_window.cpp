@@ -22,7 +22,6 @@ void PatchWindow::draw() {
   Window::draw();
   wmove(win, 1, 1);
   draw_headers();
-  fprintf(stderr, "patch win draw %p\n", patch); // DEBUG
   if (patch == nullptr)
     return;
 
@@ -50,7 +49,6 @@ void PatchWindow::draw_headers() {
 }
 
 void PatchWindow::draw_connection(Connection *conn) {  
-  fprintf(stderr, "draw_connection %p\n", conn); // DEBUG
   int vis_height = visible_height();
   char buf[BUFSIZ], fitbuf[BUFSIZ];
 
