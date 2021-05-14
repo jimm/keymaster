@@ -188,6 +188,16 @@ DONE_JSON:
       km->prev_song();
       goto DONE_JSON;
     }
+    else if (strncmp(uri, "/editsong", 9) == 0) {
+      parse_params(uri, 9);
+      km->cursor()->song()->set_name(params["songname"]);
+      goto DONE_JSON;
+    }
+    else if (strncmp(uri, "/editpatch", 10) == 0) {
+      parse_params(uri, 10);
+      km->cursor()->song()->set_name(params["patchname"]);
+      goto DONE_JSON;
+    }
     else {
       is_static = 1;
       strcpy(cgiargs, "");
@@ -307,6 +317,20 @@ void Web::cerror(const char *cause, const char *error_number,
 }
 
 void Web::return_status() {
+  string str = status_json();
+
+  fprintf(stream, "HTTP/1.1 200 OK\n");
+  fprintf(stream, "Server: Tiny Web Server\n");
+  fprintf(stream, "Content-length: %ld\n", str.size());
+  fprintf(stream, "Content-type: application/json\n");
+  fprintf(stream, "\r\n");
+  fflush(stream);
+
+  fwrite(str.c_str(), str.size(), 1, stream);
+  fflush(stream);
+}
+
+string Web::status_json() {
   ostringstream ostr;
 
   // Time to generate some JSON by hand!
@@ -316,7 +340,7 @@ void Web::return_status() {
   ostr << "\"lists\":";
   append_json_list_of_names<SetList>(ostr, km->set_lists());
 
-  ostr << ",\"song\":\"" << km->cursor()->set_list()->name() << '"';
+  ostr << ",\"list\":\"" << km->cursor()->set_list()->name() << '"';
 
   ostr << ",\"songs\":";
   append_json_list_of_names<Song>(ostr, km->cursor()->set_list()->songs());
@@ -363,16 +387,7 @@ void Web::return_status() {
     ostr << "]}";
   }
   ostr << "}";
-
-  fprintf(stream, "HTTP/1.1 200 OK\n");
-  fprintf(stream, "Server: Tiny Web Server\n");
-  fprintf(stream, "Content-length: %ld\n", ostr.str().size());
-  fprintf(stream, "Content-type: application/json\n");
-  fprintf(stream, "\r\n");
-  fflush(stream);
-
-  fwrite(ostr.str().c_str(), ostr.str().size(), 1, stream);
-  fflush(stream);
+  return ostr.str();
 }
 
 void Web::append_connection(ostringstream &ostr, Connection *conn) {
@@ -400,9 +415,9 @@ void Web::append_connection(ostringstream &ostr, Connection *conn) {
   ostr << ", \"pc\":";
   append_quoted_string(ostr, pc_str);
 
-  ostr << ", \"zone\": {\"low\": " << conn->zone_low()
-       << ", \"high\": " << conn->zone_high()
-       << "}, \"xpose\":";
+  ostr << ",\"zone\":{\"low\":" << conn->zone_low()
+       << ",\"high\":" << conn->zone_high()
+       << "},\"xpose\":";
   if (conn->xpose() != -1)
     ostr << conn->xpose();
   else
@@ -412,4 +427,44 @@ void Web::append_connection(ostringstream &ostr, Connection *conn) {
   ostr << EMPTY_STRING;         // FIXME
 
   ostr << '}';
+}
+
+string Web::unencode(const char *p) {
+  string str = "";
+  while (*p) {
+    switch (*p) {
+    case '%':
+      str += (char)hex_to_byte(p+1);
+      p += 2;
+      break;
+    case '+':
+      str += ' ';
+      break;
+    default:
+      str += *p;
+      break;
+    }
+    ++p;
+  }
+  return str;
+}
+
+void Web::parse_params(const char *uri, int path_len) {
+  params.clear();
+  if (*(uri + path_len) != '?')
+    return;
+
+  char *token, *str, *to_free;
+
+  to_free = str = strdup(uri + path_len + 1);
+  while ((token = strsep(&str, "&")) != NULL) {
+    char *equals = index(token, '=');
+    if (equals == nullptr)
+      params[unencode(token)] = "";
+    else {
+      *equals = '\0';
+      params[unencode(token)] = unencode(equals + 1);
+    }
+  }
+  free(to_free);
 }
