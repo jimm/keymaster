@@ -36,34 +36,33 @@
 
 extern char **environ; /* the environment */
 
-void append_quoted_string(string &str, string &quote_me) {
-  str += '"';
+void append_quoted_string(ostringstream &ostr, string &quote_me) {
+  ostr << '"';
   for (auto& ch : quote_me) {
     switch (ch) {
     case '"':
-      str += '\\';
-      str += ch;
+      ostr << '\\' << ch;
       break;
     case '\n':
-      str += "\\n";
+      ostr << "\\n";
       break;
     default:
-      str += ch;
+      ostr << ch;
       break;
     }
   }
-  str += '"';
+  ostr << '"';
 }
 
 template <class T>
-void append_json_list_of_names(string &str, vector<T *> &list) {
-  str += '[';
+void append_json_list_of_names(ostringstream &ostr, vector<T *> &list) {
+  ostr << '[';
   for (auto& named : list) {
     if (named != list.front())
-      str += ',';
-    append_quoted_string(str, named->name());
+      ostr << ',';
+    append_quoted_string(ostr, named->name());
   }
-  str += ']';
+  ostr << ']';
 }
 
 Web::Web(KeyMaster *keymaster, int port_number) : km(keymaster), port_num(port_number) {}
@@ -308,122 +307,109 @@ void Web::cerror(const char *cause, const char *error_number,
 }
 
 void Web::return_status() {
-  char buf[BUFSIZE];     /* message buffer */
-  string str;
+  ostringstream ostr;
 
   // Time to generate some JSON by hand!
-  str += "{";
+  ostr << "{";
 
   // TODO extract JSONification of named things
-  str += "\"lists\":";
-  append_json_list_of_names<SetList>(str, km->set_lists());
+  ostr << "\"lists\":";
+  append_json_list_of_names<SetList>(ostr, km->set_lists());
 
-  str += ",\"song\":\"";
-  str += km->cursor()->set_list()->name();
-  str += '"';
+  ostr << ",\"song\":\"" << km->cursor()->set_list()->name() << '"';
 
-  str += ",\"songs\":";
-  append_json_list_of_names<Song>(str, km->cursor()->set_list()->songs());
+  ostr << ",\"songs\":";
+  append_json_list_of_names<Song>(ostr, km->cursor()->set_list()->songs());
 
-  str += ",\"triggers\":[";
+  ostr << ",\"triggers\":[";
   int nth = 0;
   for (auto& input : km->inputs()) {
     for (auto& trigger : input->triggers()) {
       // FIXME handle double quotes in names
       if (nth != 0)
-        str += ',';
-      str += "\":";
-      str += input->name();
-      str += ' ';
-      str += "(trigger)";       // FIXME
-      str += '"';
+        ostr << ',';
+      ostr << "\":" << input->name() << ' '
+           << " (trigger)"      // FIXME
+           << '"';
       ++nth;
     }
   }
-  str += "]";
+  ostr << "]";
 
   Song *song = km->cursor()->song();
   if (song != nullptr) {
-    str += ",\"song\":{\"name\":";
-    append_quoted_string(str, song->name());
-    str += ",\"notes\":";
-    append_quoted_string(str, song->notes());
-    str += ",\"patches\":";
-    append_json_list_of_names<Patch>(str, song->patches());
-    str += "}";
+    ostr << ",\"song\":{\"name\":";
+    append_quoted_string(ostr, song->name());
+    ostr << ",\"notes\":";
+    append_quoted_string(ostr, song->notes());
+    ostr << ",\"patches\":";
+    append_json_list_of_names<Patch>(ostr, song->patches());
+    ostr << "}";
   }
 
   Patch *patch = km->cursor()->patch();
   if (patch != nullptr) {
-    str += ",\"patch\":{";
+    ostr << ",\"patch\":{";
 
-    str += "\"name\":";
-    append_quoted_string(str, patch->name());
+    ostr << "\"name\":";
+    append_quoted_string(ostr, patch->name());
 
-    str += ",\"connections\":[";
+    ostr << ",\"connections\":[";
     for (auto& conn : patch->connections()) {
       if (conn != patch->connections().front())
-        str += ',';
-      append_connection(str, conn);
+        ostr << ',';
+      append_connection(ostr, conn);
     }
-    str += "]}";
+    ostr << "]}";
   }
-  str += "}";
-
-  const char *c_str = str.c_str();
-  int c_len = (int)strlen(c_str);
+  ostr << "}";
 
   fprintf(stream, "HTTP/1.1 200 OK\n");
   fprintf(stream, "Server: Tiny Web Server\n");
-  fprintf(stream, "Content-length: %d\n", c_len);
+  fprintf(stream, "Content-length: %ld\n", ostr.str().size());
   fprintf(stream, "Content-type: application/json\n");
   fprintf(stream, "\r\n");
   fflush(stream);
 
-  fwrite(c_str, c_len, 1, stream);
+  fwrite(ostr.str().c_str(), ostr.str().size(), 1, stream);
   fflush(stream);
 }
 
-void Web::append_connection(string &str, Connection *conn) {
-  str += "{";
+void Web::append_connection(ostringstream &ostr, Connection *conn) {
+  ostr << "{";
 
-  str += "\"input\":";
-  append_quoted_string(str, conn->input()->name());
-  str += ", \"input_chan\":";
+  ostr << "\"input\":";
+  append_quoted_string(ostr, conn->input()->name());
+  ostr << ", \"input_chan\":";
   if (conn->input_chan() == -1)
-    str += "\"all\"";
+    ostr << "\"all\"";
   else
-    str += to_string(conn->input_chan() + 1);
+    ostr << to_string(conn->input_chan() + 1);
 
-  str += ", \"output\":";
-  append_quoted_string(str, conn->output()->name());
-  str += ", \"output_chan\":";
+  ostr << ", \"output\":";
+  append_quoted_string(ostr, conn->output()->name());
+  ostr << ", \"output_chan\":";
   if (conn->output_chan() == -1)
-    str += "\"all\"";
+    ostr << "\"all\"";
   else
-    str += to_string(conn->output_chan() + 1);
+    ostr << to_string(conn->output_chan() + 1);
 
-  char buf[BUFSIZ];
-  str += ", \"pc\":";
-  str += '"';
+  char buf[32];
   format_program(conn->program_bank_msb(), conn->program_bank_lsb(), conn->program_prog(), buf);
-  str += buf;
-  str += '"';
+  string pc_str(buf);
+  ostr << ", \"pc\":";
+  append_quoted_string(ostr, pc_str);
 
-  sprintf(buf, ", \"zone\": {\"low\": %d, \"high\": %d}",
-          conn->zone_low(), conn->zone_high());
-  str += buf;
-
-  str += ", \"xpose\":";
-  if (conn->xpose() != -1) {
-    sprintf(buf, "%c%2d", conn->xpose() < 0 ? '-' : ' ', abs(conn->xpose()));
-    str += buf;
-  }
+  ostr << ", \"zone\": {\"low\": " << conn->zone_low()
+       << ", \"high\": " << conn->zone_high()
+       << "}, \"xpose\":";
+  if (conn->xpose() != -1)
+    ostr << conn->xpose();
   else
-    str += EMPTY_STRING;
+    ostr << EMPTY_STRING;
 
-  str += ", \"filter\":";
-  str += EMPTY_STRING;          // TODO
+  ostr << ", \"filter\":";
+  ostr << EMPTY_STRING;         // FIXME
 
-  str += "}";
+  ostr << '}';
 }

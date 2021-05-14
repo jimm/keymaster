@@ -1,8 +1,8 @@
 #ifndef WEB_H
 #define WEB_H
 
+#include <sstream>
 #include <stdio.h>
-#include <string>
 #include "keymaster.h"
 #include "named.h"
 
@@ -25,8 +25,8 @@ private:
   void cerror(const char *cause, const char *error_number,
               const char *shortmsg, const char *longmsg);
   void return_status();
-  void append_connection(string &, Connection *);
-  void append_instrument_fields(string &, Instrument *);
+  void append_connection(ostringstream &, Connection *);
+  void append_instrument_fields(ostringstream &, Instrument *);
 };
 
 #endif /* WEB_H */
