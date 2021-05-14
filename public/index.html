@@ -1,51 +1,92 @@
 <html>
   <head>
     <title>KeyMaster</title>
+    <meta charset="utf-8"/>
     <script src="js/jquery-1.4.2.js"></script>
     <script src="js/jquery.hotkeys.js"></script>
     <script src="js/keymaster.js"></script>
-    <link rel="stylesheet" href="/style.css" type="text/css" />
+    <link rel="stylesheet" href="/style.css" type="text/css"/>
+    <link rel="icon" href="data:;base64,="/>
   </head>
   <body>
-    <table>
-      <tr>
-        <td id="appname" colspan="3">
-          <h1>KeyMaster</h1>
-        </td>
-      </tr>
-      <tr height="66%">
-        <td width="33%">
-          <h1>Song Lists</h1>
+    <div>
+      <table>
+        <tr>
+          <td id="appname" colspan="3">
+            <h1>KeyMaster</h1>
+          </td>
+        </tr>
+        <tr height="66%">
+          <td width="33%">
+            <h1>Song Lists</h1>
             <ul id="song-lists">
             </ul>
-          <h1>Songs</h1>
+            <h1>Songs</h1>
             <ul id="songs">
             </ul>
-        </td>
-        <td width="33%">
-          <h1>Song</h1>
+          </td>
+          <td width="33%">
+            <h1>Song</h1>
             <ul id="song">
             </ul>
-        </td>
-        <td>
-          <h1>Song Notes / Help</h1>
+          </td>
+          <td>
+            <h1>Song Notes / Help</h1>
             <pre id="notes">
             </pre>
-          <h1>Triggers</h1>
+            <h1>Triggers</h1>
             <ul id="triggers">
             </ul>
-        </td>
-      </tr>
-      <tr height="30%">
-        <td colspan="3">
-          <h1>Connections</h1>
+          </td>
+        </tr>
+        <tr height="30%">
+          <td colspan="3">
+            <h1>Connections</h1>
             <table id="patch">
             </table>
-        </td>
-      </tr>
-      <tr height="4%">
-        <td id="message" colspan="3">&nbsp;</td>
-      </tr>
-    </table>
+          </td>
+        </tr>
+        <tr height="4%">
+          <td id="message" colspan="3">&nbsp;</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- song editor -->
+    <div id="editsong" class="editor">
+      <div class="editor-content">
+        <span class="close">&times;</span>
+        <form id="editsongform" action="/song/edit">
+          <fieldset>
+            <legend>Song</legend>
+            <div>
+              <label for="songname">Song Name:</label>
+              <input name="songname" id="songname" type="text"
+                     placeholder="Song Name"/>
+            </div>
+            <div class="cansub"><button>Cancel</button> <input type="submit"/></div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+
+    <!-- patch editor -->
+    <div id="editpatch" class="editor">
+      <div class="editor-content">
+        <span class="close">&times;</span>
+        <form id="editpatchform" action="/patch/edit">
+          <fieldset>
+            <legend>Patch</legend>
+            <div>
+              <label for="patchname">Patch Name:</label>
+              <input name="patchname" id="patchname" type="text"
+                     placeholder="Patch Name"/>
+            </div>
+            <div class="cansub"><button>Cancel</button> <input type="submit"/></div>
+          </fieldset>
+        </form>
+      </div>
+    </div>
+
   </body>
 </html>

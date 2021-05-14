@@ -3,3 +3,4 @@ keymaster_test
 *.d
 *.o
 TAGS
+test.km

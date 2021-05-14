@@ -4,6 +4,10 @@ const CONN_HEADERS = "<tr>\n  <th>Input</th>\n  <th>Chan</th>\n  <th>Output</th>
 
 const COLOR_SCHEMES = ['default', 'green', 'amber', 'blue'];
 
+const UNDEFINED = -1;
+
+var keymaster;
+
 var color_scheme_index = 0;
 
 function notes_or_help(notes) {
@@ -55,16 +59,24 @@ function list(id, vals, highlighted_value) {
   ensureElementInViewport($(`ul#${id} li.selected`));
 };
 
+function zone_to_str(zone) {
+  if (zone.low == 0 && zone.high == 127)
+    return '';
+  else
+    return '' + zone.low + ' - ' + zone.high;
+}
+
+function program_to_str(pc) {
+  return "" + pc;
+}
+
 function connection_row(conn) {
   var vals = ['input', 'input_chan', 'output', 'output_chan', 'pc', 'zone', 'xpose', 'filter']
       .map((key, idx) => {
-        if (key == 'zone') {
-          z = conn.zone;
-          if (z.low == 0 && z.high == 127)
-            return '';
-          else
-            return '' + z.low + ' - ' + z.high;
-        }
+        if (key == 'zone')
+          return zone_to_str(conn.zone);
+        else if (key == 'pc')
+          return program_to_str(conn.pc);
         else
           return conn[key];
       });
@@ -94,20 +106,21 @@ function message(str) {
   return $('#message').html(str);
 };
 
-function keypress(action) {
+function perform_action(action) {
   return $.getJSON(action, function(data) {
-    list('song-lists', data['lists'], data['list']);
-    list('songs', data['songs'], maybe_name(data, 'song'));
-    list('triggers', data['triggers']);
-    if (data['song'] != null) {
-      notes_or_help(data['song']['notes']);
-      list('song', data['song']['patches'], maybe_name(data, 'patch'));
-      if (data['patch'] != null) {
-        connection_rows(data['patch']['connections']);
+    keymaster = data;
+    list('song-lists', keymaster['lists'], keymaster['list']);
+    list('songs', keymaster['songs'], maybe_name(keymaster, 'song'));
+    list('triggers', keymaster['triggers']);
+    if (keymaster['song'] != null) {
+      notes_or_help(keymaster['song']['notes']);
+      list('song', keymaster['song']['patches'], maybe_name(keymaster, 'patch'));
+      if (keymaster['patch'] != null) {
+        connection_rows(keymaster['patch']['connections']);
       }
     }
-    if (data['message'] != null) {
-      return message(data['message']);
+    if (keymaster['message'] != null) {
+      return message(keymaster['message']);
     }
   });
 };
@@ -139,11 +152,27 @@ function cycle_colors() {
 // ================ local funcs ================
 
 function goto_song() {
-  console.log("TODO: goto_song");
+  alert("TODO: goto_song");
 }
 
 function goto_set_list() {
-  console.log("TODO: goto_set_list");
+  alert("TODO: goto_set_list");
+}
+
+function edit_song() {
+  const editor = $('#editsong');
+  editor.show();
+  $('#songname').focus();
+  // $('#editsong button').click(function() { editor.hide(); });
+}
+
+function edit_patch() {
+  $('#editpatch').show();
+  $('#patchname').focus();
+}
+
+function help() {
+  // TODO
 }
 
 // ================ bind keys ================
@@ -161,13 +190,17 @@ const KEYMASTER_KEY_BINDINGS = {
 };
 
 const LOCAL_KEY_BINDINGS = {
+  'c': cycle_colors,
   'g': goto_song,
-  't': goto_set_list
+  't': goto_set_list,
+  's': edit_song,
+  'a': edit_patch,
+  '?': help
 }
 
 function bind_keypress(key, val) {
   return $(document).bind('keydown', key, function() {
-    return keypress(val);
+    return perform_action(val);
   });
 };
 
@@ -177,7 +210,8 @@ for (key in KEYMASTER_KEY_BINDINGS) {
 }
 
 function bind_local_call(key, func) {
-  $(document).bind('keydown', key, function() {
+  $(document).bind('keydown', key, function(event) {
+    event.preventDefault();
     return func();
   });
 }
@@ -185,7 +219,8 @@ function bind_local_call(key, func) {
 for (key in LOCAL_KEY_BINDINGS) {
   func = LOCAL_KEY_BINDINGS[key];
   bind_local_call(key, func);
+}
 
-// ================ initialize data ================
+// ================ initialize keymaster ================
 
-keypress('status');
+perform_action('status');

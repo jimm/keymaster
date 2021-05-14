@@ -168,6 +168,7 @@ int Web::run() {
     if (strncmp(uri, "/status", 7) == 0) {
 DONE_JSON:
       return_status();
+CLOSE_STREAM_AND_RETURN:
       fclose(stream);
       close(childfd);
       continue;
@@ -188,15 +189,23 @@ DONE_JSON:
       km->prev_song();
       goto DONE_JSON;
     }
-    else if (strncmp(uri, "/editsong", 9) == 0) {
+    else if (strncmp(uri, "/song/edit", 10) == 0) {
       parse_params(uri, 9);
       km->cursor()->song()->set_name(params["songname"]);
-      goto DONE_JSON;
+REDIRECT_BACK_TO_INDEX:
+      /* print response header */
+      fprintf(stream, "HTTP/1.1 302 OK\n");
+      fprintf(stream, "Server: Tiny Web Server\n");
+      fprintf(stream, "Location: /\n");
+      fprintf(stream, "Content-length: 0\n");
+      fprintf(stream, "\r\n");
+      fflush(stream);
+      goto CLOSE_STREAM_AND_RETURN;
     }
-    else if (strncmp(uri, "/editpatch", 10) == 0) {
+    else if (strncmp(uri, "/patch/edit", 11) == 0) {
       parse_params(uri, 10);
       km->cursor()->song()->set_name(params["patchname"]);
-      goto DONE_JSON;
+      goto REDIRECT_BACK_TO_INDEX;
     }
     else {
       is_static = 1;

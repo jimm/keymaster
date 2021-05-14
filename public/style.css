@@ -41,6 +41,40 @@ pre#notes {
   overflow-y: scroll;
 }
 
+div.editor {
+  color: black;
+  background-color: white;
+  display: none;
+  position: absolute;
+  left: 25%;
+  top: 5%;
+  width: 50%;
+  height: 50%; /* Full height */
+  z-index: 100; /* Sit on top */
+  margin: 2em auto; /* 15% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+}
+
+div.cansub {
+  float: right;
+}
+
+/* The Close Button */
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
 /* ================ black on white ================ */
 .default {
   background-color: white;
