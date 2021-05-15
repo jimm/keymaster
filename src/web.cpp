@@ -153,7 +153,7 @@ int Web::run() {
 
     /* tiny only supports the GET method */
     if (strcasecmp(method, "GET")) {
-      cerror(method, "501", "Not Implemented", "Tiny does not implement this method");
+      cerror(method, 501, "Not Implemented", "Tiny does not implement this method");
       fclose(stream);
       close(childfd);
       continue;
@@ -165,6 +165,16 @@ int Web::run() {
       fgets(buf, BUFSIZE, stream);
 
     /* parse the uri [crufty] */
+    char *cgiargs_start = index(uri, '?');
+    if (cgiargs_start != nullptr) {
+      strncpy(cgiargs, cgiargs_start+1, BUFSIZE);
+      cgiargs[BUFSIZE-1] = '\0';
+      *cgiargs_start = '\0';
+    }
+    else
+      cgiargs[0] = '\0';
+
+    /* routing */
     if (strncmp(uri, "/status", 7) == 0) {
 DONE_JSON:
       return_status();
@@ -190,7 +200,7 @@ CLOSE_STREAM_AND_RETURN:
       goto DONE_JSON;
     }
     else if (strncmp(uri, "/song/edit", 10) == 0) {
-      parse_params(uri, 9);
+      parse_params(cgiargs);
       km->cursor()->song()->set_name(params["songname"]);
 REDIRECT_BACK_TO_INDEX:
       /* print response header */
@@ -203,7 +213,7 @@ REDIRECT_BACK_TO_INDEX:
       goto CLOSE_STREAM_AND_RETURN;
     }
     else if (strncmp(uri, "/patch/edit", 11) == 0) {
-      parse_params(uri, 10);
+      parse_params(cgiargs);
       km->cursor()->song()->set_name(params["patchname"]);
       goto REDIRECT_BACK_TO_INDEX;
     }
@@ -218,7 +228,7 @@ REDIRECT_BACK_TO_INDEX:
 
     /* make sure the file exists */
     if (stat(filename, &sbuf) < 0) {
-      cerror(filename, "404", "Not found", "Tiny couldn't find this file");
+      cerror(filename, 404, "Not found", "Tiny couldn't find this file");
       fclose(stream);
       close(childfd);
       continue;
@@ -258,7 +268,7 @@ REDIRECT_BACK_TO_INDEX:
     else {
       /* make sure file is a regular executable file */
       if (!(S_IFREG & sbuf.st_mode) || !(S_IXUSR & sbuf.st_mode)) {
-	cerror(filename, "403", "Forbidden", "You are not allow to access this item");
+	cerror(filename, 403, "Forbidden", "You are not allow to access this item");
 	fclose(stream);
 	close(childfd);
 	continue;
@@ -312,15 +322,15 @@ void Web::error(const char *msg) {
 /*
  * cerror - returns an error message to the client
  */
-void Web::cerror(const char *cause, const char *error_number,
+void Web::cerror(const char *cause, int error_number,
 	    const char *shortmsg, const char *longmsg)
 {
-  fprintf(stream, "HTTP/1.1 %s %s\n", error_number, shortmsg);
+  fprintf(stream, "HTTP/1.1 %d %s\n", error_number, shortmsg);
   fprintf(stream, "Content-type: text/html\n");
   fprintf(stream, "\n");
   fprintf(stream, "<html><title>Tiny Error</title>");
   fprintf(stream, "<body bgcolor=""ffffff"">\n");
-  fprintf(stream, "%s: %s\n", error_number, shortmsg);
+  fprintf(stream, "%d: %s\n", error_number, shortmsg);
   fprintf(stream, "<p>%s: %s\n", longmsg, cause);
   fprintf(stream, "<hr><em>The Tiny Web server</em>\n");
 }
@@ -458,14 +468,14 @@ string Web::unencode(const char *p) {
   return str;
 }
 
-void Web::parse_params(const char *uri, int path_len) {
+void Web::parse_params(const char *cgiargs) {
   params.clear();
-  if (*(uri + path_len) != '?')
+  if (*cgiargs == '\0')
     return;
 
   char *token, *str, *to_free;
 
-  to_free = str = strdup(uri + path_len + 1);
+  to_free = str = strdup(cgiargs);
   while ((token = strsep(&str, "&")) != NULL) {
     char *equals = index(token, '=');
     if (equals == nullptr)

@@ -20,7 +20,7 @@ public:
 
   // only public for testing purposes
   string status_json();
-  void parse_params(const char *uri, int path_len);
+  void parse_params(const char *cgiargs);
 
 private:
   KeyMaster *km;
@@ -29,7 +29,7 @@ private:
   int childfd;
 
   void error(const char *);
-  void cerror(const char *cause, const char *error_number,
+  void cerror(const char *cause, int error_number,
               const char *shortmsg, const char *longmsg);
   void return_status();
   void append_connection(ostringstream &, Connection *);

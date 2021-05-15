@@ -160,10 +160,9 @@ function goto_set_list() {
 }
 
 function edit_song() {
-  const editor = $('#editsong');
-  editor.show();
+  $('#songname').val(keymaster.song.name);
+  $('#editsong').show();
   $('#songname').focus();
-  // $('#editsong button').click(function() { editor.hide(); });
 }
 
 function edit_patch() {
@@ -220,6 +219,14 @@ for (key in LOCAL_KEY_BINDINGS) {
   func = LOCAL_KEY_BINDINGS[key];
   bind_local_call(key, func);
 }
+
+// bind all cancel keys
+$('.cancel').each(function(idx, button) {
+  button.click(function(event) {
+    event.preventDefault();
+    button.parent().hide();
+  })
+});
 
 // ================ initialize keymaster ================
 
