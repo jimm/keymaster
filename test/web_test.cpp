@@ -33,7 +33,7 @@ TEST_CASE("status JSON", CATCH_CATEGORY) {
 
   SECTION("current set list") {
     ostringstream ostr;
-    ostr << "\"list\":\"" << km->cursor()->set_list()->name() << '"';
+    ostr << "\"set_list\":\"" << km->cursor()->set_list()->name() << '"';
     found = status.find(ostr.str());
     REQUIRE(found != string::npos);
   }
@@ -53,6 +53,8 @@ TEST_CASE("status JSON", CATCH_CATEGORY) {
       ostr << '"' << patch->name() << '"';
     }
     ostr << "]}";
+    fprintf(stderr, "%s\n", status.c_str()); // DEBUG
+    fprintf(stderr, "%s\n", ostr.str().c_str()); // DEBUG
     found = status.find(ostr.str());
     REQUIRE(found != string::npos);
   }

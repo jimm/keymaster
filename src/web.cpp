@@ -29,41 +29,13 @@
 #include "web.h"
 #include "cursor.h"
 #include "formatter.h"
+#include "json.h"
 
 #define BUFSIZE 1024
 #define MAXERRS 16
 #define EMPTY_STRING "\"\""
 
 extern char **environ; /* the environment */
-
-void append_quoted_string(ostringstream &ostr, string &quote_me) {
-  ostr << '"';
-  for (auto& ch : quote_me) {
-    switch (ch) {
-    case '"':
-      ostr << '\\' << ch;
-      break;
-    case '\n':
-      ostr << "\\n";
-      break;
-    default:
-      ostr << ch;
-      break;
-    }
-  }
-  ostr << '"';
-}
-
-template <class T>
-void append_json_list_of_names(ostringstream &ostr, vector<T *> &list) {
-  ostr << '[';
-  for (auto& named : list) {
-    if (named != list.front())
-      ostr << ',';
-    append_quoted_string(ostr, named->name());
-  }
-  ostr << ']';
-}
 
 Web::Web(KeyMaster *keymaster, int port_number) : km(keymaster), port_num(port_number) {}
 
@@ -350,102 +322,9 @@ void Web::return_status() {
 }
 
 string Web::status_json() {
-  ostringstream ostr;
-
-  // Time to generate some JSON by hand!
-  ostr << "{";
-
-  // TODO extract JSONification of named things
-  ostr << "\"lists\":";
-  append_json_list_of_names<SetList>(ostr, km->set_lists());
-
-  ostr << ",\"list\":\"" << km->cursor()->set_list()->name() << '"';
-
-  ostr << ",\"songs\":";
-  append_json_list_of_names<Song>(ostr, km->cursor()->set_list()->songs());
-
-  ostr << ",\"triggers\":[";
-  int nth = 0;
-  for (auto& input : km->inputs()) {
-    for (auto& trigger : input->triggers()) {
-      // FIXME handle double quotes in names
-      if (nth != 0)
-        ostr << ',';
-      ostr << "\":" << input->name() << ' '
-           << " (trigger)"      // FIXME
-           << '"';
-      ++nth;
-    }
-  }
-  ostr << "]";
-
-  Song *song = km->cursor()->song();
-  if (song != nullptr) {
-    ostr << ",\"song\":{\"name\":";
-    append_quoted_string(ostr, song->name());
-    ostr << ",\"notes\":";
-    append_quoted_string(ostr, song->notes());
-    ostr << ",\"patches\":";
-    append_json_list_of_names<Patch>(ostr, song->patches());
-    ostr << "}";
-  }
-
-  Patch *patch = km->cursor()->patch();
-  if (patch != nullptr) {
-    ostr << ",\"patch\":{";
-
-    ostr << "\"name\":";
-    append_quoted_string(ostr, patch->name());
-
-    ostr << ",\"connections\":[";
-    for (auto& conn : patch->connections()) {
-      if (conn != patch->connections().front())
-        ostr << ',';
-      append_connection(ostr, conn);
-    }
-    ostr << "]}";
-  }
-  ostr << "}";
-  return ostr.str();
-}
-
-void Web::append_connection(ostringstream &ostr, Connection *conn) {
-  ostr << "{";
-
-  ostr << "\"input\":";
-  append_quoted_string(ostr, conn->input()->name());
-  ostr << ", \"input_chan\":";
-  if (conn->input_chan() == -1)
-    ostr << "\"all\"";
-  else
-    ostr << to_string(conn->input_chan() + 1);
-
-  ostr << ", \"output\":";
-  append_quoted_string(ostr, conn->output()->name());
-  ostr << ", \"output_chan\":";
-  if (conn->output_chan() == -1)
-    ostr << "\"all\"";
-  else
-    ostr << to_string(conn->output_chan() + 1);
-
-  char buf[32];
-  format_program(conn->program_bank_msb(), conn->program_bank_lsb(), conn->program_prog(), buf);
-  string pc_str(buf);
-  ostr << ", \"pc\":";
-  append_quoted_string(ostr, pc_str);
-
-  ostr << ",\"zone\":{\"low\":" << conn->zone_low()
-       << ",\"high\":" << conn->zone_high()
-       << "},\"xpose\":";
-  if (conn->xpose() != -1)
-    ostr << conn->xpose();
-  else
-    ostr << EMPTY_STRING;
-
-  ostr << ", \"filter\":";
-  ostr << EMPTY_STRING;         // FIXME
-
-  ostr << '}';
+  JSON json;
+  json.encode(*km);
+  return json.str();
 }
 
 string Web::unencode(const char *p) {

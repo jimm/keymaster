@@ -30,7 +30,7 @@ public:
   inline vector<PmEvent> &events() { return _events; }
 
 private:
-  vector<PmEvent> _events;       // public for testing only
+  vector<PmEvent> _events;
 };
 
 #endif /* MESSAGE_H */

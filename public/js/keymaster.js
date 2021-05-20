@@ -109,7 +109,7 @@ function message(str) {
 function perform_action(action) {
   return $.getJSON(action, function(data) {
     keymaster = data;
-    list('song-lists', keymaster['lists'], keymaster['list']);
+    list('song-lists', keymaster['set_lists'], keymaster['set_list']);
     list('songs', keymaster['songs'], maybe_name(keymaster, 'song'));
     list('triggers', keymaster['triggers']);
     if (keymaster['song'] != null) {
