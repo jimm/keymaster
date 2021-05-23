@@ -43,6 +43,7 @@ public:
   bool signal_key(int key_code);
 
   string to_list_window_string();
+  string action_string();
 
 private:
   Input *_trigger_input;

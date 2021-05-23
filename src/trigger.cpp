@@ -91,34 +91,41 @@ string Trigger::to_list_window_string() {
   }
   if (!ostr.str().empty())
     ostr << " | ";
-  switch (_action) {
-  case TA_NEXT_SONG:
-    ostr << "next song";
-    break;
-  case TA_PREV_SONG:
-    ostr << "prev song";
-    break;
-  case TA_NEXT_PATCH:
-    ostr << "next patch";
-    break;
-  case TA_PREV_PATCH:
-    ostr << "prev patch";
-    break;
-  case TA_PANIC:
-    ostr << "panic";
-    break;
-  case TA_SUPER_PANIC:
-    ostr << "super panic";
-    break;
-  case TA_TOGGLE_CLOCK:
-    ostr << "toggle clock";
-    break;
-  case TA_MESSAGE:
-    ostr << _output_message->name();
-    break;
-  }
+  ostr << action_string();
 
   return ostr.str();
+}
+
+string Trigger::action_string() {
+  switch (_action) {
+  case TA_NEXT_SONG:
+    return "next song";
+    break;
+  case TA_PREV_SONG:
+    return "prev song";
+    break;
+  case TA_NEXT_PATCH:
+    return "next patch";
+    break;
+  case TA_PREV_PATCH:
+    return "prev patch";
+    break;
+  case TA_PANIC:
+    return "panic";
+    break;
+  case TA_SUPER_PANIC:
+    return "super panic";
+    break;
+  case TA_TOGGLE_CLOCK:
+    return "toggle clock";
+    break;
+  case TA_MESSAGE:
+    return _output_message->name();
+    break;
+  default:
+    return "?";
+    break;
+  }
 }
 
 void Trigger::perform_action() {
