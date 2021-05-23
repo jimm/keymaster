@@ -1,3 +1,4 @@
+#include <iomanip>
 #include <sqlite3.h>
 #include "json.h"
 #include "keymaster.h"
@@ -23,17 +24,17 @@ vector<sqlite3_int64> ids(vector<T *> &list) {
 
 // ================ JSON funcs ================
 
-void JSON::field_name(string str) {
-  encode(str);
-  _ostr << ':';
+JSON &JSON::encode(string str) {
+  return quote(str);
 }
 
-void JSON::encode(string str) {
-  quote(str);
+JSON &JSON::encode(sqlite3_int64 id) {
+  _ostr << id;
+  return *this;
 }
 
 // KeyMaster status
-void JSON::encode(KeyMaster &obj) {
+JSON &JSON::encode(KeyMaster &obj) {
   _ostr << '{';
   field_name("set_lists");
   encode(names(obj.set_lists()));
@@ -48,38 +49,59 @@ void JSON::encode(KeyMaster &obj) {
   // append_name_list(_ostr, "songs", **************** FIXME ****************
 
   _ostr << '}';
+  return *this;
 }
 
-void JSON::encode(Message &obj) {
+JSON &JSON::encode(Message &obj) {
   _ostr << '{';
   field_name("name");
   quote(obj.name());
   _ostr << ',';
   field_name("bytes");
-  quote(obj.to_editable_string());
+  quote(obj.to_string());
   _ostr << '}';
+  return *this;
 }
 
-void JSON::encode(Trigger &obj) {
+JSON &JSON::encode(Trigger &obj) {
   _ostr << '{';
   field_name("key_code");
-  _ostr << obj.trigger_key_code();
+  if (obj.trigger_key_code() == UNDEFINED)
+    _ostr << "null";
+  else
+    _ostr << obj.trigger_key_code();
   _ostr << ',';
-  field_name("trigger_message");
-  _ostr << obj.trigger_message();
+
+  if (obj.input()) {
+    field_name("input_id");
+    encode(obj.input()->id());
+    _ostr << ',';
+    field_name("trigger_message");
+    _ostr << '"' << std::setfill('0') << std::setw(8) << std::hex << obj.trigger_message() << '"';
+  }
+  else {
+    field_name("input_id");
+    _ostr << "null,";
+    field_name("trigger_message");
+    _ostr << "null";
+  }
   _ostr << ',';
+
   field_name("action");
   encode(obj.action_string());
   _ostr << ',';
+
   field_name("message_id");
   if (obj.output_message())
     _ostr <<  obj.output_message()->id();
   else
     _ostr << "null";
+
   _ostr << '}';
+  return *this;
 }
 
-void JSON::encode(Song &obj) {
+JSON &JSON::encode(Song &obj) {
   _ostr << '{';
   field_name("name");
   encode(obj.name());
@@ -87,9 +109,10 @@ void JSON::encode(Song &obj) {
   field_name("patch_ids");
   encode(ids(obj.patches()));
   _ostr << '}';
+  return *this;
 }
 
-void JSON::encode(Patch &obj) {
+JSON &JSON::encode(Patch &obj) {
   _ostr << '{';
   field_name("name");
   encode(obj.name());
@@ -97,9 +120,10 @@ void JSON::encode(Patch &obj) {
   field_name("connection_ids");
   encode(ids(obj.connections()));
   _ostr << '}';
+  return *this;
 }
 
-void JSON::encode(Connection &obj) {
+JSON &JSON::encode(Connection &obj) {
   _ostr << "{";
 
   field_name("input");
@@ -156,9 +180,10 @@ void JSON::encode(Connection &obj) {
   // FIXME: curve, filter, bools, CC map
 
   _ostr << '}';
+  return *this;
 }
 
-void JSON::encode(SetList &obj) {
+JSON &JSON::encode(SetList &obj) {
   _ostr << '{';
   field_name("name");
   encode(obj.name());
@@ -166,11 +191,12 @@ void JSON::encode(SetList &obj) {
   field_name("song_ids");
   encode(ids(obj.songs()));
   _ostr << '}';
+  return *this;
 }
 
 // ================ vectors of things ================
 
-void JSON::encode(vector<string> v) {
+JSON &JSON::encode(vector<string> v) {
   _ostr << '[';
   for (auto s : v) {
     if (s != v.front())
@@ -178,9 +204,10 @@ void JSON::encode(vector<string> v) {
     quote(s);
   }
   _ostr << ']';
+  return *this;
 }
 
-void JSON::encode(vector<sqlite3_int64> ids) {
+JSON &JSON::encode(vector<sqlite3_int64> ids) {
   _ostr << '[';
   for (auto id : ids) {
     if (id != ids.front())
@@ -188,34 +215,41 @@ void JSON::encode(vector<sqlite3_int64> ids) {
     _ostr << id;
   }
   _ostr << ']';
+  return *this;
 }
 
-// void JSON::encode(vector<Message *> v) {
+// JSON &JSON::encode(vector<Message *> v) {
+//   return *this;
 // }
 
-// void JSON::encode(vector<Trigger *> v) {
+// JSON &JSON::encode(vector<Trigger *> v) {
+//   return *this;
 // }
 
-// void JSON::encode(vector<Song *> v) {
+// JSON &JSON::encode(vector<Song *> v) {
+//   return *this;
 // }
 
-// void JSON::encode(vector<Patch *> v) {
+// JSON &JSON::encode(vector<Patch *> v) {
+//   return *this;
 // }
 
-// void JSON::encode(vector<Connection *> v) {
+// JSON &JSON::encode(vector<Connection *> v) {
+//   return *this;
 // }
 
-// void JSON::encode(vector<SetList *> v) {
+// JSON &JSON::encode(vector<SetList *> v) {
 //   append_name_list(_ostr, "set_lists", v);
+//   return *this;
 // }
 
 // ================ helpers ================
 
-void JSON::quote(string s) {
-  quote(s.c_str());
+JSON &JSON::quote(string s) {
+  return quote(s.c_str());
 }
 
-void JSON::quote(const char *s) {
+JSON &JSON::quote(const char *s) {
   _ostr << '"';
   while (*s) {
     switch (*s) {
@@ -232,4 +266,11 @@ void JSON::quote(const char *s) {
     ++s;
   }
   _ostr << '"';
+  return *this;
+}
+
+JSON &JSON::field_name(string str) {
+  quote(str);
+  _ostr << ':';
+  return *this;
 }
