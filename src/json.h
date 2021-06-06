@@ -14,6 +14,7 @@ class Song;
 class Patch;
 class Connection;
 class SetList;
+class Curve;
 
 class JSON {
 public:
@@ -33,8 +34,9 @@ public:
   // JSON &encode(vector<Trigger *> v);
   // JSON &encode(vector<Song *> v);
   // JSON &encode(vector<Patch *> v);
-  // JSON &encode(vector<Connection *> v);
+  JSON &encode(vector<Connection *> v);
   // JSON &encode(vector<SetList *> v);
+  JSON &encode(vector<Curve *> v);
 
   string str() { return _ostr.str(); }
 

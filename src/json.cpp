@@ -35,6 +35,8 @@ JSON &JSON::encode(sqlite3_int64 id) {
 
 // KeyMaster status
 JSON &JSON::encode(KeyMaster &obj) {
+  Cursor *cursor = obj.cursor();
+
   _ostr << '{';
   field_name("set_lists");
   encode(names(obj.set_lists()));
@@ -45,8 +47,47 @@ JSON &JSON::encode(KeyMaster &obj) {
   encode(names(set_list->songs()));
   _ostr << ',';
 
-  // FIXME
-  // append_name_list(_ostr, "songs", **************** FIXME ****************
+  field_name("curr_set_list");
+  encode(cursor->set_list()->name());
+  _ostr << ',';
+
+  field_name("curr_song");
+  Song *song = cursor->song();
+  if (song != nullptr) {
+    _ostr << '{';
+    field_name("name");
+    encode(song->name());
+    _ostr << ',';
+
+    field_name("patches");
+    encode(names(song->patches()));
+    _ostr << ',';
+
+    Patch *patch = cursor->patch();
+    field_name("curr_patch");
+    if (patch != nullptr) {
+      _ostr << '{';
+      field_name("name");
+      _ostr << patch->name();
+      _ostr << ',';
+
+      field_name("connections");
+      encode(patch->connections());
+
+      _ostr << '}';
+    }
+    else
+      _ostr << "null";
+
+    _ostr << '}';
+  }
+  else {
+    _ostr << "null";
+  }
+  _ostr << ',';
+
+  field_name("curves");
+  encode(obj.velocity_curves());
 
   _ostr << '}';
   return *this;
@@ -165,19 +206,27 @@ JSON &JSON::encode(Connection &obj) {
 
   field_name("zone");
   _ostr << '{';
-
   field_name("low");
   _ostr << obj.zone_low();
   _ostr << ',';
-
   field_name("high");
   _ostr << obj.zone_low();
   _ostr << "},";
 
   field_name("xpose");
   _ostr << obj.xpose();
+  _ostr << ',';
 
   // FIXME: curve, filter, bools, CC map
+  field_name("curve_id");
+  _ostr << obj.velocity_curve()->id();
+  // _ostr << ',';
+
+  // FIXME message filter
+
+  // FIXME processing_sysex
+
+  // FIXME cc_maps
 
   _ostr << '}';
   return *this;
@@ -234,14 +283,48 @@ JSON &JSON::encode(vector<sqlite3_int64> ids) {
 //   return *this;
 // }
 
-// JSON &JSON::encode(vector<Connection *> v) {
-//   return *this;
-// }
+JSON &JSON::encode(vector<Connection *> v) {
+  _ostr << '[';
+  for (auto conn : v) {
+    if (conn != v.front())
+      _ostr << ',';
+    encode(*conn);
+  }
+  _ostr << ']';
+  return *this;
+}
 
 // JSON &JSON::encode(vector<SetList *> v) {
 //   append_name_list(_ostr, "set_lists", v);
 //   return *this;
 // }
+
+JSON &JSON::encode(vector<Curve *> v) {
+  _ostr << '[';
+  for (auto curve : v) {
+    if (curve != v.front())
+      _ostr << ',';
+    _ostr << '{';
+    field_name("name");
+    encode(curve->name());
+    _ostr << ',';
+
+    field_name("short_name");
+    encode(curve->short_name());
+    _ostr << ',';
+
+    field_name("vals");
+    _ostr << '[';
+    unsigned char *curve_values = &(curve->curve[0]);
+    for (int i = 0; i < 128; ++i) {
+      if (i > 0) _ostr << ',';
+      _ostr << (unsigned int)(*curve_values++);
+    }
+    _ostr << "]}";
+  }
+  _ostr << ']';
+  return *this;
+}
 
 // ================ helpers ================
 

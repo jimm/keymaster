@@ -31,6 +31,14 @@ TEST_CASE("JSON", CATCH_CATEGORY) {
   }
 
   // TODO KeyMaster
+  SECTION("keymaster") {
+    JSON json;
+    json.encode(*km);
+    string str = json.str();
+
+    // TODO
+    // REQUIRE(json.str() == "{\"name\":\"_start\",\"bytes\":\"00007ab0007f07b0007f07b1\"}");
+  }
 
   SECTION("message") {
     JSON json;
@@ -103,6 +111,6 @@ TEST_CASE("JSON", CATCH_CATEGORY) {
 //     REQUIRE(found != string::npos);
 //   }
 
-//   delete km;
-// }
+  delete km;
 }
+

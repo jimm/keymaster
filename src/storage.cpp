@@ -581,10 +581,10 @@ void Storage::save_velocity_curves(vector<Curve *> &curves) {
     sqlite3_bind_text(stmt, col++, curve->name().c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, col++, curve->short_name().c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, col++, hex_chars, -1, SQLITE_STATIC);
-    free(hex_chars);
     sqlite3_step(stmt);
     extract_id(curve);
     sqlite3_reset(stmt);
+    free(hex_chars);
   }
   sqlite3_finalize(stmt);
 }
