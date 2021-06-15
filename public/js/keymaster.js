@@ -1,9 +1,8 @@
 const $ = jQuery;
 
 const CONN_HEADERS = "<tr>\n  <th>Input</th>\n  <th>Chan</th>\n  <th>Output</th>\n  <th>Chan</th>\n  <th>Prog</th>\n  <th>Zone</th>\n  <th>Xpose</th>\n  <th>Filter</th>\n</tr>";
-
+const TRIGGER_HEADERS = "<tr>\n  <th>Key</th>\n  <th>Input</th>\n  <th>Trig Message</th>\n  <th>Action</th>\n  <th>Send Message</th>\n</tr>";
 const COLOR_SCHEMES = ['default', 'green', 'amber', 'blue'];
-
 const UNDEFINED = -1;
 
 var keymaster;
@@ -59,6 +58,29 @@ function list(id, vals, highlighted_value) {
   ensureElementInViewport($(`ul#${id} li.selected`));
 };
 
+function trigger_row(trigger) {
+  var vals = ['key_code', 'input', 'trigger_message', 'action', 'send_message']
+      .map((key, idx) => {
+        return trigger[key] || '&nbsp;';
+      });
+  return "<tr><td>" + (vals.join('</td><td>')) + "</td></tr>";
+}
+
+function trigger_rows(triggers) {
+  var trig, rows;
+  rows = (function() {
+    var _i, _len, _results;
+    _results = [];
+    for (_i = 0, _len = triggers.length; _i < _len; _i++) {
+      trig = triggers[_i];
+      _results.push(trigger_row(trig));
+    }
+    return _results;
+  })();
+  $('#triggers').html(TRIGGER_HEADERS + "\n" + rows.join("\n"));
+  return set_colors();
+}
+
 function zone_to_str(zone) {
   if (zone.low == 0 && zone.high == 127)
     return '';
@@ -109,14 +131,14 @@ function message(str) {
 function perform_action(action) {
   return $.getJSON(action, function(data) {
     keymaster = data;
-    list('song-lists', keymaster['set_lists'], keymaster['set_list']);
-    list('songs', keymaster['songs'], maybe_name(keymaster, 'song'));
-    list('triggers', keymaster['triggers']);
-    if (keymaster['song'] != null) {
-      notes_or_help(keymaster['song']['notes']);
-      list('song', keymaster['song']['patches'], maybe_name(keymaster, 'patch'));
-      if (keymaster['patch'] != null) {
-        connection_rows(keymaster['patch']['connections']);
+    list('song-lists', keymaster['set_lists'], keymaster['curr_set_list']);
+    list('songs', keymaster['set_list'], keymaster['curr_song']['name'] || '');
+    trigger_rows(keymaster['triggers']);
+    if (keymaster['curr_song'] != null) {
+      notes_or_help(keymaster['curr_song']['notes']);
+      list('song', keymaster['curr_song']['patches'], keymaster['curr_song']['curr_patch']['name'] || '');
+      if (keymaster['curr_song']['curr_patch'] != null) {
+        connection_rows(keymaster['curr_song']['curr_patch']['connections']);
       }
     }
     if (keymaster['message'] != null) {

@@ -29,7 +29,7 @@ JSON &JSON::encode(string str) {
 }
 
 JSON &JSON::encode(sqlite3_int64 id) {
-  _ostr << id;
+  _ostr << (long double)id;
   return *this;
 }
 
@@ -56,7 +56,11 @@ JSON &JSON::encode(KeyMaster &obj) {
   if (song != nullptr) {
     _ostr << '{';
     field_name("name");
-    encode(song->name());
+    quote(song->name());
+    _ostr << ',';
+
+    field_name("notes");
+    quote(song->notes());
     _ostr << ',';
 
     field_name("patches");
@@ -68,7 +72,7 @@ JSON &JSON::encode(KeyMaster &obj) {
     if (patch != nullptr) {
       _ostr << '{';
       field_name("name");
-      _ostr << patch->name();
+      quote(patch->name());
       _ostr << ',';
 
       field_name("connections");
@@ -86,8 +90,12 @@ JSON &JSON::encode(KeyMaster &obj) {
   }
   _ostr << ',';
 
-  field_name("curves");
-  encode(obj.velocity_curves());
+  field_name("triggers");
+  encode(obj.triggers());
+  // _ostr << ',';
+
+  // field_name("curves");
+  // encode(obj.velocity_curves());
 
   _ostr << '}';
   return *this;
@@ -114,11 +122,13 @@ JSON &JSON::encode(Trigger &obj) {
   _ostr << ',';
 
   if (obj.input()) {
-    field_name("input_id");
-    encode(obj.input()->id());
+    field_name("input");
+    encode(obj.input()->name());
     _ostr << ',';
     field_name("trigger_message");
-    _ostr << '"' << std::setfill('0') << std::setw(8) << std::hex << obj.trigger_message() << '"';
+    _ostr << '"' << std::setfill('0') << std::setw(8)
+          << std::hex << obj.trigger_message() << std::dec
+          <<  '"';
   }
   else {
     field_name("input_id");
@@ -132,9 +142,9 @@ JSON &JSON::encode(Trigger &obj) {
   encode(obj.action_string());
   _ostr << ',';
 
-  field_name("message_id");
+  field_name("send_message");
   if (obj.output_message())
-    _ostr <<  obj.output_message()->id();
+    encode(obj.output_message()->name());
   else
     _ostr << "null";
 
@@ -144,11 +154,18 @@ JSON &JSON::encode(Trigger &obj) {
 
 JSON &JSON::encode(Song &obj) {
   _ostr << '{';
+
   field_name("name");
   encode(obj.name());
   _ostr << ',';
+
+  field_name("notes");
+  encode(obj.notes());
+  _ostr << ',';
+
   field_name("patch_ids");
   encode(ids(obj.patches()));
+
   _ostr << '}';
   return *this;
 }
@@ -271,9 +288,16 @@ JSON &JSON::encode(vector<sqlite3_int64> ids) {
 //   return *this;
 // }
 
-// JSON &JSON::encode(vector<Trigger *> v) {
-//   return *this;
-// }
+JSON &JSON::encode(vector<Trigger *> v) {
+  _ostr << '[';
+  for (auto trigger : v) {
+    if (trigger != v.front())
+      _ostr << ',';
+    encode(*trigger);
+  }
+  _ostr << ']';
+  return *this;
+}
 
 // JSON &JSON::encode(vector<Song *> v) {
 //   return *this;

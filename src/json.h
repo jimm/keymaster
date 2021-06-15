@@ -31,7 +31,7 @@ public:
   JSON &encode(vector<string> v);
   JSON &encode(vector<sqlite3_int64> ids);
   // JSON &encode(vector<Message *> v);
-  // JSON &encode(vector<Trigger *> v);
+  JSON &encode(vector<Trigger *> v);
   // JSON &encode(vector<Song *> v);
   // JSON &encode(vector<Patch *> v);
   JSON &encode(vector<Connection *> v);
