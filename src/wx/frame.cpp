@@ -99,9 +99,9 @@ Frame::Frame(const wxString& title)
   : wxFrame(NULL, wxID_ANY, title),
     updating_notes(false)
 {
+  CreateStatusBar();
   make_frame_panels();
   make_menu_bar();
-  CreateStatusBar();
   show_user_message("No KeyMaster file loaded", 15);
 }
 
