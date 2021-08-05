@@ -28,7 +28,7 @@ ClockPanel::ClockPanel(wxWindow *parent)
                                 wxSize(BPM_WIDTH, BPM_HEIGHT), wxTE_PROCESS_ENTER);
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  sizer->Add(new wxStaticText(this, wxID_ANY, TITLE_STR("Clock")), wxSizerFlags().Align(wxALIGN_LEFT));
+  sizer->Add(header_text(this, "Clock"), wxSizerFlags().Align(wxALIGN_LEFT));
 
   wxBoxSizer *control_sizer = new wxBoxSizer(wxHORIZONTAL);
   control_sizer->Add(lc_clock_bpm, wxSizerFlags(1).Expand().Border());

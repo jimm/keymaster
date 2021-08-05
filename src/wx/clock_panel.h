@@ -6,9 +6,10 @@
  #include <wx/wx.h>
 #endif
 #include <wx/tglbtn.h>
+#include "window_utils.h"
 #include "../observer.h"
 
-class ClockPanel : public wxPanel, public Observer {
+class ClockPanel : public wxPanel, public Observer, WindowUtils {
 public:
   ClockPanel(wxWindow *parent);
 

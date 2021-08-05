@@ -7,6 +7,7 @@
  #include <wx/listctrl.h>
 #endif
 #include "events.h"
+#include "window_utils.h"
 #include "../keymaster.h"
 #include "../observer.h"
 
@@ -53,7 +54,7 @@ class TriggerList;
 class SetListEditor;
 class ClockPanel;
 
-class Frame: public wxFrame, public Observer {
+class Frame: public wxFrame, public Observer, WindowUtils {
 public:
   Frame(const wxString& title);
   virtual ~Frame() {}

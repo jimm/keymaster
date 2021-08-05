@@ -7,6 +7,7 @@
  #include <wx/wx.h>
 #endif
 #include "events.h"
+#include "window_utils.h"
 
 enum {
   ID_SLE_Name = 1000,
@@ -23,7 +24,7 @@ class KeyMaster;
 class SetList;
 class wxListCtrl;
 
-class SetListEditor : public wxDialog {
+class SetListEditor : public wxDialog, WindowUtils {
 public:
   SetListEditor(wxWindow *parent, SetList *set_list);
 

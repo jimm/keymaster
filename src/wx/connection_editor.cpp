@@ -53,7 +53,7 @@ ConnectionEditor::ConnectionEditor(wxWindow *parent, Connection *c)
 wxWindow *ConnectionEditor::make_input_panel(wxWindow *parent) {
   return make_instrument_panel(
     parent, ID_CE_InputDropdown, ID_CE_InputChannel,
-    TITLE_STR("Input"), "All Channels", &cb_input, &cb_input_chan,
+    "Input", "All Channels", &cb_input, &cb_input_chan,
     reinterpret_cast<vector<Instrument *> &>(km->inputs()),
     connection->input(), connection->input_chan());
 }
@@ -61,7 +61,7 @@ wxWindow *ConnectionEditor::make_input_panel(wxWindow *parent) {
 wxWindow *ConnectionEditor::make_output_panel(wxWindow *parent) {
   return make_instrument_panel(
     parent, ID_CE_OutputDropdown, ID_CE_OutputChannel,
-    TITLE_STR("Output"), "Input Channel", &cb_output, &cb_output_chan,
+    "Output", "Input Channel", &cb_output, &cb_output_chan,
     reinterpret_cast<vector<Instrument *> &>(km->outputs()),
     connection->output(), connection->output_chan());
 }
@@ -92,7 +92,7 @@ wxWindow *ConnectionEditor::make_instrument_panel(
   *chan_combo_ptr = make_channel_dropdown(p, chan_id, curr_chan, all_chans_name);
   field_sizer->Add(*chan_combo_ptr);
 
-  outer_sizer->Add(new wxStaticText(p, wxID_ANY, title));
+  outer_sizer->Add(header_text(p, title));
   outer_sizer->Add(field_sizer);
 
   p->SetSizerAndFit(outer_sizer);
@@ -118,29 +118,29 @@ wxComboBox *ConnectionEditor::make_channel_dropdown(
 wxWindow *ConnectionEditor::make_program_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
   wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
-  wxSizerFlags center_flags =
-    wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL);
 
   wxString val = connection->program_bank_msb() >= 0
     ? wxString::Format("%d", connection->program_bank_msb()) : "";
-  field_sizer->Add(new wxStaticText(p, wxID_ANY, "Bank MSB"), center_flags);
+  field_sizer->Add(new wxStaticText(p, wxID_ANY, "Bank MSB"));
   tc_bank_msb = new wxTextCtrl(p, ID_CE_BankMSB, val);
-  field_sizer->Add(tc_bank_msb, center_flags);
+  field_sizer->Add(tc_bank_msb);
 
   val = connection->program_bank_lsb() >= 0
     ? wxString::Format("%d", connection->program_bank_lsb()) : "";
-  field_sizer->Add(new wxStaticText(p, wxID_ANY, "Bank LSB"), center_flags);
+  field_sizer->Add(new wxStaticText(p, wxID_ANY, "Bank LSB"));
   tc_bank_lsb = new wxTextCtrl(p, ID_CE_BankLSB, val);
-  field_sizer->Add(tc_bank_lsb, center_flags);
+  field_sizer->Add(tc_bank_lsb);
 
   val = connection->program_prog() >= 0
     ? wxString::Format("%d", connection->program_prog()) : "";
-  field_sizer->Add(new wxStaticText(p, wxID_ANY, "PChg"), center_flags);
+  field_sizer->Add(new wxStaticText(p, wxID_ANY, "PChg"));
   tc_prog = new wxTextCtrl(p, ID_CE_Program, val);
-  field_sizer->Add(tc_prog, center_flags);
+  field_sizer->Add(tc_prog);
 
   program_sizer = new wxBoxSizer(wxVERTICAL);
-  program_sizer->Add(new wxStaticText(p, wxID_ANY, "Program Change (in or out channel must be selected)"));
+  wxStaticText *header = new wxStaticText(p, wxID_ANY, "");
+  header->SetLabelMarkup(TITLE_STR("<b>Program Change</b> (in or out channel must be selected)"));
+  program_sizer->Add(header);
   program_sizer->Add(field_sizer);
 
   p->SetSizerAndFit(program_sizer);
@@ -152,24 +152,22 @@ wxWindow *ConnectionEditor::make_zone_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, CONTAINER_PANEL_ARGS);
   wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
-  wxSizerFlags center_flags =
-    wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL);
 
   char buf[BUFSIZ];
   note_num_to_name(connection->zone_low(), buf);
   wxString val(buf);
-  field_sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Low")), center_flags);
+  field_sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Low")));
   tc_zone_low = new wxTextCtrl(p, ID_CE_ZoneLow, val);
-  field_sizer->Add(tc_zone_low, center_flags);
+  field_sizer->Add(tc_zone_low);
 
   note_num_to_name(connection->zone_high(), buf);
   val = buf;
-  field_sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("High")), center_flags);
+  field_sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("High")));
   tc_zone_high = new wxTextCtrl(p, ID_CE_ZoneHigh, val);
-  field_sizer->Add(tc_zone_high, center_flags);
+  field_sizer->Add(tc_zone_high);
 
-  outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Zone"), center_flags);
-  outer_sizer->Add(field_sizer, center_flags);
+  outer_sizer->Add(header_text(p, "Zone"));
+  outer_sizer->Add(field_sizer);
 
   p->SetSizerAndFit(outer_sizer);
   return p;
@@ -185,7 +183,7 @@ wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
   tc_xpose = new wxTextCtrl(p, ID_CE_Transpose, xpose_val);
   xpose_field_sizer->Add(tc_xpose);
 
-  xpose_sizer->Add(new wxStaticText(p, wxID_ANY, "Transpose"));
+  xpose_sizer->Add(header_text(p, TITLE_STR("Transpose")));
   xpose_sizer->Add(xpose_field_sizer);
 
   wxBoxSizer *vel_curve_sizer = new wxBoxSizer(wxVERTICAL);
@@ -194,7 +192,7 @@ wxWindow *ConnectionEditor::make_xpose_panel(wxWindow *parent) {
   make_velocity_curve_dropdown(p);
   vel_curve_field_sizer->Add(cb_vel_curve);
 
-  vel_curve_sizer->Add(new wxStaticText(p, wxID_ANY, "Velocity Curve"));
+  vel_curve_sizer->Add(header_text(p, TITLE_STR("Velocity Curve")));
   vel_curve_sizer->Add(vel_curve_field_sizer);
 
   wxBoxSizer *outer_sizer = new wxBoxSizer(wxHORIZONTAL);
@@ -263,7 +261,7 @@ wxWindow *ConnectionEditor::make_filter_panel(wxWindow *parent) {
   system_sizer->Add(cb_pass_system_reset);
 
   wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
-  outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Message Filters"));
+  outer_sizer->Add(header_text(p, TITLE_STR("Message Filters")));
 
   wxBoxSizer *side_by_side = new wxBoxSizer(wxHORIZONTAL);
   side_by_side->Add(channel_sizer);
@@ -288,7 +286,7 @@ wxWindow *ConnectionEditor::make_cc_maps_panel(wxWindow *parent) {
   b_del_ccmap = new wxButton(p, ID_CE_DelControllerMapping, " - ");
   button_sizer->Add(b_del_ccmap, wxSizerFlags().Left());
 
-  outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Controller Mappings"));
+  outer_sizer->Add(header_text(p, "Controller Mappings"));
   outer_sizer->Add(lc_cc_mappings);
   outer_sizer->Add(button_sizer);
 

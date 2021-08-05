@@ -49,7 +49,7 @@ wxWindow *ControllerEditor::make_numbers_panel(wxWindow *parent) {
   field_sizer->Add(cb_xlated_number, center_flags);
 
   wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
-  outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Controller Number"));
+  outer_sizer->Add(header_text(p, "Controller Number"));
   outer_sizer->Add(field_sizer);
 
   p->SetSizerAndFit(outer_sizer);
@@ -121,7 +121,7 @@ wxWindow *ControllerEditor::make_val_mapping_panel(wxWindow *parent) {
   mapping_sizer->Add(cb_pass_through_127, POS(2, 3), SPAN(1, 2));
 
   value_sizer = new wxBoxSizer(wxVERTICAL);
-  value_sizer->Add(new wxStaticText(p, wxID_ANY, "Value Mapping"));
+  value_sizer->Add(header_text(p, "Value Mapping"));
   value_sizer->Add(mapping_sizer);
 
   p->SetSizerAndFit(value_sizer);
@@ -138,7 +138,7 @@ wxWindow *ControllerEditor::make_filtered_panel(wxWindow *parent) {
   cb_filtered->SetValue(controller->filtered());
   field_sizer->Add(cb_filtered);
 
-  outer_sizer->Add(new wxStaticText(p, wxID_ANY, "Filter"));
+  outer_sizer->Add(header_text(p, "Filter"));
   outer_sizer->Add(field_sizer);
 
   p->SetSizerAndFit(outer_sizer);

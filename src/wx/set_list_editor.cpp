@@ -87,7 +87,7 @@ wxWindow *SetListEditor::make_buttons(wxWindow *parent) {
 }
 
 wxWindow *SetListEditor::make_set_list_panel(wxWindow *parent) {
-  wxWindow *retval = make_panel(parent, ID_SLE_SetList, "Set List Songs",
+  wxWindow *retval = make_panel(parent, ID_SLE_SetList, TITLE_STR("Set List Songs"),
                                 songs_copy, &set_list_wxlist);
   return retval;
 }
@@ -102,7 +102,7 @@ wxWindow *SetListEditor::make_panel(wxWindow *parent, wxWindowID id,
                             nullptr, wxLB_SINGLE);
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  sizer->Add(new wxStaticText(p, wxID_ANY, title), wxSizerFlags().Align(wxALIGN_LEFT));
+  sizer->Add(header_text(p, title), wxSizerFlags().Align(wxALIGN_LEFT));
   sizer->Add(*list_ptr, wxSizerFlags(1).Expand().Border());
 
   update(*list_ptr, song_list);
