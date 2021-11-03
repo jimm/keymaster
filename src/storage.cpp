@@ -931,7 +931,7 @@ PmMessage Storage::single_message_from_hex_bytes(char *bytes) {
 
 // FIXME use standard Message format 007f35b0
 string Storage::single_message_to_hex_bytes(PmMessage msg) {
-  char buf[7], *p = buf;
+  char buf[16], *p = buf;
 
   for (int i = 0; i < 4; ++i) {
     sprintf(p, "%02x", (unsigned char)(msg & 0xff));
