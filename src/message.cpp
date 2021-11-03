@@ -148,7 +148,7 @@ string Message::to_string() {
 // numbers. Each message is separated by a newline and each byte within the
 // message is separated by a space.
 string Message::to_editable_string() {
-  char buf[4];
+  char buf[16];
   string str;
   bool in_sysex = false;
 
