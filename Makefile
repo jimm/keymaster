@@ -53,13 +53,10 @@ $(NAME)_test:	$(TEST_OBJS)
 	$(CXX) $(LDFLAGS) $(LIBS) -o $@ $(filter-out src/error.o,$^)
 
 install:	$(bindir)/$(NAME)
-
-$(bindir)/$(NAME):	$(NAME)
-	cp ./$(NAME) $(bindir)
-	chmod 755 $(bindir)/$(NAME)
+	install ./$(NAME) $(bindir)
 
 uninstall:
-	rm -f $(bindir)/$(name)
+	rm -f $(bindir)/$(NAME)
 
 tags:	TAGS
 
