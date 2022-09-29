@@ -333,29 +333,21 @@ TEST_CASE("save sets UNDEFINED_ID ids and does not mess up patches", CATCH_CATEG
   // save and ensure that undefined IDs are now defined (though we don't
   // care what they are and they really don't need to be defined any more)
 
-  fprintf(stderr, "****************\n"); // DEBUG
   {
-    fprintf(stderr, "opening db\n"); // DEBUG
     Storage saver(TEST_DB_PATH "_save_test");
-    fprintf(stderr, "calling save\n"); // DEBUG
     saver.save(km, true);
     REQUIRE(saver.has_error() == false);
-    fprintf(stderr, "back from save\n"); // DEBUG
     REQUIRE(new_song->id() != UNDEFINED_ID);
     REQUIRE(new_patch->id() != UNDEFINED_ID);
     // make sure saver is deleted, closing the database
   }
-  fprintf(stderr, "****************\n"); // DEBUG
 
   // reload and check songs and patches to make sure nothing was scrambled
 
   delete km;
   km = nullptr;
-  fprintf(stderr, "next step opening db\n"); // DEBUG
   Storage storage(TEST_DB_PATH "_save_test");
-  fprintf(stderr, "next step loading\n"); // DEBUG
   km = storage.load(true);
-  fprintf(stderr, "next step checking for error\n"); // DEBUG
   REQUIRE(storage.has_error() == false);
 
   vector<Song *> &all = km->all_songs()->songs();

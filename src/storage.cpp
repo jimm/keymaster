@@ -28,7 +28,6 @@ Storage::Storage(const char *path) : loading_version(0) {
     sprintf(error_buf,  "error opening database file %s", path);
     error_str = error_buf;
   }
-  fprintf(stderr, "opened %s db %p in Storage ctor\n", path, db); // DEBUG
 }
 
 Storage::~Storage() {
@@ -71,12 +70,9 @@ void Storage::save(KeyMaster *keymaster, bool testing) {
   if (db == nullptr)
     return;
 
-  fprintf(stderr, "::save calling initialize\n"); // DEBUG
   initialize();
   if (has_error())
-  { fprintf(stderr, "HAS ERROR %s\n", error_str.c_str()); // DEBUG
     return;
-  } // DEBUG
 
   km = keymaster;
   save_schema_version();
@@ -93,7 +89,6 @@ void Storage::save(KeyMaster *keymaster, bool testing) {
 
 void Storage::close() {
   if (db != nullptr) {
-    fprintf(stderr, "closing db %p in ::close with close_v2\n", db); // DEBUG
     sqlite3_close_v2(db);
     db = nullptr;
   }
@@ -104,7 +99,6 @@ bool Storage::has_error() {
 }
 
 string Storage::error() {
-  fprintf(stderr, "returning error string %s\n", error_str.c_str()); // DEBUG
   return error_str;
 }
 
@@ -114,10 +108,8 @@ void Storage::initialize() {
   char *error_buf;
 
   // execute schema strings defined in schema.sql.h
-  fprintf(stderr, "calling sqlite3_exec on db %p\n", db); // DEBUG
   int status = sqlite3_exec(db, SCHEMA_SQL, nullptr, nullptr, &error_buf);
   if (status != 0) {
-    fprintf(stderr, "error about to be output, db %p\n", db); // DEBUG
     fprintf(stderr, "error initializing database: %s\n", error_buf);
     error_str = error_buf;
     sqlite3_free(error_buf);
@@ -552,8 +544,8 @@ void Storage::save_instruments() {
   for (auto& input : km->inputs()) {
     sqlite3_bind_null(stmt, 1);
     sqlite3_bind_int(stmt, 2, 0);
-    sqlite3_bind_text(stmt, 3, input->name().c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 4, input->device_name.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, input->name().c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 4, input->device_name.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     extract_id(input);
     sqlite3_reset(stmt);
@@ -561,8 +553,8 @@ void Storage::save_instruments() {
   for (auto& output : km->outputs()) {
     sqlite3_bind_null(stmt, 1);
     sqlite3_bind_int(stmt, 2, 1);
-    sqlite3_bind_text(stmt, 3, output->name().c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 4, output->device_name.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, output->name().c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 4, output->device_name.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     extract_id(output);
     sqlite3_reset(stmt);
@@ -585,9 +577,9 @@ void Storage::save_velocity_curves(vector<Curve *> &curves) {
 
     int col = 1;
     sqlite3_bind_null(stmt, col++);
-    sqlite3_bind_text(stmt, col++, curve->name().c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, col++, curve->short_name().c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, col++, hex_chars, -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, col++, curve->name().c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, col++, curve->short_name().c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, col++, hex_chars, -1, SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     extract_id(curve);
     sqlite3_reset(stmt);
@@ -605,8 +597,8 @@ void Storage::save_messages() {
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   for (auto& msg : km->messages()) {
     sqlite3_bind_null(stmt, 1);
-    sqlite3_bind_text(stmt, 2, msg->name().c_str(), -1, SQLITE_STATIC);
-    sqlite3_bind_text(stmt, 3, msg->to_string().c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, msg->name().c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 3, msg->to_string().c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     extract_id(msg);
     sqlite3_reset(stmt);
@@ -634,7 +626,7 @@ void Storage::save_triggers() {
     else
       sqlite3_bind_text(stmt, 4,
                         single_message_to_hex_bytes(trigger->trigger_message()).c_str(),
-                        -1, SQLITE_STATIC);
+                        -1, SQLITE_TRANSIENT);
     if (trigger->output_message() != nullptr) {
       sqlite3_bind_null(stmt, 5);
       sqlite3_bind_int64(stmt, 6, trigger->output_message()->id());
@@ -651,7 +643,7 @@ void Storage::save_triggers() {
       case TA_TOGGLE_CLOCK: action = "toggle_clock"; break;
       default: break;
       }
-      sqlite3_bind_text(stmt, 5, action, -1, SQLITE_STATIC);
+      sqlite3_bind_text(stmt, 5, action, -1, SQLITE_TRANSIENT);
       sqlite3_bind_null(stmt, 6);
     }
     sqlite3_step(stmt);
@@ -669,17 +661,15 @@ void Storage::save_songs() {
   sqlite3_prepare_v3(db, sql, -1, 0, &stmt, nullptr);
   for (auto& song : km->all_songs()->songs()) {
     sqlite3_bind_null(stmt, 1);
-    sqlite3_bind_text(stmt, 2, song->name().c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, song->name().c_str(), -1, SQLITE_TRANSIENT);
     if (song->notes().empty())
       sqlite3_bind_null(stmt, 3);
     else
-      sqlite3_bind_text(stmt, 3, song->notes().c_str(), -1, SQLITE_STATIC);
+      sqlite3_bind_text(stmt, 3, song->notes().c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_double(stmt, 4, song->bpm());
     sqlite3_bind_int(stmt, 5, song->clock_on_at_start() ? 1 : 0);
     sqlite3_step(stmt);
-    fprintf(stderr, "extracting id of song %p name %s, with id %lld\n", song, song->name().c_str(), song->id()); // DEBUG
     extract_id(song);
-    fprintf(stderr, "after extracting id of song %p name %s, id = %lld\n", song, song->name().c_str(), song->id()); // DEBUG
     sqlite3_reset(stmt);
     save_patches(song);
   }
@@ -699,7 +689,7 @@ void Storage::save_patches(Song *song) {
     sqlite3_bind_null(stmt, 1);
     sqlite3_bind_int64(stmt, 2, song->id());
     sqlite3_bind_int(stmt, 3, position++);
-    sqlite3_bind_text(stmt, 4, patch->name().c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, patch->name().c_str(), -1, SQLITE_TRANSIENT);
     bind_obj_id_or_null(stmt, 5, patch->start_message());
     bind_obj_id_or_null(stmt, 6, patch->stop_message());
     sqlite3_step(stmt);
@@ -806,7 +796,7 @@ void Storage::save_set_lists() {
     if (set_list == km->all_songs())
       continue;
     sqlite3_bind_null(stmt, 1);
-    sqlite3_bind_text(stmt, 2, set_list->name().c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 2, set_list->name().c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     extract_id(set_list);
     sqlite3_reset(stmt);

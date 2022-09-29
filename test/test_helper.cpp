@@ -27,7 +27,6 @@ void _initialize_and_load_database() {
     fprintf(stderr,  "error opening database file %s\n", TEST_DB_PATH);
     exit(1);
   }
-  fprintf(stderr, "opened %s db %p in _initialize_and_load_database\n", TEST_DB_PATH, db); // DEBUG
 
   // read data file and execute
   char *error_buf;
@@ -37,14 +36,12 @@ void _initialize_and_load_database() {
   status = sqlite3_exec(db, data_sql.c_str(), nullptr, nullptr, &error_buf);
   if (status != 0) {
     fprintf(stderr, "error loading test data: %s\n", error_buf);
-    fprintf(stderr, "closing in error db %p in _initialize_and_load_database with close_v2\n", db); // DEBUG
     if ((status = sqlite3_close_v2(db)) != 0)
       fprintf(stderr, "error closing database file %s\n", TEST_DB_PATH);
     sqlite3_free(error_buf);
     exit(1);
   }
 
-  fprintf(stderr, "closing db %p in _initialize_and_load_database with close_v2\n", db); // DEBUG
   if ((status = sqlite3_close_v2(db)) != 0)
     fprintf(stderr, "error closing database file %s\n", TEST_DB_PATH);
 }
