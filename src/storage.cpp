@@ -28,12 +28,11 @@ Storage::Storage(const char *path) : loading_version(0) {
     sprintf(error_buf,  "error opening database file %s", path);
     error_str = error_buf;
   }
+  fprintf(stderr, "opened %s db %p in Storage ctor\n", path, db); // DEBUG
 }
 
 Storage::~Storage() {
-  if (db != nullptr)
-    sqlite3_close(db);
-
+  close();
   // sqlite3_prepare_v3() seems to set errno to 2 for no good reason that I
   // can tell. Reinitialize it here.
   errno = 0;
@@ -61,6 +60,7 @@ KeyMaster *Storage::load(bool testing) {
   create_default_patches();
 
   km->clear_modified();
+  close();
   return km;
 }
 
@@ -71,9 +71,12 @@ void Storage::save(KeyMaster *keymaster, bool testing) {
   if (db == nullptr)
     return;
 
+  fprintf(stderr, "::save calling initialize\n"); // DEBUG
   initialize();
   if (has_error())
+  { fprintf(stderr, "HAS ERROR %s\n", error_str.c_str()); // DEBUG
     return;
+  } // DEBUG
 
   km = keymaster;
   save_schema_version();
@@ -85,6 +88,15 @@ void Storage::save(KeyMaster *keymaster, bool testing) {
   save_set_lists();
 
   km->clear_modified();
+  close();
+}
+
+void Storage::close() {
+  if (db != nullptr) {
+    fprintf(stderr, "closing db %p in ::close with close_v2\n", db); // DEBUG
+    sqlite3_close_v2(db);
+    db = nullptr;
+  }
 }
 
 bool Storage::has_error() {
@@ -92,6 +104,7 @@ bool Storage::has_error() {
 }
 
 string Storage::error() {
+  fprintf(stderr, "returning error string %s\n", error_str.c_str()); // DEBUG
   return error_str;
 }
 
@@ -101,10 +114,13 @@ void Storage::initialize() {
   char *error_buf;
 
   // execute schema strings defined in schema.sql.h
+  fprintf(stderr, "calling sqlite3_exec on db %p\n", db); // DEBUG
   int status = sqlite3_exec(db, SCHEMA_SQL, nullptr, nullptr, &error_buf);
   if (status != 0) {
-    fprintf(stderr, "%s\n", error_buf);
+    fprintf(stderr, "error about to be output, db %p\n", db); // DEBUG
+    fprintf(stderr, "error initializing database: %s\n", error_buf);
     error_str = error_buf;
+    sqlite3_free(error_buf);
   }
 
   vector<Curve *> generated;
@@ -661,7 +677,9 @@ void Storage::save_songs() {
     sqlite3_bind_double(stmt, 4, song->bpm());
     sqlite3_bind_int(stmt, 5, song->clock_on_at_start() ? 1 : 0);
     sqlite3_step(stmt);
+    fprintf(stderr, "extracting id of song %p name %s, with id %lld\n", song, song->name().c_str(), song->id()); // DEBUG
     extract_id(song);
+    fprintf(stderr, "after extracting id of song %p name %s, id = %lld\n", song, song->name().c_str(), song->id()); // DEBUG
     sqlite3_reset(stmt);
     save_patches(song);
   }

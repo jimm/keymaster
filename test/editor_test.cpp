@@ -44,7 +44,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     SetList *set_list = e.create_set_list();
     e.add_set_list(set_list);
     km->cursor()->set_list_index = km->set_lists().size() - 1;
-    // sanity checks
+    // precondition checks
     REQUIRE(set_list == km->cursor()->set_list());
     REQUIRE(set_list->songs().size() == 0);
 
@@ -87,7 +87,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     Input *input = km->inputs().front();
 
     int num_triggers = input->triggers().size();
-    REQUIRE(num_triggers > 0);    // test sanity check
+    REQUIRE(num_triggers > 0);    // test precondition check
     e.destroy_trigger(input->triggers().front());
     REQUIRE(input->triggers().size() == num_triggers - 1);
   }
@@ -109,7 +109,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     Patch *old_patch = c->patch();
     int num_patches = c->song()->patches().size();
 
-    // sanity check
+    // precondition check
     REQUIRE(c->song() == km->all_songs()->songs()[0]);
     REQUIRE(c->patch() == c->song()->patches()[0]);
 
@@ -131,7 +131,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     c->patch_index = num_patches - 1;
     Patch *old_patch = c->patch();
 
-    // sanity check
+    // precondition check
     REQUIRE(c->song() == km->all_songs()->songs()[0]);
     REQUIRE(c->patch() == c->song()->patches().back());
     REQUIRE(c->song()->patches().size() == num_patches);
@@ -175,7 +175,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
 
   SECTION("add then destroy patches", CATCH_CATEGORY) {
     Song *song = c->song();
-    REQUIRE(song->patches().size() == 2); // sanity check
+    REQUIRE(song->patches().size() == 2); // precondition check
 
     Patch *created1 = e.create_patch();
     Patch *created2 = e.create_patch();
@@ -189,7 +189,7 @@ TEST_CASE("create and add message", CATCH_CATEGORY) {
     REQUIRE(c->patch() == song->patches().back()); // cursor moves to last added patch
 
     c->patch_index = 2;              // first created patch
-    REQUIRE(c->patch() == created1); // sanity check
+    REQUIRE(c->patch() == created1); // precondition check
 
     e.destroy_patch(song, c->patch());
     REQUIRE(c->patch_index == 2);

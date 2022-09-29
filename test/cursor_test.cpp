@@ -1,6 +1,5 @@
 #include "catch.hpp"
 #include "test_helper.h"
-#include "../src/storage.h"
 
 #define CATCH_CATEGORY "[cursor]"
 

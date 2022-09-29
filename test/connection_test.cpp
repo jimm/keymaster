@@ -280,7 +280,7 @@ TEST_CASE("editing when running and input changes", CATCH_CATEGORY) {
 
   conn.start();
 
-  REQUIRE(in_old.connections().size() == 1); // sanity check
+  REQUIRE(in_old.connections().size() == 1); // precondition check
 
   REQUIRE(conn.is_running());
   conn.begin_changes();

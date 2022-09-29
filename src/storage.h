@@ -15,6 +15,7 @@ public:
   ~Storage();
 
   void initialize();            // public for testing
+  void close();                 // ditto
 
   KeyMaster *load(bool testing = false);
   void save(KeyMaster *km, bool testing = false);

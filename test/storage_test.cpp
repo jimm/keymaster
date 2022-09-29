@@ -191,13 +191,13 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
     Song *s = km->all_songs()->songs()[TO_EACH_INDEX];
     Patch *p = s->patches()[0];
     Connection *conn = p->connections().back();
-    REQUIRE(conn->id() == 2);     // sanity check
+    REQUIRE(conn->id() == 2);     // precondition check
     REQUIRE(conn->cc_map(64) != nullptr);
     REQUIRE(conn->cc_map(64)->filtered() == true);
 
     p = s->patches()[1];
     conn = p->connections().front();
-    REQUIRE(conn->id() == 3);     // sanity check
+    REQUIRE(conn->id() == 3);     // precondition check
     Controller *cc = conn->cc_map(7);
     REQUIRE(cc != nullptr);
     REQUIRE(cc->translated_cc_num() == 10);
@@ -247,6 +247,7 @@ TEST_CASE("initialize", CATCH_CATEGORY) {
   REQUIRE(storage.has_error() == false);
   
   KeyMaster *km = storage.load(true);
+  REQUIRE(storage.has_error() == false);
   REQUIRE(km->inputs().size() == 0);
   REQUIRE(km->outputs().size() == 0);
   REQUIRE(km->messages().size() == 0);
@@ -257,9 +258,12 @@ TEST_CASE("initialize", CATCH_CATEGORY) {
 TEST_CASE("save", CATCH_CATEGORY) {
   KeyMaster *km = load_test_data();
 
-  Storage saver(TEST_DB_PATH "_save_test");
-  saver.save(km, true);
-  REQUIRE(saver.has_error() == false);
+  {
+    Storage saver(TEST_DB_PATH "_save_test");
+    saver.save(km, true);
+    REQUIRE(saver.has_error() == false);
+    // make sure saver is deleted, closing the database
+  }
 
   Storage storage(TEST_DB_PATH "_save_test");
   km = storage.load(true);
@@ -301,7 +305,7 @@ TEST_CASE("save sets UNDEFINED_ID ids and does not mess up patches", CATCH_CATEG
   Editor e;
 
   // Remember a few things before we save so we can compare them after
-  // saving and reloading. There are a bunch of sanity checkes here
+  // saving and reloading. There are a bunch of precondition checkes here
 
   Song *another_song = km->all_songs()->songs()[0];
   Patch *another_song_first_patch = another_song->patches()[0];
@@ -320,7 +324,7 @@ TEST_CASE("save sets UNDEFINED_ID ids and does not mess up patches", CATCH_CATEG
   new_song->name() = "B Side";
   e.add_song(new_song);
 
-  // sanity checks
+  // precondition checks
   REQUIRE(new_song->id() == UNDEFINED_ID);
   REQUIRE(new_patch->id() == UNDEFINED_ID);
   REQUIRE(km->all_songs()->songs().size() == 4);
@@ -329,17 +333,29 @@ TEST_CASE("save sets UNDEFINED_ID ids and does not mess up patches", CATCH_CATEG
   // save and ensure that undefined IDs are now defined (though we don't
   // care what they are and they really don't need to be defined any more)
 
-  Storage saver(TEST_DB_PATH "_save_test");
-  saver.save(km, true);
-  REQUIRE(new_song->id() != UNDEFINED_ID);
-  REQUIRE(new_patch->id() != UNDEFINED_ID);
+  fprintf(stderr, "****************\n"); // DEBUG
+  {
+    fprintf(stderr, "opening db\n"); // DEBUG
+    Storage saver(TEST_DB_PATH "_save_test");
+    fprintf(stderr, "calling save\n"); // DEBUG
+    saver.save(km, true);
+    REQUIRE(saver.has_error() == false);
+    fprintf(stderr, "back from save\n"); // DEBUG
+    REQUIRE(new_song->id() != UNDEFINED_ID);
+    REQUIRE(new_patch->id() != UNDEFINED_ID);
+    // make sure saver is deleted, closing the database
+  }
+  fprintf(stderr, "****************\n"); // DEBUG
 
   // reload and check songs and patches to make sure nothing was scrambled
 
   delete km;
   km = nullptr;
+  fprintf(stderr, "next step opening db\n"); // DEBUG
   Storage storage(TEST_DB_PATH "_save_test");
+  fprintf(stderr, "next step loading\n"); // DEBUG
   km = storage.load(true);
+  fprintf(stderr, "next step checking for error\n"); // DEBUG
   REQUIRE(storage.has_error() == false);
 
   vector<Song *> &all = km->all_songs()->songs();

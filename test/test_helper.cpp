@@ -15,6 +15,7 @@ void _initialize_database() {
 
   Storage storage(TEST_DB_PATH);
   storage.initialize();
+  storage.close();
 }
 
 void _initialize_and_load_database() {
@@ -23,9 +24,10 @@ void _initialize_and_load_database() {
   sqlite3 *db;
   int status = sqlite3_open(TEST_DB_PATH, &db);
   if (status != 0) {
-    fprintf(stderr,  "error opening database file %s", TEST_DB_PATH);
+    fprintf(stderr,  "error opening database file %s\n", TEST_DB_PATH);
     exit(1);
   }
+  fprintf(stderr, "opened %s db %p in _initialize_and_load_database\n", TEST_DB_PATH, db); // DEBUG
 
   // read data file and execute
   char *error_buf;
@@ -34,12 +36,17 @@ void _initialize_and_load_database() {
                        std::istreambuf_iterator<char>());
   status = sqlite3_exec(db, data_sql.c_str(), nullptr, nullptr, &error_buf);
   if (status != 0) {
-    fprintf(stderr, "%s\n", error_buf);
-    sqlite3_close(db);
+    fprintf(stderr, "error loading test data: %s\n", error_buf);
+    fprintf(stderr, "closing in error db %p in _initialize_and_load_database with close_v2\n", db); // DEBUG
+    if ((status = sqlite3_close_v2(db)) != 0)
+      fprintf(stderr, "error closing database file %s\n", TEST_DB_PATH);
+    sqlite3_free(error_buf);
     exit(1);
   }
 
-  sqlite3_close(db);
+  fprintf(stderr, "closing db %p in _initialize_and_load_database with close_v2\n", db); // DEBUG
+  if ((status = sqlite3_close_v2(db)) != 0)
+    fprintf(stderr, "error closing database file %s\n", TEST_DB_PATH);
 }
 
 KeyMaster *load_test_data() {
@@ -51,6 +58,7 @@ KeyMaster *load_test_data() {
 
   Storage storage(TEST_DB_PATH);
   KeyMaster *km = storage.load(true);
+  storage.close();
   if (storage.has_error()) {
     fprintf(stderr, "load_test_data storage error: %s\n",
             storage.error().c_str());
