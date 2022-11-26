@@ -25,7 +25,7 @@ Storage::Storage(const char *path) : loading_version(0) {
   if (status != 0) {
     db = nullptr;
     char error_buf[BUFSIZ];
-    sprintf(error_buf,  "error opening database file %s", path);
+    snprintf(error_buf, BUFSIZ, "error opening database file %s", path);
     error_str = error_buf;
   }
 }
@@ -329,7 +329,7 @@ void Storage::load_patches(Song *s) {
       }
       if (p->start_message() == nullptr) {
         char error_buf[BUFSIZ];
-        sprintf(error_buf,
+        snprintf(error_buf, BUFSIZ,
                 "patch %lld (%s) can't find start message with id %lld\n",
                 id, name, start_message_id);
         error_str = error_buf;
@@ -342,7 +342,7 @@ void Storage::load_patches(Song *s) {
       }
       if (p->stop_message() == nullptr) {
         char error_buf[BUFSIZ];
-        sprintf(error_buf,
+        snprintf(error_buf, BUFSIZ,
                 "patch %lld (%s) can't find stop message with id %lld\n",
                 id, name, stop_message_id);
         error_str = error_buf;
@@ -872,7 +872,7 @@ void Storage::set_find_error_message(
   const char * const find_name, sqlite3_int64 find_id
 ) {
   char error_buf[BUFSIZ];
-  sprintf(error_buf, "%s (%lld) can't find %s with id %lld\n",
+  snprintf(error_buf, BUFSIZ, "%s (%lld) can't find %s with id %lld\n",
           searcher_name, searcher_id, find_name, find_id);
   error_str = error_buf;
 }
@@ -942,7 +942,7 @@ string Storage::single_message_to_hex_bytes(PmMessage msg) {
   char buf[16], *p = buf;
 
   for (int i = 0; i < 4; ++i) {
-    sprintf(p, "%02x", (unsigned char)(msg & 0xff));
+    snprintf(p, 3, "%02x", (unsigned char)(msg & 0xff));
     msg >>= 8;
     p += 2;
   }

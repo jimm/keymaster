@@ -21,7 +21,7 @@ static const char HEX_DIGITS[] = {
 void note_num_to_name(int num, char *buf) {
   int oct = (num / 12) - 1;
   const char *note = NOTE_NAMES[num % 12];
-  sprintf(buf, "%s%d", note, oct);
+  snprintf(buf, 8, "%s%d", note, oct);
 }
 
 // str may point to an integer string like "64" as well
@@ -58,29 +58,29 @@ void format_program(int bank_msb, int bank_lsb, int prog, char *buf) {
   int has_lsb = bank_lsb != UNDEFINED;
   int has_bank = has_msb || has_lsb;
 
-  sprintf(buf, " %c", has_bank ? '[' : ' ');
+  snprintf(buf, 3, " %c", has_bank ? '[' : ' ');
   buf += 2;
 
   if (has_msb)
-    sprintf(buf, "%3d", bank_msb);
+    snprintf(buf, 4, "%3d", bank_msb);
   else
     strcat(buf, "   ");
   buf += 3;
 
-  sprintf(buf, "%c ", has_bank ? ',' : ' ');
+  snprintf(buf, 3, "%c ", has_bank ? ',' : ' ');
   buf += 2;
 
   if (has_lsb)
-    sprintf(buf, "%3d", bank_lsb);
+    snprintf(buf, 4, "%3d", bank_lsb);
   else
     strcat(buf, "   ");
   buf += 3;
 
-  sprintf(buf, "%c ", has_bank ? ']' : ' ');
+  snprintf(buf, 3, "%c ", has_bank ? ']' : ' ');
   buf += 2;
 
   if (prog != UNDEFINED)
-    sprintf(buf, " %3d", prog);
+    snprintf(buf, 5, " %3d", prog);
   else
     strcat(buf, "    ");
 }
@@ -96,35 +96,31 @@ void format_controllers(Connection *conn, char *buf) {
       continue;
 
     if (first) first = false; else { strcat(buf, ", "); buf += 2; }
-    sprintf(buf, "%d", cc->cc_num());
+    snprintf(buf, 4, "%d", cc->cc_num());
     buf += strlen(buf);
 
     if (cc->filtered()) {
-      sprintf(buf, "x");
-      buf += 1;
+      *buf++ = 'x';
       continue;
     }
 
     if (cc->cc_num() != cc->translated_cc_num()) {
-      sprintf(buf, "->%d", cc->translated_cc_num());
+      snprintf(buf, 6, "->%d", cc->translated_cc_num());
       buf += strlen(buf);
     }
 
     if (cc->min_in() != 0 || cc->max_in() != 127
         || cc->min_out() != 0 || cc->max_out() != 127)
     {
-      sprintf(buf, " ");
-      buf += 1;
-      if (cc->pass_through_0()) {
-        sprintf(buf, "0");
-        buf += 1;
-      }
-      sprintf(buf, " [%d, %d] -> [%d, %d]",
+      *buf++ = ' ';
+      if (cc->pass_through_0())
+        *buf++ = '0';
+      snprintf(buf, 28, " [%d, %d] -> [%d, %d]",
               cc->min_in(), cc->max_in(),
               cc->min_out(), cc->max_out());
       buf += strlen(buf);
       if (cc->pass_through_127()) {
-        sprintf(buf, "127");
+        snprintf(buf, 4, "127");
         buf += 3;
       }
     }
@@ -135,7 +131,7 @@ void format_controllers(Connection *conn, char *buf) {
 // Translate floating-point value (to a precision of 0.001) to a string,
 // removing trailing zeroes and decimal point if possible.
 void format_float(float val, char *buf) {
-  sprintf(buf, "%0.2f", val);
+  snprintf(buf, 16, "%0.2f", val);
   char *p = buf + strlen(buf) - 1;
   while (*p == '0') --p;
   if (*p != '.') ++p;

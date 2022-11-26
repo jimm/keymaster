@@ -200,7 +200,7 @@ void KeyMaster::create_songs() {
     // this input to each individual output
     int output_num = 1;
     for (auto& output : _outputs) {
-      sprintf(name, "%s -> %s", input->name().c_str(), output->name().c_str());
+      snprintf(name, BUFSIZ, "%s -> %s", input->name().c_str(), output->name().c_str());
       Song *song = new Song(UNDEFINED_ID, name);
       all_songs()->add_song(song);
 
@@ -216,7 +216,7 @@ void KeyMaster::create_songs() {
 
     if (_outputs.size() > 1) {
       // one more song: this input to all _outputs at once
-      sprintf(name, "%s -> all _outputs", input->name().c_str());
+      snprintf(name, BUFSIZ, "%s -> all _outputs", input->name().c_str());
       Song *song = new Song(UNDEFINED_ID, name);
       all_songs()->add_song(song);
 

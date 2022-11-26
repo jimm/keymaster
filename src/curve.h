@@ -6,8 +6,6 @@
 #include "db_obj.h"
 #include "named.h"
 
-class KeyMaster;
-
 class Curve : public DBObj, public Named {
 public:
   string _short_name;
@@ -18,6 +16,9 @@ public:
   void from_chars(const char *str);
 
   string short_name() { return _short_name; }
+
+protected:
+  virtual void generate() { }
 };
 
 extern void generate_default_curves(vector<Curve *> &vec);

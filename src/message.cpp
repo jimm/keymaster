@@ -138,7 +138,7 @@ string Message::to_string() {
 
   buf[8] = 0;
   for (auto &event : _events) {
-    sprintf(buf, "%08x", event.message);
+    snprintf(buf, 9, "%08x", event.message);
     str += buf;
   }
   return str;
@@ -165,7 +165,7 @@ string Message::to_editable_string() {
         in_sysex = false;
         str += "f7\n";
       }
-      sprintf(buf, "%02x %02x %02x\n", (unsigned char)status,
+      snprintf(buf, 10, "%02x %02x %02x\n", (unsigned char)status,
               (unsigned char)Pm_MessageData1(msg),
               (unsigned char)Pm_MessageData2(msg));
       str += buf;
@@ -175,7 +175,7 @@ string Message::to_editable_string() {
         in_sysex = false;
         str += "f7\n";
       }
-      sprintf(buf, "%02x %02x\n", (unsigned char)status,
+      snprintf(buf, 8, "%02x %02x\n", (unsigned char)status,
               (unsigned char)Pm_MessageData1(msg));
       str += buf;
       break;
@@ -192,22 +192,22 @@ string Message::to_editable_string() {
       in_sysex = true;
     PRINT_SYSEX_FOUR_BYTES:
       if (status == EOX) goto EOX_SEEN;
-      sprintf(buf, "%02x", status);
+      snprintf(buf, 3, "%02x", status);
       str += buf;
 
       byte = Pm_MessageData1(msg);
       if (byte == EOX) goto EOX_SEEN;
-      sprintf(buf, " %02x", byte);
+      snprintf(buf, 4, " %02x", byte);
       str += buf;
 
       byte = Pm_MessageData2(msg);
       if (byte == EOX) goto EOX_SEEN;
-      sprintf(buf, " %02x", byte);
+      snprintf(buf, 4, " %02x", byte);
       str += buf;
 
       byte = (msg >> 24) & 0xff;
       if (byte == EOX) goto EOX_SEEN;
-      sprintf(buf, " %02x", byte);
+      snprintf(buf, 4, " %02x", byte);
       str += buf;
 
       break;
@@ -221,7 +221,7 @@ string Message::to_editable_string() {
         str += ' ';
         goto PRINT_SYSEX_FOUR_BYTES;
       }
-      sprintf(buf, "%02x", status);
+      snprintf(buf, 4, "%02x", status);
       str += buf;
       break;
     }

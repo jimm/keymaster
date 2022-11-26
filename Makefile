@@ -41,11 +41,6 @@ src/schema.sql.h: db/schema.sql
 	&& cat $< >> $@ \
 	&& echo ')";' >> $@
 
-src/curves.cpp: src/generated_curves.h
-
-src/generated_curves.h:	bin/generate_curves.py
-	bin/generate_curves.py > $@
-
 test: $(NAME)_test
 	./$(NAME)_test --use-colour no $(CATCH_CATEGORY)
 
