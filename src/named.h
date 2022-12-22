@@ -16,6 +16,8 @@ public:
   void set_name(const char *name);
   void set_name(string &name) { set_name(name.c_str()); }
 
+  string to_list_window_string() { return _name; }
+
 private:
   string _name;
 };
