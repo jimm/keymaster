@@ -21,7 +21,7 @@ static const char HEX_DIGITS[] = {
 void note_num_to_name(int num, char *buf) {
   int oct = (num / 12) - 1;
   const char *note = NOTE_NAMES[num % 12];
-  snprintf(buf, 8, "%s%d", note, oct);
+  snprintf(buf, 5, "%s%d", note, oct);
 }
 
 // str may point to an integer string like "64" as well

@@ -2,8 +2,6 @@
 #include <ncurses.h>
 #include "prompt_window.h"
 
-static struct rect empty_rect = {0, 0, 0, 0};
-
 PromptWindow::PromptWindow(const char *title_str)
   : Window(geom_prompt_rect(), nullptr)
 {
@@ -38,9 +36,7 @@ string PromptWindow::read_string() {
   nocbreak();
   echo();
   curs_set(1);
-  wattron(win, A_REVERSE);
-  wgetstr(win, str);
-  wattroff(win, A_REVERSE);
+  wgetnstr(win, str, BUFSIZ);
   curs_set(0);
   noecho();
   cbreak();

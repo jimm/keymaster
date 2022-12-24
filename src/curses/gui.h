@@ -65,6 +65,7 @@ private:
   void resize_windows();
   void toggle_view();
   void toggle_midi_monitor();
+  void toggle_midi_monitor_show_clock();
   void free_windows();
   void refresh_all();
   void set_window_data();

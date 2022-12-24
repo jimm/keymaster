@@ -3,9 +3,9 @@
 #include "../formatter.h"
 
 MIDIMonitorWindow::MIDIMonitorWindow(struct rect r, KeyMaster *patchmaster)
-  : Window(r, nullptr), km(patchmaster)
+  : Window(r, nullptr), km(patchmaster), display_clock_messages(false)
 {
-  title = "MIDI Monitor (press 'm' to close)";
+  title = "MIDI Monitor   clock: hide";
   for (auto *input : km->inputs())
     input->add_observer(this);
   for (auto *output : km->outputs())
@@ -17,6 +17,12 @@ MIDIMonitorWindow::~MIDIMonitorWindow() {
     input->remove_observer(this);
   for (auto *output : km->outputs())
     output->remove_observer(this);
+}
+
+void MIDIMonitorWindow::toggle_show_clock() {
+  display_clock_messages = !display_clock_messages;
+  title = "MIDI Monitor   clock: ";
+  title += display_clock_messages ? "show" : "hide";
 }
 
 void MIDIMonitorWindow::update(Observable *o, void *arg) {
@@ -53,7 +59,7 @@ void MIDIMonitorWindow::add_message(deque<string> &lines, string sym, PmMessage 
     (unsigned char)Pm_MessageData2(msg)
   };
 
-  if (bytes[0] == CLOCK)
+  if (!display_clock_messages && bytes[0] == CLOCK)
     return;
 
   ostringstream ostr;

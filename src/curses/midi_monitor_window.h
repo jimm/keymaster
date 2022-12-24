@@ -16,10 +16,13 @@ public:
 
   void draw();
 
+  void toggle_show_clock();
+
 private:
   KeyMaster *km;
   deque<string> input_lines;
   deque<string> output_lines;
+  bool display_clock_messages;
 
   void monitor_input(Input *input, PmMessage msg);
   void monitor_output(Output *output, PmMessage msg);

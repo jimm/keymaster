@@ -2,7 +2,7 @@
 #include <ncurses.h>
 #include "geometry.h"
 
-#define MAX_PROMPT_WINDOW_WIDTH 40
+#define MAX_PROMPT_WINDOW_WIDTH 60
 
 inline int TOP_HEIGHT() { return (LINES - 1) * 2 / 3; }
 inline int BOT_HEIGHT() { return (LINES - 1) - TOP_HEIGHT(); }

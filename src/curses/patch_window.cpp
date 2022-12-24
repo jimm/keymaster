@@ -68,11 +68,11 @@ void PatchWindow::format_chans(Connection *conn, char *buf) {
   if (conn->input_chan() == -1)
     strcpy(inchan, "all");
   else
-    snprintf(inchan, 3, "%3d", conn->input_chan() + 1);
+    snprintf(inchan, 4, "%3d", conn->input_chan() + 1);
   if (conn->output_chan() == -1)
     strcpy(outchan, "all");
   else
-    snprintf(outchan, 3, "%3d", conn->output_chan() + 1);
+    snprintf(outchan, 4, "%3d", conn->output_chan() + 1);
 
   snprintf(buf, BUFSIZ-3, " %*s  %3s | %*s  %3s |",
            max_input_name_len, conn->input()->name().c_str(), inchan,
@@ -81,14 +81,14 @@ void PatchWindow::format_chans(Connection *conn, char *buf) {
 
 void PatchWindow::format_zone(Connection *conn, char *buf) {
   if (conn->zone_low() != -1 || conn->zone_high() != -1)
-    snprintf(buf + strlen(buf), 12, " %3d - %3d |", conn->zone_low(), conn->zone_high());
+    snprintf(buf + strlen(buf), 13, " %3d - %3d |", conn->zone_low(), conn->zone_high());
   else
     strcat(buf, "           |");
 }
 
 void PatchWindow::format_xpose(Connection *conn, char *buf) {
   if (conn->xpose() != -1)
-    snprintf(buf + strlen(buf), 8, "   %c%2d |", conn->xpose() < 0 ? '-' : ' ', abs(conn->xpose()));
+    snprintf(buf + strlen(buf), 9, "   %c%2d |", conn->xpose() < 0 ? '-' : ' ', abs(conn->xpose()));
   else
     strcat(buf, "       |");
 }

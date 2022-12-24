@@ -19,6 +19,52 @@ For more information see the [wiki](https://github.com/jimm/keymaster/wiki).
 
 ![Screenshot](https://raw.githubusercontent.com/wiki/jimm/keymaster/images/km_screen_shot.png)
 
+# Key Bindings
+
+## Movement
+
+- **j**, **down**, **space** - Next patch
+- **k**, **up** - Previous patch
+- **n**, **right** - Next song
+- **p**, **left** - Previous song
+- **g** - Goto song
+- **l** - Goto song list
+
+## Performance
+
+- **ESC** - Panic
+- **ESC ESC** - Send individual note off messages on all channels
+
+## Editing
+
+- **e p** - Edit patch
+- **e s** - Edit song
+- **e l** - Edit song list ("All songs" list is not editable)
+- **e m** - Edit message
+- **e t** - Edit trigger
+- **n p** - New patch
+- **n s** - New song
+- **n l** - New song list
+- **n m** - New message
+- **n t** - New trigger
+- **l** - Load a file
+- **s** - Save to a file
+- **r** - Reload previously loaded or last saved file
+
+## MIDI Monitor
+
+- **m** - Open MIDI monitor window
+- **ESC** - Close MIDI monitor window
+- **c** - Toggle display of clock messages (default is off)
+
+## Miscellaneous
+
+- **m** - Open MIDI monitor
+- **v** - Toggle view
+
+- **h**, **?** - Help; any key closes the help window
+- **q** - Quit
+
 # To Do / Bugs
 
 See the [To Do](https://github.com/jimm/keymaster/wiki/To-Do) list on the

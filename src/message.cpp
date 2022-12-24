@@ -221,7 +221,7 @@ string Message::to_editable_string() {
         str += ' ';
         goto PRINT_SYSEX_FOUR_BYTES;
       }
-      snprintf(buf, 4, "%02x", status);
+      snprintf(buf, 3, "%02x", status);
       str += buf;
       break;
     }

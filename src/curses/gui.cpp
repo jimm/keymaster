@@ -95,10 +95,14 @@ void GUI::event_loop() {
       help();
       break;
     case '\e':                  /* escape */
-      show_message("Sending panic...");
-      km->panic(prev_cmd == '\e');
-      show_message("Panic sent");
-      clear_message_after(5);
+      if (midi_monitor != nullptr)
+        toggle_midi_monitor();
+      else {
+        show_message("Sending panic...");
+        km->panic(prev_cmd == '\e');
+        show_message("Panic sent");
+        clear_message_after(5);
+      }
       break;
     case 'l':
       load();
@@ -114,6 +118,9 @@ void GUI::event_loop() {
       break;
     case 'm':
       toggle_midi_monitor();
+      break;
+    case 'c':
+      toggle_midi_monitor_show_clock();
       break;
     case 'q':
       done = TRUE;
@@ -133,6 +140,7 @@ void GUI::event_loop() {
 }
 
 void GUI::config_curses() {
+  setenv("ESCDELAY", "25", 1);
   initscr();
   cbreak();                     /* unbuffered input */
   noecho();                     /* do not show typed keys */
@@ -209,6 +217,11 @@ void GUI::toggle_midi_monitor() {
     delete midi_monitor;
     midi_monitor = nullptr;
   }
+}
+
+void GUI::toggle_midi_monitor_show_clock() {
+  if (midi_monitor != nullptr)
+    midi_monitor->toggle_show_clock();
 }
 
 void GUI::refresh_all() {
