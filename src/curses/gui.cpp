@@ -340,7 +340,7 @@ void GUI::load() {
 
 void GUI::load(string path) {
   if (path.length() == 0) {
-    show_message("error: no file loaded");
+    show_message("no file loaded");
     return;
   }
 

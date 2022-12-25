@@ -15,143 +15,60 @@ inline int PLAY_VIEW_LEFT_WIDTH() { return COLS / 3; }
 inline int PLAY_VIEW_RIGHT_WIDTH() { return COLS - PLAY_VIEW_LEFT_WIDTH(); }
 
 rect geom_set_list_rect() {
-  rect r;
-
-  r.row = 0;
-  r.col = 0;
-  r.height = SL_HEIGHT();
-  r.width = TOP_WIDTH();
-  return r;
+  return rect { 0, 0, SL_HEIGHT(), TOP_WIDTH() };
 }
 
 rect geom_song_rect() {
-  rect r;
-
-  r.row = 0;
-  r.col = TOP_WIDTH();
-  r.height = SL_HEIGHT();
-  r.width = TOP_WIDTH();
-  return r;
+  return rect { 0, TOP_WIDTH(), SL_HEIGHT(), TOP_WIDTH() };
 }
 
 rect geom_set_lists_rect() {
-  rect r;
-
-  r.row = SL_HEIGHT();
-  r.col = 0;
-  r.height = SLS_HEIGHT();
-  r.width = TOP_WIDTH();
-  return r;
+  return rect { SL_HEIGHT(), 0, SLS_HEIGHT(), TOP_WIDTH() };
 }
 
 rect geom_messages_rect() {
-  rect r;
-
-  r.row = SL_HEIGHT();
-  r.col = TOP_WIDTH();
-  r.height = SLS_HEIGHT();
-  r.width = TOP_WIDTH();
-  return r;
+  return rect { SL_HEIGHT(), TOP_WIDTH(), SLS_HEIGHT(), TOP_WIDTH() };
 }
 
 rect geom_triggers_rect() {
-  rect r;
-
-  r.row = SL_HEIGHT();
-  r.col = TOP_WIDTH() * 2;
-  r.height = SLS_HEIGHT();
-  r.width = TOP_WIDTH();
-  return r;
+  return rect { SL_HEIGHT(), TOP_WIDTH() * 2, SLS_HEIGHT(), COLS - (TOP_WIDTH() * 2) };
 }
 
 rect geom_patch_rect() {
-  rect r;
-
-  r.row = ((LINES - 1) * 2 / 3);
-  r.col = 0;
-  r.height = BOT_HEIGHT();
-  r.width = COLS;
-  return r;
+  return rect { ((LINES - 1) * 2 / 3), 0, BOT_HEIGHT(), COLS };
 }
 
 rect geom_message_rect() {
-  rect r;
-
-  r.row = LINES - 1;
-  r.col = 0;
-  r.height = 1;
-  r.width = COLS;
-  return r;
+  return rect { LINES - 1, 0, 1, COLS };
 }
 
 rect geom_info_rect() {
-  rect r;
-
-  r.row = 0;
-  r.col = TOP_WIDTH() * 2;
-  r.height = SL_HEIGHT();
-  r.width = COLS - (TOP_WIDTH() * 2);
-  return r;
+  return rect { 0, TOP_WIDTH() * 2, SL_HEIGHT(), COLS - (TOP_WIDTH() * 2) };
 }
 
 rect geom_help_rect() {
-  rect r;
-
-  r.row = 3;
-  r.col = 3;
-  r.height = LINES - 6;
-  r.width = COLS - 6;
-  return r;
+  return rect { 3, 3, LINES - 6, COLS - 6 };
 }
 
 rect geom_prompt_rect() {
-  rect r;
-
-  r.height = 3;
-  r.width = COLS / 2;
-  if (r.width > MAX_PROMPT_WINDOW_WIDTH)
-    r.width = MAX_PROMPT_WINDOW_WIDTH;
-  r.row = LINES / 3;
-  r.col = (COLS - r.width) / 2;
-  return r;
+  int width = COLS / 2;
+  if (width > MAX_PROMPT_WINDOW_WIDTH)
+    width = MAX_PROMPT_WINDOW_WIDTH;
+  return rect { LINES / 3, (COLS - width) / 2, 3, COLS / 2 };
 }
 
 rect geom_play_song_rect() {
-  rect r;
-
-  r.row = 0;
-  r.col = 0;
-  r.height = PLAY_VIEW_TOP_HEIGHT();
-  r.width = PLAY_VIEW_LEFT_WIDTH();
-  return r;
+  return rect { 0, 0, PLAY_VIEW_TOP_HEIGHT(), PLAY_VIEW_LEFT_WIDTH() };
 }
 
 rect geom_play_notes_rect() {
-  rect r;
-
-  r.row = 0;
-  r.col = PLAY_VIEW_LEFT_WIDTH();
-  r.height = PLAY_VIEW_TOP_HEIGHT();
-  r.width = PLAY_VIEW_RIGHT_WIDTH();
-  return r;
+  return rect { 0, PLAY_VIEW_LEFT_WIDTH(), PLAY_VIEW_TOP_HEIGHT(), PLAY_VIEW_RIGHT_WIDTH() };
 }
 
 rect geom_play_patch_rect() {
-  rect r;
-
-  r.row = PLAY_VIEW_TOP_HEIGHT();
-  r.col = 0;
-  r.height = PLAY_VIEW_BOT_HEIGHT();
-  r.width = COLS;
-  return r;
+  return rect { PLAY_VIEW_TOP_HEIGHT(), 0, PLAY_VIEW_BOT_HEIGHT(), COLS };
 }
 
 rect geom_midi_monitor_rect() {
-  rect r;
-
-  r.row = 3;
-  r.col = (COLS - 38) / 2;
-  r.height = LINES - 6;
-  r.width = 38;
-  return r;
+  return rect { 3, (COLS - 38) / 2, LINES - 6, 38 };
 }
