@@ -5,8 +5,8 @@
  * A FrameList is a wxListCtrl that tells the frame to update its menu
  * whenever an item is selected/deselected.
  */
-FrameListBox::FrameListBox(wxWindow *parent, wxWindowID id, wxPoint pos, wxSize size, long style)
-  : wxListBox(parent, id, pos, size, 0, nullptr, style)
+FrameListBox::FrameListBox(wxWindow *parent, wxWindowID id)
+  : wxListBox(parent, id)
 {
 }
 

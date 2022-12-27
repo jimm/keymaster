@@ -9,7 +9,7 @@
 
 class SetListListBox : public FrameListBox {
 public:
-  SetListListBox(wxWindow *parent, wxWindowID id, wxSize size);
+  SetListListBox(wxWindow *parent, wxWindowID id);
 
   void update();
   void jump();

@@ -1,8 +1,8 @@
 #include "message_list.h"
 #include "../keymaster.h"
 
-MessageList::MessageList(wxWindow *parent, wxWindowID id, wxSize size)
-  : FrameListBox(parent, id, wxDefaultPosition, size, wxLB_SINGLE),
+MessageList::MessageList(wxWindow *parent, wxWindowID id)
+  : FrameListBox(parent, id),
     message(nullptr)
 {
 }

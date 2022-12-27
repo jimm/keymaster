@@ -27,9 +27,7 @@
 #include "../storage.h"
 #include "../editor.h"
 
-#define LIST_WIDTH 200
 #define TALL_LIST_HEIGHT 300
-#define SHORT_LIST_HEIGHT 200
 #define CLOCK_BPM_HEIGHT 16
 #define NOTES_WIDTH 200
 
@@ -119,15 +117,23 @@ void Frame::make_frame_panels() {
   sizer->Add(make_messages_panel(this), POS(4, 1), SPAN(1, 1), wxEXPAND);
   sizer->Add(make_triggers_panel(this), POS(4, 2), SPAN(1, 1), wxEXPAND);
 
+  sizer->AddGrowableRow(0);
+  sizer->AddGrowableRow(1);
+  sizer->AddGrowableRow(2);
+  sizer->AddGrowableRow(3);
+  sizer->AddGrowableRow(4);
+  sizer->AddGrowableCol(0);
+  sizer->AddGrowableCol(1);
+  sizer->AddGrowableCol(2);
+
   wxBoxSizer * const outer_border_sizer = new wxBoxSizer(wxVERTICAL);
-  outer_border_sizer->Add(sizer, wxSizerFlags().Expand().Border());
+  outer_border_sizer->Add(sizer, wxSizerFlags(1).Expand().Border(wxALL, 20));
   SetSizerAndFit(outer_border_sizer);
 }
 
 wxWindow * Frame::make_set_list_songs_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
-  lc_set_list = new SetListBox(p, ID_SetListSongs,
-                               wxSize(LIST_WIDTH, TALL_LIST_HEIGHT));
+  lc_set_list = new SetListBox(p, ID_SetListSongs);
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
   sizer->Add(header_text(p, "Songs"), wxSizerFlags().Align(wxALIGN_LEFT));
@@ -139,8 +145,7 @@ wxWindow * Frame::make_set_list_songs_panel(wxWindow *parent) {
 
 wxWindow * Frame::make_set_lists_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
-  lc_set_lists = new SetListListBox(p, ID_SetListList,
-                                      wxSize(LIST_WIDTH, SHORT_LIST_HEIGHT));
+  lc_set_lists = new SetListListBox(p, ID_SetListList);
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
   sizer->Add(header_text(p, "Set Lists"), wxSizerFlags().Align(wxALIGN_LEFT));
@@ -152,8 +157,7 @@ wxWindow * Frame::make_set_lists_panel(wxWindow *parent) {
 
 wxWindow * Frame::make_song_patches_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
-  lc_song_patches = new SongBox(p, ID_SongPatches,
-                                wxSize(LIST_WIDTH, TALL_LIST_HEIGHT));
+  lc_song_patches = new SongBox(p, ID_SongPatches);
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
   sizer->Add(header_text(p, "Patches"), wxSizerFlags().Align(wxALIGN_LEFT));
@@ -165,8 +169,7 @@ wxWindow * Frame::make_song_patches_panel(wxWindow *parent) {
 
 wxWindow * Frame::make_messages_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
-  lc_messages = new MessageList(p, ID_MessageList,
-                                wxSize(LIST_WIDTH, SHORT_LIST_HEIGHT));
+  lc_messages = new MessageList(p, ID_MessageList);
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
   sizer->Add(header_text(p, "Messages"), wxSizerFlags().Align(wxALIGN_LEFT));

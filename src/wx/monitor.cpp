@@ -20,7 +20,7 @@ wxEND_EVENT_TABLE()
 
 
 Monitor::Monitor()
-  : wxFrame(NULL, wxID_ANY, "MIDI Monitor"),
+  : wxFrame(nullptr, wxID_ANY, "MIDI Monitor"),
     modified(false), timer(this, TIMER_ID)
 {     
   wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);

@@ -19,6 +19,13 @@ For more information see the [wiki](https://github.com/jimm/keymaster/wiki).
 
 ![Screenshot](https://raw.githubusercontent.com/wiki/jimm/keymaster/images/km_screen_shot.png)
 
+# Requirements
+
+All of these requirements are available via [brew](https://brew.sh/)
+
+- [PortMidi](https://github.com/PortMidi/portmidi), known as "portmidi" in brew
+- [wxWidgets](https://wxwidgets.org/), known as "wxwidgets" in brew
+
 # To Do / Bugs
 
 See the [To Do](https://github.com/jimm/keymaster/wiki/To-Do) list on the

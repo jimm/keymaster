@@ -8,7 +8,7 @@
 
 class FrameListBox : public wxListBox {
 public:
-  FrameListBox(wxWindow *parent, wxWindowID id, wxPoint pos, wxSize size, long style);
+  FrameListBox(wxWindow *parent, wxWindowID id);
 
   virtual void update();
 

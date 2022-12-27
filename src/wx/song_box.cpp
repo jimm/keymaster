@@ -2,8 +2,8 @@
 #include "../keymaster.h"
 #include "../cursor.h"
 
-SongBox::SongBox(wxWindow *parent, wxWindowID id, wxSize size)
-  : FrameListBox(parent, id, wxDefaultPosition, size, wxLB_SINGLE),
+SongBox::SongBox(wxWindow *parent, wxWindowID id)
+  : FrameListBox(parent, id),
     song(nullptr)
 {
 }

@@ -11,7 +11,7 @@ class Song;
 
 class SongBox : public FrameListBox {
 public:
-  SongBox(wxWindow *parent, wxWindowID id, wxSize size);
+  SongBox(wxWindow *parent, wxWindowID id);
 
   void update();
   void jump();

@@ -11,7 +11,7 @@ class Message;
 
 class MessageList : public FrameListBox {
 public:
-  MessageList(wxWindow *parent, wxWindowID id, wxSize size);
+  MessageList(wxWindow *parent, wxWindowID id);
 
   void update();
 

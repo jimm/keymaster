@@ -2,8 +2,8 @@
 #include "../keymaster.h"
 #include "../cursor.h"
 
-SetListBox::SetListBox(wxWindow *parent, wxWindowID id, wxSize size)
-  : FrameListBox(parent, id, wxDefaultPosition, size, wxLB_SINGLE),
+SetListBox::SetListBox(wxWindow *parent, wxWindowID id)
+  : FrameListBox(parent, id),
     set_list(nullptr)
 {
 }
