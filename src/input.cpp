@@ -97,7 +97,7 @@ void Input::remove_trigger(Trigger *trigger) {
 // starts a `read_thread` for this Input.
 void Input::start() {
   Instrument::start();
-  if (!enabled || !real_port())
+  if (!enabled || !is_real_port())
     return;
 
   int status;
@@ -183,7 +183,7 @@ void Input::enqueue(PmEvent *events, int num) {
 }
 
 void Input::read(PmMessage msg) {
-  if (!enabled && real_port())
+  if (!enabled && is_real_port())
     return;
 
   unsigned char status = Pm_MessageStatus(msg);
@@ -200,7 +200,7 @@ void Input::read(PmMessage msg) {
   // When testing, remember the messages we've seen. This could be made
   // more efficient by doing a bulk copy before or after this for loop,
   // making sure not to copy over the end of received_messages.
-  if (!real_port() && num_io_messages < MIDI_BUFSIZ-1)
+  if (!is_real_port() && num_io_messages < MIDI_BUFSIZ-1)
     io_messages[num_io_messages++] = msg;
 
   changed((void *)(long)msg);

@@ -32,7 +32,7 @@ void assert_start_sent(KeyMaster *km) {
 
 void assert_stop_sent(KeyMaster *km) {
   Output *out = km->outputs()[0];
-  REQUIRE(!out->real_port());
+  REQUIRE(!out->is_real_port());
   for (int i = 0; i < out->num_io_messages; ++i)
     if (out->io_messages[i] == Pm_Message(0xb2, 7, 0x7f))
       return;

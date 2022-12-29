@@ -26,7 +26,7 @@ public:
 
   virtual void start();
   virtual void stop();
-  bool real_port();
+  bool is_real_port();
 
   void clear();                 // testing only
 

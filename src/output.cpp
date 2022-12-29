@@ -22,7 +22,7 @@ bool Output::start_midi() {
 }
 
 void Output::write(PmEvent *buf, int len) {
-  if (real_port()) {
+  if (is_real_port()) {
     if (enabled) {
       output_mutex.lock();
       PmError err = Pm_Write(stream, buf, len);

@@ -10,12 +10,12 @@ Instrument::Instrument(sqlite3_int64 id, PmDeviceID dev_id, const char *dev_devi
   num_io_messages = 0;
 }
 
-bool Instrument::real_port() {
+bool Instrument::is_real_port() {
   return device_id != pmNoDevice;
 }
 
 void Instrument::start() {
-  if (!real_port()) {
+  if (!is_real_port()) {
     enabled = false;
     return;
   }
@@ -23,7 +23,7 @@ void Instrument::start() {
 }
 
 void Instrument::stop() {
-  if (real_port() && enabled)
+  if (is_real_port() && enabled)
     stop_midi();
   enabled = false;
 }
