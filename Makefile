@@ -48,7 +48,7 @@ $(NAME)_test:	$(TEST_OBJS)
 	$(CXX) $(LDFLAGS) $(LIBS) -o $@ $(filter-out src/error.o,$^)
 
 install:	$(bindir)/$(NAME)
-	install ./$(NAME) $(bindir)
+	install -s ./$(NAME) $(bindir)
 
 uninstall:
 	rm -f $(bindir)/$(NAME)
