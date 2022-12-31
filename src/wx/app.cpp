@@ -44,7 +44,6 @@ bool App::OnInit() {
   init_portmidi();
   frame = new Frame("KeyMaster");
   frame->Show(true);
-  SetTopWindow(frame);
   if (command_line_path.IsEmpty())
     frame->initialize();
   else

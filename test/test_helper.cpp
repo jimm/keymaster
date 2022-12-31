@@ -4,9 +4,15 @@
 #include <unistd.h>
 #include "test_helper.h"
 #include "../src/storage.h"
+#include "../src/error.h"
 
-void error_message(const char * const msg) {
-  fprintf(stderr, "%s\n", msg);
+void error_message(const char *fmt...) {
+  char buf[BUFSIZ];
+
+  va_list args;
+  va_start(args, fmt);
+  vsnprintf(buf, BUFSIZ, fmt, args);
+  fprintf(stderr, "%s\n", buf);
 }
 
 void _initialize_database() {

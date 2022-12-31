@@ -6,6 +6,7 @@
 #include "formatter.h"
 #include "consts.h"
 #include "connection.h"
+#include "error.h"
 
 static const char * NOTE_NAMES[] = {
   "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"
@@ -187,7 +188,7 @@ bool check_byte_value(int val) {
   if (val >= 0 && val <= 255)
     return true;
 
-  fprintf(stderr, "byte value %d is out of range\n", val);
+  error_message("byte value %d is out of range", val);
   return false;
 }
 

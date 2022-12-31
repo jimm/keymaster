@@ -31,10 +31,8 @@ void Instrument::stop() {
 void Instrument::stop_midi() {
   PmError err = Pm_Close(stream);
   if (err != 0) {
-    char buf[BUFSIZ];
-    snprintf(buf, BUFSIZ, "error closing instrument %s: %s\n", name().c_str(),
-            Pm_GetErrorText(err));
-    error_message(buf);
+    error_message("error closing instrument %s: %s\n", name().c_str(),
+                  Pm_GetErrorText(err));
   }
 }
 

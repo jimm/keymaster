@@ -117,14 +117,10 @@ void Frame::make_frame_panels() {
   sizer->Add(make_messages_panel(this), POS(4, 1), SPAN(1, 1), wxEXPAND);
   sizer->Add(make_triggers_panel(this), POS(4, 2), SPAN(1, 1), wxEXPAND);
 
-  sizer->AddGrowableRow(0);
-  sizer->AddGrowableRow(1);
-  sizer->AddGrowableRow(2);
-  sizer->AddGrowableRow(3);
-  sizer->AddGrowableRow(4);
-  sizer->AddGrowableCol(0);
-  sizer->AddGrowableCol(1);
-  sizer->AddGrowableCol(2);
+  for (int i = 0; i <= 4; ++i)
+    sizer->AddGrowableRow(i);
+  for (int i = 0; i <= 2; ++i)
+    sizer->AddGrowableCol(i);
 
   wxBoxSizer * const outer_border_sizer = new wxBoxSizer(wxVERTICAL);
   outer_border_sizer->Add(sizer, wxSizerFlags(1).Expand().Border(wxALL, 20));

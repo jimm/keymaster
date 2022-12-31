@@ -13,7 +13,7 @@ InstrumentEditor::InstrumentEditor(wxWindow *parent, Instrument *instrument_ptr)
     instrument(instrument_ptr)
 {
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  wxSizerFlags panel_flags = wxSizerFlags().Expand().Border(wxTOP|wxLEFT|wxRIGHT);
+  wxSizerFlags panel_flags = wxSizerFlags().Expand().Border();
   sizer->Add(new wxStaticText(this, wxID_ANY, instrument->device_name), panel_flags);
   sizer->Add(make_name_panel(this), panel_flags);
   sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), panel_flags);
@@ -23,8 +23,7 @@ InstrumentEditor::InstrumentEditor(wxWindow *parent, Instrument *instrument_ptr)
 wxWindow *InstrumentEditor::make_name_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
   wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-  wxSizerFlags panel_flags =
-    wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL).Expand().Border(wxTOP|wxLEFT|wxRIGHT);
+  wxSizerFlags panel_flags = wxSizerFlags().Expand().Border();
 
   sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Name")), panel_flags);
   name_text = new wxTextCtrl(p, ID_IN_Name, instrument->name(), wxDefaultPosition, NAME_CTRL_SIZE);

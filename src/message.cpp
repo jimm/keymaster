@@ -6,6 +6,7 @@
 #include "message.h"
 #include "output.h"
 #include "formatter.h"
+#include "error.h"
 
 #define NON_REALTIME_STATUS(b) ((b) >= NOTE_OFF && (b) <= EOX)
 
@@ -119,7 +120,7 @@ void Message::from_editable_string(const string &str) {
       }
       break;
     default:
-      fprintf(stderr, "bad MIDI data seen in string; expected status byte got %02x\n", status);
+      error_message("bad MIDI data seen in string; expected status byte got %02x", status);
       break;
     }
     istream >> word;

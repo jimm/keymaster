@@ -107,10 +107,8 @@ void Input::start() {
   if (portmidi_pthread == nullptr) {
     status = pthread_create(&portmidi_pthread, 0, input_thread, 0);
     if (status != 0) {
-      char buf[BUFSIZ];
-      snprintf(buf, BUFSIZ, "error creating global input stream thread %s: %d\n",
-              name().c_str(), status);
-      error_message(buf);
+      error_message("error creating global input stream thread %s: %d\n",
+                    name().c_str(), status);
       exit(1);
     }
   }
@@ -122,10 +120,8 @@ void Input::start() {
   _running = true;
   status = pthread_create(&read_pthread, 0, read_thread, this);
   if (status != 0) {
-    char buf[BUFSIZ];
-    snprintf(buf, BUFSIZ, "error creating input read thread %s: %d\n",
-            name().c_str(), status);
-    error_message(buf);
+    error_message("error creating input read thread %s: %d\n",
+                  name().c_str(), status);
     exit(1);
   }
 }
@@ -155,19 +151,15 @@ void Input::stop() {
 bool Input::start_midi() {
   PmError err = Pm_OpenInput(&stream, device_id, 0, MIDI_BUFSIZ, 0, 0);
   if (err != 0) {
-    char buf[BUFSIZ];
-    snprintf(buf, BUFSIZ, "error opening input stream %s: %s\n", name().c_str(),
-            Pm_GetErrorText(err));
-    error_message(buf);
+    error_message("error opening input stream %s: %s\n", name().c_str(),
+                  Pm_GetErrorText(err));
     return false;
   }
 
   err = Pm_SetFilter(stream, PM_FILT_ACTIVE); // TODO cmd line option to enable
   if (err != 0) {
-    char buf[BUFSIZ];
-    snprintf(buf, BUFSIZ, "error setting PortMidi filter for input %s: %s\n",
-            name().c_str(), Pm_GetErrorText(err));
-    error_message(buf);
+    error_message("error setting PortMidi filter for input %s: %s\n",
+                  name().c_str(), Pm_GetErrorText(err));
   }
 
   return true;
