@@ -26,7 +26,7 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
   }
 
   SECTION("load messages") {
-    REQUIRE(km->messages().size() == 4); // includes 2 start/stop messages
+    REQUIRE(km->messages().size() == 5); // includes 2 start/stop messages
 
     Message *msg = km->messages()[0];
     REQUIRE(msg->name() == "Tune Request");
@@ -37,6 +37,15 @@ TEST_CASE("storage load", CATCH_CATEGORY) {
     REQUIRE(msg->events()[0].message == Pm_Message(0x80, 64, 0));
     REQUIRE(msg->events()[1].message == Pm_Message(0x81, 64, 0));
     REQUIRE(msg->events()[2].message == Pm_Message(0x82, 42, 127));
+
+    msg = km->messages()[4];
+    REQUIRE(msg->name() == "All Notes Off");
+    string str = msg->to_string();
+    char buf[9];
+    for (int chan = 0; chan < 16; ++chan) {
+      snprintf(buf, 9, "%08x", Pm_Message(CONTROLLER + chan, 7, 127));
+      REQUIRE(str.substr(chan * 8, 8) == buf);
+    }
   }
 
   SECTION("load triggers") {
@@ -272,7 +281,7 @@ TEST_CASE("save", CATCH_CATEGORY) {
   REQUIRE(km->inputs().size() == 2);
   REQUIRE(km->outputs().size() == 2);
   REQUIRE(km->inputs()[0]->name() == "first input");
-  REQUIRE(km->messages().size() == 4);
+  REQUIRE(km->messages().size() == 5);
 
   REQUIRE(km->triggers().size() == 7);
   REQUIRE(km->inputs()[0]->triggers().size() == 5);

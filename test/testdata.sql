@@ -8,7 +8,8 @@ insert into messages (id, name, bytes) values
   (1, 'Tune Request', '000000f6'),
   (2, 'Multiple Note-Offs', '0000408000004081007f2a82'),
   (3, '_start', '00007ab0007f07b0007f07b1'),
-  (4, '_stop', '007f07b2007f07b3007fa7b0');
+  (4, '_stop', '007f07b2007f07b3007fa7b0'),
+  (5, 'All Notes Off', '007f07b0007f07b1007f07b2007f07b3007f07b4007f07b5007f07b6007f07b7007f07b8007f07b9007f07ba007f07bb007f07bc007f07bd007f07be007f07bf');
 
 insert into triggers
   (id, trigger_key_code, input_id, trigger_message_bytes, action, message_id)
