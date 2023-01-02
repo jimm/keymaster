@@ -23,12 +23,14 @@ wxEND_EVENT_TABLE()
 
 SetListEditor::SetListEditor(wxWindow *parent, SetList *slist)
   : wxDialog(parent, wxID_ANY, "Set List Editor", wxDefaultPosition),
-    km(KeyMaster_instance()), set_list(slist)
+    km(KeyMaster_instance()), set_list(slist), set_list_wxlist(nullptr)
 {     
   songs_copy = set_list->songs();
 
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
   sizer->Add(make_name_panel(this), wxEXPAND);
+
+  sizer->AddSpacer(5);
 
   wxBoxSizer *list_sizer = new wxBoxSizer(wxHORIZONTAL);
   list_sizer->Add(make_all_songs_panel(this), wxEXPAND);
@@ -39,7 +41,9 @@ SetListEditor::SetListEditor(wxWindow *parent, SetList *slist)
   wxSizerFlags panel_flags = wxSizerFlags().Expand().Border(wxTOP|wxLEFT|wxRIGHT);
   sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), panel_flags);
 
-  SetSizerAndFit(sizer);
+  wxBoxSizer * const outer_border_sizer = new wxBoxSizer(wxVERTICAL);
+  outer_border_sizer->Add(sizer, wxSizerFlags(1).Expand().Border(wxALL, 10));
+  SetSizerAndFit(outer_border_sizer);
   Show(true);
 }
 
@@ -76,11 +80,16 @@ wxWindow *SetListEditor::make_buttons(wxWindow *parent) {
   up_button->Disable();
   down_button->Disable();
 
-  button_sizer->Add(add_button);
-  button_sizer->Add(remove_button);
-  button_sizer->AddSpacer(10);
-  button_sizer->Add(up_button);
-  button_sizer->Add(down_button);
+  auto flags = wxSizerFlags().Align(wxALIGN_CENTER);
+
+  button_sizer->AddSpacer(60);
+  button_sizer->Add(add_button, flags);
+  button_sizer->AddSpacer(5);
+  button_sizer->Add(remove_button, flags);
+  button_sizer->AddSpacer(20);
+  button_sizer->Add(up_button, flags);
+  button_sizer->AddSpacer(5);
+  button_sizer->Add(down_button, flags);
 
   p->SetSizerAndFit(button_sizer);
   return p;
@@ -120,12 +129,7 @@ void SetListEditor::all_songs_selection(wxCommandEvent& event) {
 }
 
 void SetListEditor::set_list_selection(wxCommandEvent& event) {
-  int selection_index = set_list_wxlist->GetSelection();
-  bool is_song_selected = selection_index != wxNOT_FOUND;
-
-  remove_button->Enable(is_song_selected);
-  up_button->Enable(is_song_selected && selection_index != 0);
-  down_button->Enable(is_song_selected != songs_copy.size() - 1);
+  update_buttons();
 }
 
 void SetListEditor::add_song(wxCommandEvent& event) {
@@ -155,7 +159,7 @@ void SetListEditor::remove_song(wxCommandEvent& event) {
 
 void SetListEditor::move_song_up(wxCommandEvent& event) {
   int selected_index = set_list_wxlist->GetSelection();
-  if (selected_index == wxNOT_FOUND)
+  if (selected_index == wxNOT_FOUND || selected_index == 0)
     return;
 
   Song *tmp = songs_copy[selected_index];
@@ -170,7 +174,7 @@ void SetListEditor::move_song_up(wxCommandEvent& event) {
 // do any bounds checking.
 void SetListEditor::move_song_down(wxCommandEvent& event) {
   int selected_index = set_list_wxlist->GetSelection();
-  if (selected_index == wxNOT_FOUND)
+  if (selected_index == wxNOT_FOUND || selected_index == songs_copy.size() - 1)
     return;
 
   Song *tmp = songs_copy[selected_index];
@@ -181,23 +185,38 @@ void SetListEditor::move_song_down(wxCommandEvent& event) {
   update(set_list_wxlist, songs_copy);
 }
 
+void SetListEditor::update_buttons() {
+  if (set_list_wxlist == nullptr) // still initializing
+    return;
+
+  int selection_index = set_list_wxlist->GetSelection();
+  bool is_song_selected = selection_index != wxNOT_FOUND;
+
+  remove_button->Enable(is_song_selected);
+  up_button->Enable(is_song_selected && selection_index != 0);
+  down_button->Enable(is_song_selected && selection_index != songs_copy.size() - 1);
+}
+
 void SetListEditor::update(wxListBox *list_box, std::vector<Song *>&song_list) {
   int selected_index = list_box->GetSelection();
 
   list_box->Clear();
-  if (song_list.empty())
+  if (song_list.empty()) {
+    update_buttons();
     return;
+  }
 
   wxArrayString names;
   for (auto& song : song_list)
     names.Add(song->name().c_str());
-  if (!names.empty())
-      list_box->InsertItems(names, 0);
+  list_box->InsertItems(names, 0);
 
   if (selected_index != wxNOT_FOUND) {
     list_box->SetSelection(selected_index);
     list_box->EnsureVisible(selected_index);
   }
+
+  update_buttons();
 }
 
 void SetListEditor::save(wxCommandEvent& _) {

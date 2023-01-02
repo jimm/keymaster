@@ -56,6 +56,7 @@ private:
   void remove_song(wxCommandEvent& event);
   void move_song_up(wxCommandEvent& event);
   void move_song_down(wxCommandEvent& event);
+  void update_buttons();
 
   void update(wxListBox *list_box, std::vector<Song *> &song_list);
   void save(wxCommandEvent& _);

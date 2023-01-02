@@ -123,7 +123,7 @@ void Frame::make_frame_panels() {
     sizer->AddGrowableCol(i);
 
   wxBoxSizer * const outer_border_sizer = new wxBoxSizer(wxVERTICAL);
-  outer_border_sizer->Add(sizer, wxSizerFlags(1).Expand().Border(wxALL, 20));
+  outer_border_sizer->Add(sizer, wxSizerFlags(1).Expand().Border(wxALL, 10));
   SetSizerAndFit(outer_border_sizer);
 }
 

@@ -16,7 +16,7 @@ SongEditor::SongEditor(wxWindow *parent, Song *song_ptr)
     song(song_ptr)
 {
   wxBoxSizer *sizer = new wxBoxSizer(wxVERTICAL);
-  wxSizerFlags panel_flags = wxSizerFlags().Expand().Border(wxTOP|wxLEFT|wxRIGHT);
+  wxSizerFlags panel_flags = wxSizerFlags().Expand().Border();
   sizer->Add(make_name_panel(this), panel_flags);
   sizer->Add(make_clock_panel(this), panel_flags);
   sizer->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), panel_flags);
@@ -26,8 +26,7 @@ SongEditor::SongEditor(wxWindow *parent, Song *song_ptr)
 wxWindow *SongEditor::make_name_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
   wxBoxSizer *sizer = new wxBoxSizer(wxHORIZONTAL);
-  wxSizerFlags panel_flags =
-    wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL).Expand().Border(wxTOP|wxLEFT|wxRIGHT);
+  wxSizerFlags panel_flags = wxSizerFlags().Expand().Border();
 
   sizer->Add(new wxStaticText(p, wxID_ANY, TITLE_STR("Name")), panel_flags);
   name_text = new wxTextCtrl(p, ID_SE_Name, song->name(), wxDefaultPosition, NAME_CTRL_SIZE);
@@ -41,8 +40,7 @@ wxWindow *SongEditor::make_clock_panel(wxWindow *parent) {
   wxPanel *p = new wxPanel(parent, wxID_ANY);
   wxBoxSizer *outer_sizer = new wxBoxSizer(wxVERTICAL);
   wxBoxSizer *field_sizer = new wxBoxSizer(wxHORIZONTAL);
-  wxSizerFlags panel_flags =
-    wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL).Expand().Border(wxTOP|wxLEFT|wxRIGHT);
+  wxSizerFlags panel_flags = wxSizerFlags().Expand().Border();
 
   char buf[16];
   format_float(song->bpm(), buf);
