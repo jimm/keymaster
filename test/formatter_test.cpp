@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include <catch2/catch_all.hpp>
 
 #define CATCH_CATEGORY "[formatter]"
 #include "../src/formatter.h"

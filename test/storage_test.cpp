@@ -1,5 +1,5 @@
 #include <string.h>
-#include "catch.hpp"
+#include <catch2/catch_all.hpp>
 #include "test_helper.h"
 #include "../src/storage.h"
 #include "../src/editor.h"

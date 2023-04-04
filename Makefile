@@ -5,7 +5,7 @@ WXFLAGS := $(shell wx-config --cxxflags)
 WXLIBS := $(shell wx-config --libs)
 
 CPP = $(shell wx-config --cxx)
-CPPFLAGS += -std=c++11 -MD -MP -g $(DEBUG) $(WXFLAGS)
+CPPFLAGS += -std=c++14 -MD -MP -g $(DEBUG) $(WXFLAGS)
 
 LD = $(shell wx-config --ld)
 LIBS = -lc -lc++ -lsqlite3 -lportmidi
@@ -18,6 +18,7 @@ SRC = $(wildcard src/*.cpp) $(wildcard src/wx/*.cpp)
 OBJS = $(SRC:%.cpp=%.o)
 TEST_SRC = $(wildcard src/*.cpp) $(wildcard test/*.cpp)
 TEST_OBJS = $(TEST_SRC:%.cpp=%.o)
+TEST_LIBS = $(LIBS) -lCatch2Main -lCatch2
 
 CATCH_CATEGORY ?= ""
 
@@ -42,10 +43,10 @@ src/schema.sql.h: db/schema.sql
 	&& echo ')";' >> $@
 
 test: $(NAME)_test
-	./$(NAME)_test --use-colour no $(CATCH_CATEGORY)
+	./$(NAME)_test --colour-mode=none $(CATCH_CATEGORY)
 
 $(NAME)_test:	$(TEST_OBJS)
-	$(CXX) $(LDFLAGS) $(LIBS) -o $@ $(filter-out src/error.o,$^)
+	$(CXX) $(LDFLAGS) $(TEST_LIBS) -o $@ $(filter-out src/error.o,$^)
 
 install:	$(bindir)/$(NAME)
 	install -s ./$(NAME) $(bindir)
