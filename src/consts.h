@@ -7,6 +7,8 @@
 #define UNDEFINED_ID (-1LL)
 #define CONNECTION_ALL_CHANNELS (-1)
 #define CONTROLLER_BLOCK (-1)
+#define INSTRUMENT_TYPE_INPUT 0
+#define INSTRUMENT_TYPE_OUTPUT 1
 
 // MIDI constants
 

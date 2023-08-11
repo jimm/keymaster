@@ -5,6 +5,7 @@
 #include "output.h"
 
 #define is_status(b) (((b) & 0x80) == 0x80)
+#define is_system(b) ((b) >= SYSEX)
 #define is_realtime(b) ((b) >= 0xf8)
 
 Connection::Connection(sqlite3_int64 id, Input *in, int in_chan, Output *out,
@@ -308,7 +309,7 @@ int Connection::input_channel_ok(int status) {
   if (_input_chan == CONNECTION_ALL_CHANNELS || _processing_sysex)
     return true;
 
-  return status >= SYSEX || _input_chan == (status & 0x0f);
+  return is_system(status) || _input_chan == (status & 0x0f);
 }
 
 int Connection::inside_zone(int note) {

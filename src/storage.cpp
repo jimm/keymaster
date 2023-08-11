@@ -8,6 +8,7 @@
 #include <portmidi.h>
 #include <sqlite3.h>
 #include "keymaster.h"
+#include "consts.h"
 #include "cursor.h"
 #include "storage.h"
 #include "formatter.h"
@@ -17,8 +18,6 @@
 using namespace std;
 
 #define SCHEMA_VERSION 1
-#define INSTRUMENT_TYPE_INPUT 0
-#define INSTRUMENT_TYPE_OUTPUT 1
 
 Storage::Storage(const char *path) : loading_version(0) {
   int status = sqlite3_open(path, &db);

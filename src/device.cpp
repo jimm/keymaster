@@ -1,3 +1,4 @@
+#include "consts.h"
 #include "device.h"
 #include "keymaster.h"
 
@@ -23,8 +24,8 @@ PmDeviceID find_device(const char *device_name, int device_type) {
 
   for (auto &iter : pm_devices) {
     const PmDeviceInfo *info = iter.second;
-    if (((device_type == 0 && info->input)
-         || (device_type == 1 && info->output))
+    if (((device_type == INSTRUMENT_TYPE_INPUT && info->input)
+         || (device_type == INSTRUMENT_TYPE_OUTPUT && info->output))
         && device_names_equal(device_name, (const char *)info->name))
       return iter.first;
   }
