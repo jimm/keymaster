@@ -8,7 +8,7 @@ CPP = $(shell wx-config --cxx)
 CPPFLAGS += -std=c++14 -MD -MP -g $(DEBUG) $(WXFLAGS)
 
 LD = $(shell wx-config --ld)
-LIBS = -lc -lc++ -lsqlite3 -lportmidi
+LIBS = -lsqlite3 -lportmidi
 
 prefix = /usr/local
 exec_prefix = $(prefix)
