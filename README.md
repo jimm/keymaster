@@ -1,8 +1,3 @@
-[The repo formerly named "keymaster" that used to be here has been renamed
-to "keymaster\_objc". It has moved
-[here](https://github.com/jimm/keymaster_objc). This project used to be
-named "SeaMaster".]
-
 # KeyMaster
 
 KeyMaster is a MIDI processing and patching system. It allows a musician to
