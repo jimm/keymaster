@@ -20,6 +20,7 @@ TEST_SRC = $(wildcard src/*.cpp) $(wildcard test/*.cpp)
 TEST_OBJS = $(TEST_SRC:%.cpp=%.o)
 TEST_LIBS = $(LIBS) -lCatch2Main -lCatch2
 
+CATCH_FILE = /opt/homebrew/include/catch2/catch_all.hpp
 CATCH_CATEGORY ?= ""
 
 .PHONY: all test install uninstall tags clean distclean
@@ -42,8 +43,11 @@ src/schema.sql.h: db/schema.sql
 	&& cat $< >> $@ \
 	&& echo ')";' >> $@
 
-test: $(NAME)_test
+test: $(CATCH_FILE) $(NAME)_test
 	./$(NAME)_test --colour-mode=none $(CATCH_CATEGORY)
+
+$(CATCH_FILE):
+	brew install catch2
 
 $(NAME)_test:	$(TEST_OBJS)
 	$(CXX) $(LDFLAGS) $(TEST_LIBS) -o $@ $(filter-out src/error.o,$^)

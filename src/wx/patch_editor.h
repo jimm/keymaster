@@ -5,7 +5,6 @@
 #ifndef WX_PRECOMP
  #include <wx/wx.h>
 #endif
-#include "event.h"
 
 using namespace std;
 
