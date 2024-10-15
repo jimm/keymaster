@@ -10,14 +10,14 @@ void *clock_send_thread(void *clock_ptr) {
 
   while (clock->is_running()) {
     rqtp.tv_nsec = clock->tick();
-    if (nanosleep(&rqtp, nullptr) == -1)
-      return nullptr;
+    if (nanosleep(&rqtp, 0) == -1)
+      return 0;
   }
-  return nullptr;
+  return 0;
 }
 
 Clock::Clock(vector<Input *> &km_inputs)
-  : inputs(km_inputs), thread(nullptr)
+  : inputs(km_inputs), thread(0)
 {
   set_bpm(120);
 }
@@ -45,9 +45,9 @@ void Clock::start() {
 }
 
 void Clock::stop() {
-  if (thread == nullptr)
+  if (thread == 0)
     return;
-  thread = nullptr;
+  thread = 0;
   changed((void *)ClockChangeStop);
   tick_within_beat = 0;
 }

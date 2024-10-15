@@ -29,7 +29,7 @@ public:
   void start();
   void stop();
   long tick();
-  bool is_running() { return thread != nullptr; }
+  bool is_running() { return thread != 0; }
 
 protected:
   float _bpm;

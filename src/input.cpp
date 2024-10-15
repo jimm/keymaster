@@ -11,11 +11,11 @@
 
 // 10 milliseconds, in nanoseconds
 #define SLEEP_NANOSECS 10000000L
-#define INPUT_THREAD_IS_RUNNING (portmidi_pthread != nullptr)
+#define INPUT_THREAD_IS_RUNNING (portmidi_pthread != 0)
 
 static mutex inputs_mutex;
 static set<Input *> inputs;
-static pthread_t portmidi_pthread = nullptr;
+static pthread_t portmidi_pthread = 0;
 
 
 // For each running input in `inputs`, sees if there is any MIDI data to be
@@ -33,7 +33,7 @@ void *input_thread(void *_) {
     for (auto& in : inputs) {
       if (!INPUT_THREAD_IS_RUNNING) { // one more chance to stop
         inputs_mutex.unlock();
-        return nullptr;
+        return 0;
       }
       if (in->is_running() && Pm_Poll(in->stream) == TRUE) {
         int n = Pm_Read(in->stream, buf, MIDI_BUFSIZ);
@@ -45,11 +45,11 @@ void *input_thread(void *_) {
     }
     inputs_mutex.unlock();
     if (!processed_something && INPUT_THREAD_IS_RUNNING) {
-      if (nanosleep(&rqtp, nullptr) == -1)
-        return nullptr;
+      if (nanosleep(&rqtp, 0) == -1)
+        return 0;
     }
   }
-  return nullptr;
+  return 0;
 }
 
 // While the Input pointed to by `in_voidptr` is running, take PmMessages
@@ -64,16 +64,16 @@ void *read_thread(void *in_voidptr) {
     if (msg != 0)
       in->read(msg);
     else {
-      if (nanosleep(&rqtp, nullptr) == -1)
-        return nullptr;
+      if (nanosleep(&rqtp, 0) == -1)
+        return 0;
     }
   }
-  return nullptr;
+  return 0;
 }
 
 
 Input::Input(sqlite3_int64 id, PmDeviceID device_id, const char *device_name, const char *name)
-  : Instrument(id, device_id, device_name, name), _running(false), read_pthread(nullptr)
+  : Instrument(id, device_id, device_name, name), _running(false), read_pthread(0)
 {
 }
 
@@ -104,7 +104,7 @@ void Input::start() {
 
   // Not thread safe, but we don't care because this method is called
   // synchronously from a single thread.
-  if (portmidi_pthread == nullptr) {
+  if (portmidi_pthread == 0) {
     status = pthread_create(&portmidi_pthread, 0, input_thread, 0);
     if (status != 0) {
       error_message("error creating global input stream thread %s: %d\n",
@@ -141,7 +141,7 @@ void Input::stop() {
   if (inputs.empty()) {
     // Not really threadsafe, but we don't care because this method is
     // called synchronously from a single thread.
-    portmidi_pthread = nullptr;
+    portmidi_pthread = 0;
   }
   inputs_mutex.unlock();
 
